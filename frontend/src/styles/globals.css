@@ -32,47 +32,70 @@
     "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo,
     Consolas, monospace;
 
-  /* Ground and surfaces */
-  --color-ground: oklch(0.145 0.006 265);
-  --color-surface: oklch(0.178 0.007 265);
-  --color-surface-raised: oklch(0.206 0.008 265);
-  --color-surface-sunken: oklch(0.126 0.006 265);
+  /*
+    Ground and surfaces: true neutral, chroma 0.
+
+    Every grey here used to carry a little hue 265, which on a large dark
+    surface reads as a blue cast rather than as a colour choice. Neutral greys
+    also let the accent and the semantic colours do the only colouring on the
+    page, which is the point of using them sparingly.
+
+    The steps widen as they go up - 0.115, 0.145, 0.185, 0.225 - because the
+    eye separates dark values less easily than light ones. An even ramp here
+    would read as one flat surface.
+  */
+  --color-ground: oklch(0.145 0 0);
+  --color-surface: oklch(0.185 0 0);
+  --color-surface-raised: oklch(0.225 0 0);
+  --color-surface-sunken: oklch(0.115 0 0);
 
   /* Text */
-  --color-ink: oklch(0.962 0.004 265);
-  --color-ink-muted: oklch(0.704 0.013 265);
-  --color-ink-subtle: oklch(0.556 0.014 265);
+  --color-ink: oklch(0.97 0 0);
+  --color-ink-muted: oklch(0.715 0 0);
+  --color-ink-subtle: oklch(0.56 0 0);
 
   /* Lines */
-  --color-line: oklch(0.272 0.011 265);
-  --color-line-strong: oklch(0.345 0.014 265);
+  --color-line: oklch(0.275 0 0);
+  --color-line-strong: oklch(0.355 0 0);
 
-  /* Accent: a technical blue, used sparingly */
-  --color-accent: oklch(0.682 0.153 248);
-  --color-accent-strong: oklch(0.754 0.158 248);
-  --color-accent-muted: oklch(0.42 0.09 248);
-  --color-accent-ghost: oklch(0.27 0.045 248);
+  /* Accent: a technical blue, and the only hue on most screens. A little more
+     chroma than before, because it now sits on neutral grey rather than on a
+     ground that was already leaning its way. */
+  --color-accent: oklch(0.692 0.168 248);
+  --color-accent-strong: oklch(0.775 0.158 248);
+  --color-accent-muted: oklch(0.43 0.098 248);
+  --color-accent-ghost: oklch(0.268 0.052 248);
 
   /* Semantics */
-  --color-warm: oklch(0.746 0.154 155);
-  --color-warm-ghost: oklch(0.29 0.055 155);
-  --color-cold: oklch(0.63 0.019 265);
-  --color-spend: oklch(0.745 0.157 60);
-  --color-spend-ghost: oklch(0.3 0.06 60);
-  --color-danger: oklch(0.672 0.192 22);
-  --color-danger-ghost: oklch(0.3 0.08 22);
-  --color-caution: oklch(0.79 0.153 85);
-  --color-caution-ghost: oklch(0.32 0.06 85);
-  --color-replay: oklch(0.73 0.14 300);
-  --color-replay-ghost: oklch(0.3 0.06 300);
+  --color-warm: oklch(0.755 0.162 155);
+  --color-warm-ghost: oklch(0.285 0.058 155);
+  --color-cold: oklch(0.63 0 0);
+  --color-spend: oklch(0.752 0.163 60);
+  --color-spend-ghost: oklch(0.295 0.062 60);
+  --color-danger: oklch(0.682 0.198 22);
+  --color-danger-ghost: oklch(0.295 0.082 22);
+  --color-caution: oklch(0.795 0.158 85);
+  --color-caution-ghost: oklch(0.315 0.062 85);
+  --color-replay: oklch(0.738 0.148 300);
+  --color-replay-ghost: oklch(0.295 0.064 300);
 
   --radius-xs: 3px;
   --radius-sm: 5px;
   --radius-md: 7px;
   --radius-lg: 10px;
 
-  --shadow-raise: 0 1px 2px oklch(0 0 0 / 0.35), 0 4px 16px oklch(0 0 0 / 0.22);
-  --shadow-float: 0 8px 36px oklch(0 0 0 / 0.42);
+  --shadow-raise: 0 1px 2px oklch(0 0 0 / 0.4), 0 4px 18px oklch(0 0 0 / 0.26);
+  --shadow-float: 0 10px 40px oklch(0 0 0 / 0.5);
+
+  /*
+    How strongly the atmospheric wash behind a section reads.
+
+    On a dark ground the blobs are the only large areas of colour on screen,
+    so at full strength they tint the whole page - the thing neutral greys
+    were chosen to avoid. A quarter is enough to give the ground depth
+    without it reading as a blue cast.
+  */
+  --atmosphere: 0.22;
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
@@ -87,6 +110,8 @@
   a 1px line that reads as structure at 14% lightness disappears at 97%.
 */
 :root:not(.dark) {
+  --atmosphere: 0.7;
+
   /* Ground and surfaces: paper, with the raised surface lighter than the page
      so cards come forward rather than sinking. */
   --color-ground: oklch(0.982 0.004 85);

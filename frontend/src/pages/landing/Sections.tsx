@@ -347,13 +347,13 @@ export function CacheLayers() {
         title="Four layers, and a guard that does not look at the score."
         lede="The semantic layer is what makes a paraphrase free instead of full price. It is also the most dangerous component in the system, so it is the one with a deterministic veto in front of it."
         aside={
-          <div className="overflow-hidden rounded-xl border border-line bg-[oklch(0.125_0.006_265)]">
+          <div className="overflow-hidden rounded-xl border border-line bg-[oklch(0.115_0_0)]">
             <div className="border-b border-line/60 px-4 py-2">
               <span className="mono text-[10.5px] uppercase tracking-[0.14em] text-ink-subtle">
                 lookup order
               </span>
             </div>
-            <pre className="code-block overflow-x-auto p-4 text-[oklch(0.9_0.004_265)]">
+            <pre className="code-block overflow-x-auto p-4 text-[oklch(0.9_0_0)]">
               <code>{LOOKUP_ORDER}</code>
             </pre>
           </div>
@@ -685,7 +685,7 @@ export function QuickStart() {
           lede="The planner falls back to a deterministic adapter, execution falls back to cassettes, and a test key returns mock results with zero SerpApi credits. make dev and make seed must work on a machine that has never seen a SerpApi key - and they do."
         />
 
-        <div data-reveal className="min-w-0 overflow-hidden rounded-xl border border-line bg-[oklch(0.12_0.006_265)] shadow-float">
+        <div data-reveal className="min-w-0 overflow-hidden rounded-xl border border-line bg-[oklch(0.11_0_0)] shadow-float">
           <div className="flex items-center gap-2 border-b border-line/60 px-4 py-2.5">
             <div className="flex gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
@@ -700,7 +700,7 @@ export function QuickStart() {
               <div key={line.cmd} className="group/cmd flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <span className="text-warm">$</span>
-                  <span className="text-[oklch(0.95_0.004_265)]">{line.cmd}</span>
+                  <span className="text-[oklch(0.95_0_0)]">{line.cmd}</span>
                 </div>
                 <span className="pl-4 text-[11.5px] text-ink-subtle transition-colors duration-300 group-hover/cmd:text-ink-muted">
                   {line.note}

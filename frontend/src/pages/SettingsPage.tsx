@@ -1045,19 +1045,61 @@ function SecuritySettings() {
 
 // ------------------------------------------------------ notifications
 function NotificationsSettings() {
+  const { can } = useSession();
+  const canWrite = can(PERMISSIONS.alertWrite);
+
   const [channels, setChannels] = React.useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [kind, setKind] = React.useState("email");
+  const [name, setName] = React.useState("");
+  const [target, setTarget] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
 
-  React.useEffect(() => {
-    api
-      .channels()
-      .then(setChannels)
-      .catch(() => setChannels([]))
-      .finally(() => setLoading(false));
+  const refresh = React.useCallback(async () => {
+    const rows = await api.channels().catch(() => []);
+    setChannels(Array.isArray(rows) ? rows : []);
+    setLoading(false);
   }, []);
 
+  React.useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  async function add() {
+    if (!target.trim()) {
+      toast.error(kind === "email" ? "Enter an email address." : "Enter a URL.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.createChannel({
+        name: name.trim() || (kind === "email" ? "Email" : "Webhook"),
+        kind,
+        target: target.trim(),
+      });
+      toast.success("Channel added.");
+      setName("");
+      setTarget("");
+      await refresh();
+    } catch (error) {
+      toast.error((error as { message?: string })?.message ?? "Could not add the channel.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove(id: string) {
+    try {
+      await api.deleteChannel(id);
+      toast.success("Channel removed.");
+      await refresh();
+    } catch (error) {
+      toast.error((error as { message?: string })?.message ?? "Could not remove the channel.");
+    }
+  }
+
   return (
-    <motion.div variants={listVariants} initial="initial" animate="animate">
+    <motion.div variants={listVariants} initial="initial" animate="animate" className="space-y-4">
       <Card>
         <CardHeader
           title="Notification channels"
@@ -1065,19 +1107,69 @@ function NotificationsSettings() {
           description="Where SerpFlow sends alerts. Add an email address or a webhook URL, and it will be told when a budget crosses its threshold or runs out, a run fails, routing accuracy regresses, a credential stops working, or the upstream quota diverges from what SerpFlow has recorded."
         />
         <CardBody>
+          {canWrite ? (
+            <div className="mb-4 flex flex-wrap items-end gap-2 rounded-[var(--radius-sm)] border border-line bg-surface-sunken p-3">
+              <Field label="Type" className="w-36">
+                <Select value={kind} onValueChange={setKind}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="webhook">Webhook</SelectItem>
+                    <SelectItem value="slack">Slack</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Label" hint="Optional" className="w-40">
+                <Input
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder={kind === "email" ? "On-call" : "Ops webhook"}
+                />
+              </Field>
+              <Field
+                label={kind === "email" ? "Address" : "URL"}
+                className="min-w-56 flex-1"
+              >
+                <Input
+                  value={target}
+                  onChange={(event) => setTarget(event.target.value)}
+                  placeholder={
+                    kind === "email" ? "oncall@company.com" : "https://hooks.example.com/serpflow"
+                  }
+                />
+              </Field>
+              <Button variant="primary" onClick={add} disabled={saving || !target.trim()}>
+                <Plus />
+                Add channel
+              </Button>
+            </div>
+          ) : null}
+
           {loading ? (
             <Skeleton className="h-20" />
           ) : channels.length ? (
             <ul className="divide-y divide-line">
-              {channels.map((channel, index) => (
-                <li key={index} className="flex items-center gap-3 py-2.5">
+              {channels.map((channel) => (
+                <li key={String(channel.id)} className="flex items-center gap-3 py-2.5">
                   <Badge tone="outline">{String(channel.kind)}</Badge>
-                  <span className="min-w-0 flex-1 truncate text-[12px] text-ink">
+                  <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink">
                     {String(channel.name)}
                   </span>
-                  <span className="mono truncate text-[11px] text-ink-subtle">
+                  <span className="mono min-w-0 max-w-64 truncate text-[11.5px] text-ink-subtle">
                     {String(channel.target)}
                   </span>
+                  {canWrite ? (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={"Remove " + String(channel.name)}
+                      onClick={() => remove(String(channel.id))}
+                    >
+                      <Trash2 />
+                    </Button>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -1085,7 +1177,11 @@ function NotificationsSettings() {
             <EmptyState
               icon={Bell}
               title="No channels configured"
-              description="Add an email address or a webhook URL to be told about budgets, failed runs and quota changes."
+              description={
+                canWrite
+                  ? "Add an email address or a webhook URL above to be told about budgets, failed runs and quota changes."
+                  : "Nobody is being told about budgets, failed runs or quota changes yet."
+              }
             />
           )}
         </CardBody>

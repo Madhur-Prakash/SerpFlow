@@ -23,12 +23,53 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`TRUSTED_PROXY_HOPS`.** How many proxies in front of the API append to
   `X-Forwarded-For`. The address is now read that many entries from the right,
   so a client-supplied header can no longer forge a caller identity.
+- **Notification channels are configurable from the console.** Settings,
+  Notifications now adds and removes channels: an email address, a webhook URL
+  or a Slack URL, with an optional label. Previously the page listed what
+  existed and offered no way to change it, so a channel could only be created
+  through the API.
+- **A footer on every console page.** Licence, catalog version, execution mode
+  and links back to the landing page, the documentation and the API reference -
+  the same closing line the public pages carry.
 - Surface tests for the CLI, the MCP server and both SDKs; email and bootstrap
   test suites. 115 tests to 180.
 - `sdk/README.md` and `sdk/typescript/README.md`.
+- **Custom roles.** An owner can define a role, choose its permissions from a
+  grouped and described list, and assign it to members and API keys alongside
+  the five built-in roles. Create, edit and delete under Settings, Roles.
+  Deleting a role that is still assigned is refused rather than silently
+  stripping everyone who holds it, and an unrecognised permission is dropped on
+  read rather than granted - so removing one from the enum cannot widen a role
+  that referenced it. Writing roles is owner-only; `role:write` is not in the
+  admin set, because defining a role is defining authority.
+- **A public web surface.** A landing page that tells the thesis as a pinned,
+  scrubbed scroll story; a documentation browser at `/docs` rendered from the
+  repository's own markdown; and an API reference at `/api` generated from the
+  OpenAPI schema. GSAP, SplitText and ScrollTrigger load on demand, so the
+  console downloads none of it. See `docs/architecture/web.md`.
+- **Light theme, and a theme control.** Three states (dark, light, system,
+  defaulting to system), switched with a View Transitions circle reveal from
+  the control that was pressed. An inline script applies the stored theme
+  before the first paint, so there is no flash. The light theme is a separate
+  design rather than a tinted inversion: the accent darkens to hold contrast on
+  white and shadows take over the structural work borders do on a dark ground.
+- `make api-check` exercises every operation in the OpenAPI schema against a
+  running instance, filling path parameters from records it creates or fetches,
+  and reports what it skipped and why. 71 of 78 covered.
+- `make test-ui` builds, serves and checks the public pages in a real browser in
+  both themes, failing on console errors, on any element a scroll reveal left
+  invisible, and on the pinned story's counter disagreeing with its cards.
+- `make api-reference` regenerates the reference page; `make docs-check`
+  verifies that all 374 relative links and 95 cited paths resolve.
 
 ### Fixed
 
+- **Console pages below the fold appeared to be unscrollable.** The card
+  reveal used a ScrollTrigger, which watches the window, while the console
+  scrolls inside its own container - so every card past the first screen never
+  triggered and stayed at `opacity: 0`. The reveal now runs on mount with a
+  capped stagger, and clears its own properties so a later layout change cannot
+  inherit a stale transform.
 - A malformed engine in the catalog reached the API as a bare `INTERNAL_ERROR`
   with no indication of what was wrong. The loader now raises `CATALOG_ERROR`
   naming the file, the engine and the offending field.
@@ -83,36 +124,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   extending it, so `.venv` was being linted — 37,831 findings hiding 47 real
   ones, all now fixed, along with 23 real mypy errors.
 
-- **Custom roles.** An owner can define a role, choose its permissions from a
-  grouped and described list, and assign it to members and API keys alongside
-  the five built-in roles. Create, edit and delete under Settings, Roles.
-  Deleting a role that is still assigned is refused rather than silently
-  stripping everyone who holds it, and an unrecognised permission is dropped on
-  read rather than granted - so removing one from the enum cannot widen a role
-  that referenced it. Writing roles is owner-only; `role:write` is not in the
-  admin set, because defining a role is defining authority.
-- **A public web surface.** A landing page that tells the thesis as a pinned,
-  scrubbed scroll story; a documentation browser at `/docs` rendered from the
-  repository's own markdown; and an API reference at `/api` generated from the
-  OpenAPI schema. GSAP, SplitText and ScrollTrigger load on demand, so the
-  console downloads none of it. See `docs/architecture/web.md`.
-- **Light theme, and a theme control.** Three states (dark, light, system,
-  defaulting to system), switched with a View Transitions circle reveal from
-  the control that was pressed. An inline script applies the stored theme
-  before the first paint, so there is no flash. The light theme is a separate
-  design rather than a tinted inversion: the accent darkens to hold contrast on
-  white and shadows take over the structural work borders do on a dark ground.
-- `make api-check` exercises every operation in the OpenAPI schema against a
-  running instance, filling path parameters from records it creates or fetches,
-  and reports what it skipped and why. 71 of 78 covered.
-- `make test-ui` builds, serves and checks the public pages in a real browser in
-  both themes, failing on console errors, on any element a scroll reveal left
-  invisible, and on the pinned story's counter disagreeing with its cards.
-- `make api-reference` regenerates the reference page; `make docs-check`
-  verifies that all 374 relative links and 95 cited paths resolve.
-
 ### Changed
 
+- **The dark theme is neutral.** Every grey carried a little hue 265, which on
+  a large dark surface reads as a blue cast rather than as a deliberate colour.
+  The greys are now chroma 0, which leaves the accent and the semantic colours
+  as the only colouring on the page - which is the point of using them
+  sparingly. The value steps widen as they rise (0.115, 0.145, 0.185, 0.225)
+  because the eye separates dark values less easily than light ones; an even
+  ramp read as one flat surface. The atmospheric washes behind the landing
+  sections are behind an `--atmosphere` token, dimmed in dark and left bright
+  in light.
 - The landing page's top progress bar is replaced by a section rail on the
   right edge: it says which section you are in, how far through the page that
   is, and jumps on click. The pinned story's beat indicator is now one

@@ -16,11 +16,17 @@ import { loadScrollTools } from "@/animations/scroll";
 import { motionAllowed } from "@/hooks/useReducedMotion";
 
 /**
- * Rise `[data-card]` children into place as they cross the fold.
+ * Rise `[data-card]` children into place when the page mounts.
  *
- * Elements already on screen animate immediately; the rest wait for the
- * scroll. Under reduced motion nothing is touched, so content is never left
- * at opacity 0 by an animation that did not run.
+ * On mount, deliberately - not on scroll. The console scrolls inside its own
+ * container rather than the window, and ScrollTrigger watches the window by
+ * default: cards below the fold never triggered, so they stayed at opacity 0
+ * and the page looked like it would not scroll to the bottom. Tying the
+ * trigger to the inner scroller would work, but a bounded page with a dozen
+ * cards does not need scroll choreography - it needs to appear.
+ *
+ * The stagger is capped, so a long page does not make the last card wait.
+ * Under reduced motion nothing is touched at all.
  */
 export function useCardReveal(
   ref: React.RefObject<HTMLElement | null>,
@@ -35,33 +41,26 @@ export function useCardReveal(
     let revert: (() => void) | undefined;
     let alive = true;
 
-    void loadScrollTools().then(({ gsap, ScrollTrigger }) => {
+    void loadScrollTools().then(({ gsap }) => {
       if (!alive) return;
       const ctx = gsap.context(() => {
         const targets = gsap.utils.toArray<HTMLElement>(selector, root);
         if (!targets.length) return;
 
-        gsap.set(targets, { opacity: 0, y });
-
-        targets.forEach((el, index) => {
-          const above = el.getBoundingClientRect().top < window.innerHeight;
-          gsap.to(el, {
+        gsap.fromTo(
+          targets,
+          { opacity: 0, y },
+          {
             opacity: 1,
             y: 0,
-            duration: 0.42,
+            duration: 0.4,
             ease: "power2.out",
-            delay: above ? index * stagger : 0,
-            ...(above
-              ? {}
-              : {
-                  scrollTrigger: { trigger: el, start: "top 92%", once: true },
-                }),
-          });
-        });
-
-        // Content above can finish loading after this runs and move everything
-        // down; without a refresh the triggers keep their stale positions.
-        ScrollTrigger.refresh();
+            // Capped: the twentieth card should not wait most of a second.
+            stagger: { each: stagger, amount: Math.min(targets.length * stagger, 0.36) },
+            // Cleared so a later layout change cannot inherit a stale transform.
+            clearProps: "opacity,transform",
+          },
+        );
       }, root);
       revert = () => ctx.revert();
     });

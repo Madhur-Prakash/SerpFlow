@@ -25,6 +25,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { pageVariants, startSmoothScroll, stopSmoothScroll } from "@/animations";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { ModeBadge } from "@/components/shared";
 import { useCardReveal, useFigureCounters } from "@/hooks/useConsoleMotion";
 import {
   Badge,
@@ -85,6 +86,61 @@ const NAVIGATION: { group: string; items: NavItem[] }[] = [
     ],
   },
 ];
+
+/**
+ * The console's footer.
+ *
+ * Deliberately quiet: the version, the catalog it is running, and the few
+ * links somebody actually leaves the console for. It also gives every page a
+ * defined end, which a scroll container otherwise lacks.
+ */
+function ConsoleFooter() {
+  const health = useHealth();
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="mt-10 border-t border-line pt-5 pb-1">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] text-ink-subtle">
+          <span>&copy; {year} SerpFlow. All rights reserved.</span>
+          <span className="mono">Apache-2.0</span>
+          {health.data?.catalog_version ? (
+            <span className="mono">catalog {health.data.catalog_version}</span>
+          ) : null}
+          {health.data?.mode ? (
+            <ModeBadge mode={health.data.mode} className="scale-90" />
+          ) : null}
+        </div>
+
+        <nav className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px]">
+          <Link to="/" className="text-ink-subtle transition-colors hover:text-ink">
+            Home
+          </Link>
+          <Link to="/docs" className="text-ink-subtle transition-colors hover:text-ink">
+            Documentation
+          </Link>
+          <Link to="/api" className="text-ink-subtle transition-colors hover:text-ink">
+            API reference
+          </Link>
+          <Link
+            to="/app/settings/organization"
+            className="text-ink-subtle transition-colors hover:text-ink"
+          >
+            Settings
+          </Link>
+          <a
+            href="https://github.com/serpflow/serpflow"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-ink-subtle transition-colors hover:text-ink"
+          >
+            Source
+          </a>
+        </nav>
+      </div>
+    </footer>
+  );
+}
 
 export function AppShell() {
   const { me, project, selectProject, logout, can } = useSession();
@@ -343,6 +399,8 @@ export function AppShell() {
               className="mx-auto w-full max-w-[1500px] px-4 py-6 lg:px-8 lg:py-8"
             >
               <Outlet />
+            
+              <ConsoleFooter />
             </motion.main>
           </AnimatePresence>
         </div>

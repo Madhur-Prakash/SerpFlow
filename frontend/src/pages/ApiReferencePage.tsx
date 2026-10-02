@@ -191,8 +191,8 @@ function OperationCard({ op }: { op: ApiOperation }) {
               </Detail>
             ) : null}
 
-            <div className="rounded-lg border border-line bg-[oklch(0.12_0.006_265)] p-3">
-              <code className="code-block block whitespace-pre-wrap break-all text-[11.5px] text-[oklch(0.92_0.004_265)]">
+            <div className="rounded-lg border border-line bg-[oklch(0.11_0_0)] p-3">
+              <code className="code-block block whitespace-pre-wrap break-all text-[11.5px] text-[oklch(0.92_0_0)]">
                 <span className="text-warm">curl</span> -X {op.method}{" "}
                 <span className="text-accent-strong">
                   http://localhost:8000{op.path}

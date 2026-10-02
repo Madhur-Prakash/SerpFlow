@@ -268,7 +268,7 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
   }, [code]);
 
   return (
-    <div className="group/code relative my-5 overflow-hidden rounded-xl border border-line bg-[oklch(0.125_0.006_265)]">
+    <div className="group/code relative my-5 overflow-hidden rounded-xl border border-line bg-[oklch(0.115_0_0)]">
       <div className="flex items-center justify-between border-b border-line/60 px-4 py-2">
         <span className="mono text-[10.5px] uppercase tracking-[0.14em] text-ink-subtle">
           {lang || "text"}
@@ -283,7 +283,7 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="code-block overflow-x-auto p-4 text-[oklch(0.9_0.004_265)]">
+      <pre className="code-block overflow-x-auto p-4 text-[oklch(0.9_0_0)]">
         <code>{highlight(code, lang)}</code>
       </pre>
     </div>

@@ -37,18 +37,24 @@ export function Atmosphere({
       aria-hidden
       className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
     >
-      <div className="absolute inset-0 grid-field opacity-[0.55]" />
+      <div className="absolute inset-0 grid-field opacity-[0.45]" />
       {variant !== "quiet" && (
         <>
           <div
             data-backdrop
             className="absolute -top-[22%] left-[8%] h-[46rem] w-[46rem] rounded-full blur-[120px] animate-drift-slow"
-            style={{ background: "radial-gradient(circle, var(--color-accent-ghost) 0%, transparent 68%)" }}
+            style={{
+              background: "radial-gradient(circle, var(--color-accent-ghost) 0%, transparent 68%)",
+              opacity: "var(--atmosphere)",
+            }}
           />
           <div
             data-backdrop
             className="absolute -right-[12%] top-[14%] h-[38rem] w-[38rem] rounded-full blur-[130px] animate-drift-slower"
-            style={{ background: "radial-gradient(circle, var(--color-warm-ghost) 0%, transparent 70%)" }}
+            style={{
+              background: "radial-gradient(circle, var(--color-warm-ghost) 0%, transparent 70%)",
+              opacity: "var(--atmosphere)",
+            }}
           />
         </>
       )}
@@ -56,7 +62,10 @@ export function Atmosphere({
         <div
           data-backdrop
           className="absolute bottom-[-30%] left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full blur-[140px] animate-drift-slow"
-          style={{ background: "radial-gradient(circle, var(--color-replay-ghost) 0%, transparent 72%)" }}
+          style={{
+            background: "radial-gradient(circle, var(--color-replay-ghost) 0%, transparent 72%)",
+            opacity: "calc(var(--atmosphere) * 0.8)",
+          }}
         />
       )}
       {/* A top-down fade so the band below always starts clean. */}
