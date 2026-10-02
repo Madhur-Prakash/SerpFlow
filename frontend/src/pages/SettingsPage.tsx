@@ -63,15 +63,28 @@ import { api } from "@/lib/api";
 import * as fmt from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { PERMISSIONS, useSession } from "@/stores/session";
+import { RolesSettings } from "@/pages/settings/RolesSettings";
+
+/**
+ * Absolute, deliberately.
+ *
+ * These links live inside a nested `<Routes>` mounted at `settings/*`, where a
+ * relative `to="members"` resolves against the current URL rather than the
+ * settings root: from /app/settings/organization it produced
+ * /app/settings/organization/members, which matches no child, so the layout
+ * never rendered and the page came up blank.
+ */
+const SETTINGS_ROOT = "/app/settings";
 
 const TABS = [
-  { to: "organization", label: "Organization", icon: Building2 },
-  { to: "members", label: "Members", icon: Users },
-  { to: "projects", label: "Projects", icon: Terminal },
-  { to: "api-keys", label: "API keys", icon: Key },
-  { to: "credentials", label: "Credentials", icon: Shield },
-  { to: "security", label: "Security", icon: Lock },
-  { to: "notifications", label: "Notifications", icon: Bell },
+  { to: SETTINGS_ROOT + "/organization", label: "Organization", icon: Building2 },
+  { to: SETTINGS_ROOT + "/members", label: "Members", icon: Users },
+  { to: SETTINGS_ROOT + "/roles", label: "Roles", icon: Shield },
+  { to: SETTINGS_ROOT + "/projects", label: "Projects", icon: Terminal },
+  { to: SETTINGS_ROOT + "/api-keys", label: "API keys", icon: Key },
+  { to: SETTINGS_ROOT + "/credentials", label: "Credentials", icon: Shield },
+  { to: SETTINGS_ROOT + "/security", label: "Security", icon: Lock },
+  { to: SETTINGS_ROOT + "/notifications", label: "Notifications", icon: Bell },
 ];
 
 export function SettingsPage() {
@@ -117,11 +130,15 @@ export function SettingsRoutes() {
         <Route index element={<Navigate to="organization" replace />} />
         <Route path="organization" element={<OrganizationSettings />} />
         <Route path="members" element={<MembersSettings />} />
+        <Route path="roles" element={<RolesSettings />} />
         <Route path="projects" element={<ProjectsSettings />} />
         <Route path="api-keys" element={<ApiKeysSettings />} />
         <Route path="credentials" element={<CredentialsSettings />} />
         <Route path="security" element={<SecuritySettings />} />
         <Route path="notifications" element={<NotificationsSettings />} />
+        {/* Anything else under settings returns to the first tab rather than
+            rendering an empty panel. */}
+        <Route path="*" element={<Navigate to={SETTINGS_ROOT + "/organization"} replace />} />
       </Route>
     </Routes>
   );
@@ -187,7 +204,21 @@ function OrganizationSettings() {
 }
 
 // ------------------------------------------------------------ members
+/** The organization's own roles, for the pickers. Empty when none are defined. */
+function useCustomRoles() {
+  const [roles, setRoles] = React.useState<{ slug: string; name: string }[]>([]);
+  React.useEffect(() => {
+    api
+      .roles()
+      .then((page) => setRoles(page.items ?? []))
+      // A member manager without role:read still gets the built-in options.
+      .catch(() => setRoles([]));
+  }, []);
+  return roles;
+}
+
 function MembersSettings() {
+  const customRoles = useCustomRoles();
   const { can, me } = useSession();
   const members = useMembers();
   const [email, setEmail] = React.useState("");
@@ -240,6 +271,11 @@ function MembersSettings() {
                     {me?.role === "owner" ? (
                       <SelectItem value="owner">Owner</SelectItem>
                     ) : null}
+                    {customRoles.map((custom) => (
+                      <SelectItem key={custom.slug} value={custom.slug}>
+                        {custom.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </Field>
@@ -302,6 +338,11 @@ function MembersSettings() {
                       <SelectItem value="developer">Developer</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="owner">Owner</SelectItem>
+                      {customRoles.map((custom) => (
+                        <SelectItem key={custom.slug} value={custom.slug}>
+                          {custom.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 ) : (
@@ -1021,7 +1062,7 @@ function NotificationsSettings() {
         <CardHeader
           title="Notification channels"
           icon={Bell}
-          description="Webhook deliveries are signed and retried through Kafka. Events: budget thresholds, run completion and failure, anomalous spend, routing regressions, credential validation failures and upstream quota changes."
+          description="Where SerpFlow sends alerts. Add an email address or a webhook URL, and it will be told when a budget crosses its threshold or runs out, a run fails, routing accuracy regresses, a credential stops working, or the upstream quota diverges from what SerpFlow has recorded."
         />
         <CardBody>
           {loading ? (
@@ -1044,7 +1085,7 @@ function NotificationsSettings() {
             <EmptyState
               icon={Bell}
               title="No channels configured"
-              description="A channel receives signed webhook deliveries when a budget crosses its threshold, a run fails, routing accuracy regresses, or the upstream quota diverges from the internal ledger."
+              description="Add an email address or a webhook URL to be told about budgets, failed runs and quota changes."
             />
           )}
         </CardBody>

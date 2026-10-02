@@ -114,6 +114,8 @@ export const PERMISSIONS = {
   auditExport: "audit:export",
   memberRead: "member:read",
   memberWrite: "member:write",
+  roleRead: "role:read",
+  roleWrite: "role:write",
   projectWrite: "project:write",
   keyRead: "key:read",
   keyWrite: "key:write",

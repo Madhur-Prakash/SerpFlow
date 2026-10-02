@@ -166,6 +166,10 @@ export function Card({
 }) {
   return (
     <div
+      // The console's scroll reveal finds cards by this attribute. Opting in
+      // here rather than listing selectors in the hook means a new page gets
+      // the behaviour without anyone remembering to ask for it.
+      data-card=""
       className={cn(
         "rounded-[var(--radius-md)] border border-line bg-surface hairline",
         interactive &&

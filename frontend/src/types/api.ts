@@ -754,3 +754,30 @@ export interface RunEvent {
   run_id: string;
   type: "stage" | "complete" | "error" | "heartbeat";
 }
+
+
+// --------------------------------------------------------------- roles
+/** A role an owner defined, with the permission set they chose. */
+export type CustomRole = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  permissions: string[];
+  assigned_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PermissionView = {
+  value: string;
+  /** What this permission lets someone do, in plain words. */
+  label: string;
+  group: string;
+};
+
+export type RoleCatalogue = {
+  permissions: PermissionView[];
+  groups: string[];
+  builtin: { slug: string; name: string; permissions: string[]; builtin: boolean }[];
+};

@@ -29,7 +29,13 @@ from app.core.exceptions import (
     SessionCapExceededError,
 )
 from app.core.logging import get_logger
-from app.core.permissions import Permission, Role, has_permission, permissions_for
+from app.core.permissions import (
+    Permission,
+    Role,
+    has_permission,
+    is_builtin_role,
+    permissions_for,
+)
 from app.core.security import (
     MintedApiKey,
     create_token,
@@ -370,7 +376,7 @@ class AuthService:
                 api_key_id=cached.get("api_key_id"),
                 key_environment=cached.get("key_environment"),
                 session_cap=cached.get("session_cap"),
-                permissions=permissions_for(cached["role"]),
+                permissions=await self._permissions_for(cached["org_id"], cached["role"]),
             )
 
         # The project prefix is plaintext and uniquely indexed, so this is an
@@ -407,10 +413,25 @@ class AuthService:
             api_key_id=row.id,
             key_environment=row.environment,
             session_cap=row.session_cap,
-            permissions=permissions_for(row.role),
+            permissions=await self._permissions_for(row.org_id, row.role),
         )
         await cache_principal(key_hash, principal.as_dict())
         return principal
+
+    async def _permissions_for(self, org_id: str, role: str) -> frozenset[Permission]:
+        """Permissions for a role name, built-in or custom.
+
+        A custom role's set lives in the database, so this is the one place
+        that has to look. A name matching neither resolves to nothing: a holder
+        of a deleted role keeps their identity and loses their authority,
+        rather than falling back to someone else's.
+        """
+        if is_builtin_role(role):
+            return permissions_for(role)
+
+        from app.services.roles.service import RoleService
+
+        return await RoleService(self.session, org_id).resolve(role)
 
     # ------------------------------------------------- service sessions (35)
     async def open_service_session(
@@ -491,7 +512,7 @@ class AuthService:
             role=role,
             email=user.email,
             display=user.full_name or user.email,
-            permissions=permissions_for(role),
+            permissions=await self._permissions_for(membership.org_id, role),
         )
 
     async def create_project(

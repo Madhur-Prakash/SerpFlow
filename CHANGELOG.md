@@ -34,6 +34,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   naming the file, the engine and the offending field.
 - The `Makefile` had CRLF line endings, which silently break recipe line
   continuations under `/bin/sh`.
+- The sidebar wordmark is a link to the landing page.
+- The execution mode badge explains itself: each mode now carries its own
+  description, so the tooltip says whether what you are looking at is live and
+  whether it cost anything, rather than naming a configuration key.
+- The notification settings describe what a channel is for instead of how
+  delivery is implemented.
+- Every page under Settings rendered blank. The tab links were relative, and
+  inside a nested `<Routes>` a relative `to="members"` resolves against the
+  current URL - so from `/app/settings/organization` it produced
+  `/app/settings/organization/members`, which matches no child route, so the
+  layout never rendered. The links are absolute now, and an unmatched settings
+  path returns to the first tab instead of showing nothing.
 - `POST /v1/budgets` returned a bare 500 when a budget already existed for the
   same scope and period: the unique constraint raised an `IntegrityError` that
   nothing caught. It now answers `409 CONFLICT` and says what to do instead.
@@ -71,6 +83,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   extending it, so `.venv` was being linted — 37,831 findings hiding 47 real
   ones, all now fixed, along with 23 real mypy errors.
 
+- **Custom roles.** An owner can define a role, choose its permissions from a
+  grouped and described list, and assign it to members and API keys alongside
+  the five built-in roles. Create, edit and delete under Settings, Roles.
+  Deleting a role that is still assigned is refused rather than silently
+  stripping everyone who holds it, and an unrecognised permission is dropped on
+  read rather than granted - so removing one from the enum cannot widen a role
+  that referenced it. Writing roles is owner-only; `role:write` is not in the
+  admin set, because defining a role is defining authority.
 - **A public web surface.** A landing page that tells the thesis as a pinned,
   scrubbed scroll story; a documentation browser at `/docs` rendered from the
   repository's own markdown; and an API reference at `/api` generated from the
@@ -97,6 +117,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   right edge: it says which section you are in, how far through the page that
   is, and jumps on click. The pinned story's beat indicator is now one
   continuous track with a travelling head rather than four gradient segments.
+- Typography: Geist for the interface, Bricolage Grotesque for display
+  headings, JetBrains Mono for identifiers - all bundled through
+  `@fontsource-variable`, so there is no third-party request on load and the
+  console renders identically with no outbound network. Previously the font
+  stacks named Inter and JetBrains Mono but nothing loaded them, so everything
+  fell back to the system faces.
+- The light ground warms slightly, which reads as paper rather than wireframe.
+- Theme switching is a shutter: the new theme comes down from the top edge
+  rather than growing as a circle from the control.
+- The console's sidebar footer is the organization switcher and nothing else.
+  The health readout and the mode badge are gone - `/readyz` is an operator's
+  endpoint, and a permanent "ok" in the corner is furniture.
+- Console cards rise into place as they cross the fold and figures count up,
+  through the same on-demand GSAP module the landing page uses.
 - The light theme's accent was close to navy. Lifted to `oklch(0.58 0.206 255)`,
   with `accent-strong` kept darker for small text where 4.5:1 is the bar.
 

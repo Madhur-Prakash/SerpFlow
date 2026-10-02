@@ -19,7 +19,7 @@ type ViewTransitionDocument = Document & {
   };
 };
 
-export function switchTheme(next: Theme, origin?: { x: number; y: number }): void {
+export function switchTheme(next: Theme, _origin?: { x: number; y: number }): void {
   // flushSync, because the View Transition snapshots the DOM synchronously
   // after this callback: a React render scheduled for later would be captured
   // in the "before" frame and the transition would animate nothing.
@@ -39,25 +39,18 @@ export function switchTheme(next: Theme, origin?: { x: number; y: number }): voi
     return;
   }
 
-  const x = origin?.x ?? window.innerWidth - 48;
-  const y = origin?.y ?? 36;
-  // The radius has to reach the furthest corner, or the old theme stays
-  // visible in whichever corner the circle did not get to.
-  const radius = Math.hypot(
-    Math.max(x, window.innerWidth - x),
-    Math.max(y, window.innerHeight - y),
-  );
-
   const transition = doc.startViewTransition(apply);
   transition.ready
     .then(() => {
+      // A shutter: the new theme comes down from the top edge and covers the
+      // old one. `inset()` from 100% bottom to 0 is the whole effect - the new
+      // snapshot is clipped to a band that grows downward, so nothing moves
+      // and only the reveal animates.
       root.animate(
+        { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
         {
-          clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`],
-        },
-        {
-          duration: 620,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          duration: 560,
+          easing: "cubic-bezier(0.65, 0, 0.35, 1)",
           pseudoElement: "::view-transition-new(root)",
         },
       );

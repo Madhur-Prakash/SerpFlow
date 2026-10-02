@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy import func, select
@@ -16,8 +16,13 @@ from app.api.deps import (
     client_ip,
     require,
 )
-from app.core.exceptions import ConflictError, NotFoundError, PermissionDeniedError
-from app.core.permissions import Permission, Role
+from app.core.exceptions import (
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+    ValidationError,
+)
+from app.core.permissions import Permission, Role, is_builtin_role
 from app.db.models.identity import Membership, Project, User
 from app.db.models.keys import ApiKey
 from app.schemas.common import OkResponse, Page
@@ -265,6 +270,24 @@ async def invite_member(
     )
 
 
+async def _assert_assignable_role(session: Any, org_id: str, role: str) -> None:
+    """A role name must be a built-in or one this organization has defined.
+
+    Validated here rather than in the schema, because whether a name is valid
+    depends on the caller's organization - which a Pydantic enum cannot know.
+    """
+    if is_builtin_role(role):
+        return
+
+    from app.services.roles.service import RoleService
+
+    if await RoleService(session, org_id).by_slug(role) is None:
+        raise ValidationError(
+            "'" + role + "' is not a role in this organization. Define it under "
+            "Settings, Roles, or choose a built-in role."
+        )
+
+
 @router.patch("/members/{membership_id}", response_model=MemberResponse)
 async def update_member(
     membership_id: str,
@@ -276,6 +299,8 @@ async def update_member(
     membership = await session.get(Membership, membership_id)
     if membership is None or membership.org_id != principal.org_id:
         raise NotFoundError("Member not found.")
+
+    await _assert_assignable_role(session, principal.org_id, payload.role)
 
     # Only an owner may create another owner.
     if payload.role == Role.OWNER and principal.role != Role.OWNER:

@@ -100,7 +100,7 @@ export function Hero() {
 
           <h1
             data-hero-title
-            className="text-balance text-[clamp(2.1rem,4.4vw,3.5rem)] font-semibold leading-[1.05] tracking-[-0.035em]"
+            className="display text-balance text-[clamp(2.2rem,4.8vw,3.9rem)] leading-[1.02]"
           >
             The cache should change <span className="text-accent">which plan wins</span>.
           </h1>

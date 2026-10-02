@@ -402,7 +402,7 @@ function parseHtml(source: string): HtmlNode[] {
 }
 
 const HTML_HEADING: Record<string, string> = {
-  h1: "mt-0 mb-4 text-[clamp(1.9rem,3.4vw,2.6rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-ink",
+  h1: "display mt-0 mb-4 text-[clamp(1.9rem,3.4vw,2.6rem)] leading-[1.08] text-ink",
   h2: "mt-10 mb-3 scroll-mt-28 text-[1.45rem] font-semibold tracking-[-0.02em] text-ink",
   h3: "mt-8 mb-2.5 scroll-mt-28 text-[1.12rem] font-semibold text-ink",
   h4: "mt-6 mb-2 text-[0.98rem] font-semibold text-ink",
@@ -798,7 +798,7 @@ export function extractHeadings(markdown: string): Heading[] {
 }
 
 const HEADING_CLASS: Record<number, string> = {
-  1: "mt-0 mb-5 text-[clamp(1.9rem,3.4vw,2.6rem)] font-semibold leading-[1.1] tracking-[-0.03em]",
+  1: "display mt-0 mb-5 text-[clamp(1.9rem,3.4vw,2.6rem)] leading-[1.08]",
   2: "mt-12 mb-4 scroll-mt-28 text-[1.45rem] font-semibold leading-tight tracking-[-0.02em]",
   3: "mt-9 mb-3 scroll-mt-28 text-[1.12rem] font-semibold leading-snug",
   4: "mt-7 mb-2.5 scroll-mt-28 text-[0.98rem] font-semibold",

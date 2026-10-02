@@ -22,6 +22,7 @@ import type {
   CatalogEngine,
   CatalogGraph,
   Credential,
+  CustomRole,
   Dashboard,
   GuardRejection,
   Health,
@@ -31,6 +32,7 @@ import type {
   PayloadResponse,
   Plan,
   Project,
+  RoleCatalogue,
   Run,
   RunSummary,
   SavingsDecomposition,
@@ -426,6 +428,21 @@ export const api = {
   createChannel: (body: Record<string, unknown>) =>
     post<Record<string, unknown>>("/v1/notification-channels", body),
   deleteChannel: (id: string) => del<{ ok: boolean }>("/v1/notification-channels/" + id),
+
+  // ------------------------------------------------------------ roles
+  roles: () => get<{ items: CustomRole[]; total: number }>("/v1/roles"),
+  rolePermissions: () => get<RoleCatalogue>("/v1/roles/permissions"),
+  createRole: (body: {
+    name: string;
+    permissions: string[];
+    description?: string;
+    slug?: string;
+  }) => post<CustomRole>("/v1/roles", body),
+  updateRole: (
+    id: string,
+    body: { name?: string; description?: string; permissions?: string[] },
+  ) => patch<CustomRole>("/v1/roles/" + id, body),
+  deleteRole: (id: string) => del<{ ok: boolean }>("/v1/roles/" + id),
 
   // --------------------------------------------------- infrastructure
   health: () => get<Health>("/readyz"),

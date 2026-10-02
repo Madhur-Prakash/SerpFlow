@@ -152,7 +152,7 @@ export function ThesisStory() {
         <div className="grid min-w-0 items-end gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12">
           <div className="flex min-w-0 flex-col gap-4">
             <MonoLabel>the thesis</MonoLabel>
-            <h2 className="text-balance text-[clamp(1.75rem,3.4vw,2.65rem)] font-semibold leading-[1.1] tracking-[-0.03em]">
+            <h2 className="display text-balance text-[clamp(1.75rem,3.4vw,2.65rem)] leading-[1.08]">
               Same intent. Same catalog. A different plan wins.
             </h2>
           </div>

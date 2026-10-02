@@ -75,6 +75,10 @@ class Permission(StrEnum):
     ALERT_WRITE = "alert:write"
     CATALOG_READ = "catalog:read"
 
+    # custom roles
+    ROLE_READ = "role:read"
+    ROLE_WRITE = "role:write"
+
 
 _ANALYST: frozenset[Permission] = frozenset(
     {
@@ -121,6 +125,7 @@ _ADMIN: frozenset[Permission] = _DEVELOPER | frozenset(
     {
         Permission.MEMBER_READ,
         Permission.MEMBER_WRITE,
+        Permission.ROLE_READ,
         Permission.PROJECT_WRITE,
         Permission.BUDGET_WRITE,
         Permission.POLICY_WRITE,
@@ -138,6 +143,8 @@ _OWNER: frozenset[Permission] = _ADMIN | frozenset(
         Permission.ORG_BILLING,
         Permission.ORG_DELETE,
         Permission.CREDENTIAL_ROTATE,
+        # Defining a role is defining authority, so it stays with the owner.
+        Permission.ROLE_WRITE,
     }
 )
 
@@ -159,10 +166,121 @@ ROLE_ORDER: dict[Role, int] = {
 
 
 def permissions_for(role: Role | str) -> frozenset[Permission]:
+    """The permission set for a built-in role.
+
+    A name that is not a built-in role returns the empty set, not a guess. A
+    custom role's permissions live in the database and are resolved by
+    ``AuthService``; this function stays pure so it can be used anywhere.
+    """
     try:
         return ROLE_PERMISSIONS[Role(role)]
     except (ValueError, KeyError):
         return frozenset()
+
+
+def is_builtin_role(role: str) -> bool:
+    try:
+        Role(role)
+    except ValueError:
+        return False
+    return True
+
+
+def parse_permissions(values: list[str] | None) -> frozenset[Permission]:
+    """Turn stored strings into permissions, dropping anything unrecognised.
+
+    Dropping rather than raising matters: if a permission is removed from the
+    enum, a stored role that still names it must lose that grant, not fail to
+    load and not keep it.
+    """
+    known: set[Permission] = set()
+    for value in values or []:
+        try:
+            known.add(Permission(value))
+        except ValueError:
+            continue
+    return frozenset(known)
+
+
+#: Grouped for the interface that builds a custom role. The grouping is
+#: presentation; the permission strings are the contract.
+PERMISSION_GROUPS: list[tuple[str, tuple[Permission, ...]]] = [
+    (
+        "Organization",
+        (Permission.ORG_READ, Permission.ORG_UPDATE, Permission.ORG_BILLING, Permission.ORG_DELETE),
+    ),
+    ("Members", (Permission.MEMBER_READ, Permission.MEMBER_WRITE)),
+    ("Projects", (Permission.PROJECT_READ, Permission.PROJECT_WRITE, Permission.POLICY_WRITE)),
+    ("API keys", (Permission.KEY_READ, Permission.KEY_WRITE, Permission.KEY_PROJECT_WRITE)),
+    (
+        "Credentials",
+        (Permission.CREDENTIAL_READ, Permission.CREDENTIAL_WRITE, Permission.CREDENTIAL_ROTATE),
+    ),
+    ("Budgets", (Permission.BUDGET_READ, Permission.BUDGET_WRITE)),
+    (
+        "Search and runs",
+        (
+            Permission.PLAN_CREATE,
+            Permission.EXECUTE,
+            Permission.RUN_READ,
+            Permission.RUN_REPLAY,
+            Permission.PAYLOAD_READ,
+        ),
+    ),
+    ("Cache", (Permission.CACHE_READ, Permission.CACHE_INVALIDATE)),
+    ("Catalog", (Permission.CATALOG_READ,)),
+    (
+        "Evidence",
+        (
+            Permission.ANALYTICS_READ,
+            Permission.BENCHMARK_READ,
+            Permission.BENCHMARK_RUN,
+            Permission.AUDIT_READ,
+            Permission.AUDIT_EXPORT,
+        ),
+    ),
+    ("Alerts", (Permission.ALERT_READ, Permission.ALERT_WRITE)),
+    ("Roles", (Permission.ROLE_READ, Permission.ROLE_WRITE)),
+]
+
+#: One line per permission, for the picker. A checkbox labelled "payload:read"
+#: tells an owner nothing about what they are granting.
+PERMISSION_HELP: dict[Permission, str] = {
+    Permission.ORG_READ: "See organization settings",
+    Permission.ORG_UPDATE: "Change organization settings",
+    Permission.ORG_BILLING: "See and change billing",
+    Permission.ORG_DELETE: "Delete the organization",
+    Permission.MEMBER_READ: "See who is in the organization",
+    Permission.MEMBER_WRITE: "Invite, change and remove members",
+    Permission.PROJECT_READ: "See projects",
+    Permission.PROJECT_WRITE: "Create and change projects",
+    Permission.POLICY_WRITE: "Change engine policy and cache settings",
+    Permission.KEY_READ: "See API keys (never their secrets)",
+    Permission.KEY_WRITE: "Create, rotate and revoke any API key",
+    Permission.KEY_PROJECT_WRITE: "Create keys within their own project",
+    Permission.CREDENTIAL_READ: "See which SerpApi credentials exist",
+    Permission.CREDENTIAL_WRITE: "Attach and remove SerpApi credentials",
+    Permission.CREDENTIAL_ROTATE: "Rotate a SerpApi credential",
+    Permission.BUDGET_READ: "See budgets and remaining quota",
+    Permission.BUDGET_WRITE: "Set and change budgets",
+    Permission.PLAN_CREATE: "Plan a search without executing it (spends nothing)",
+    Permission.EXECUTE: "Execute searches (spends credits)",
+    Permission.RUN_READ: "See run history and how each plan was chosen",
+    Permission.RUN_REPLAY: "Replay a previous run",
+    Permission.PAYLOAD_READ: "Read raw result payloads, which can contain personal data",
+    Permission.CACHE_READ: "See cache contents and hit rates",
+    Permission.CACHE_INVALIDATE: "Invalidate cached entries",
+    Permission.CATALOG_READ: "Browse the engine catalog",
+    Permission.ANALYTICS_READ: "See spend, savings and attribution",
+    Permission.BENCHMARK_READ: "See benchmark results",
+    Permission.BENCHMARK_RUN: "Run the benchmark (makes real model calls)",
+    Permission.AUDIT_READ: "Read the audit log",
+    Permission.AUDIT_EXPORT: "Export the audit log",
+    Permission.ALERT_READ: "See alerts",
+    Permission.ALERT_WRITE: "Acknowledge alerts and manage channels",
+    Permission.ROLE_READ: "See the roles defined in this organization",
+    Permission.ROLE_WRITE: "Define, change and delete custom roles",
+}
 
 
 def has_permission(role: Role | str, permission: Permission) -> bool:

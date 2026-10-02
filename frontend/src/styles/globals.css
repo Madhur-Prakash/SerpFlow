@@ -13,10 +13,24 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* Three faces, imported in main.tsx and bundled rather than fetched.
+     "Variable" is part of the family name the @fontsource-variable packages
+     register; the plain names after it cover anyone with the static cuts
+     installed locally.
+
+     Geist for the interface, because it was drawn for dense product UI and its
+     figures line up. Bricolage Grotesque for display, because a heading set in
+     the body face at 3rem just looks like large body text. JetBrains Mono for
+     every identifier, credit figure and engine name. */
   --font-sans:
-    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-display:
+    "Bricolage Grotesque Variable", "Bricolage Grotesque", "Geist Variable", ui-sans-serif,
+    system-ui, sans-serif;
   --font-mono:
-    "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo,
+    Consolas, monospace;
 
   /* Ground and surfaces */
   --color-ground: oklch(0.145 0.006 265);
@@ -75,10 +89,10 @@
 :root:not(.dark) {
   /* Ground and surfaces: paper, with the raised surface lighter than the page
      so cards come forward rather than sinking. */
-  --color-ground: oklch(0.979 0.003 265);
+  --color-ground: oklch(0.982 0.004 85);
   --color-surface: oklch(1 0 0);
   --color-surface-raised: oklch(1 0 0);
-  --color-surface-sunken: oklch(0.958 0.004 265);
+  --color-surface-sunken: oklch(0.962 0.005 85);
 
   --color-ink: oklch(0.21 0.012 265);
   --color-ink-muted: oklch(0.455 0.014 265);
@@ -648,5 +662,22 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-nudge {
     animation: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   Display type
+   ==========================================================================
+   Bricolage Grotesque, tighter than the body face and set a little heavier.
+   Applied through a class rather than to every h1/h2, so a heading inside
+   prose or a card keeps the interface face.
+   ========================================================================== */
+
+@layer components {
+  .display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
 }

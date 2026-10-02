@@ -245,7 +245,7 @@ export function ApiReferencePage() {
         <Atmosphere variant="band" />
         <div className="page-shell page-shell-wide relative flex flex-col gap-6 py-14 sm:py-18">
           <MonoLabel>api reference</MonoLabel>
-          <h1 className="max-w-3xl text-balance text-[clamp(2rem,4.6vw,3.2rem)] font-semibold leading-[1.06] tracking-[-0.035em]">
+          <h1 className="display max-w-3xl text-balance text-[clamp(2rem,4.6vw,3.2rem)] leading-[1.03]">
             Every endpoint, generated from the schema.
           </h1>
           <p className="max-w-2xl text-pretty text-[15px] leading-[1.75] text-ink-muted">

@@ -53,7 +53,9 @@ class TokenResponse(APIModel):
     expires_at: datetime
     session_id: str
     org_id: str
-    role: Role
+    # A built-in role name or a custom role's slug. Not the Role enum: whether
+    # a name is valid depends on the organization, which a schema cannot know.
+    role: str
 
 
 class UserResponse(APIModel):
@@ -80,7 +82,9 @@ class MeResponse(APIModel):
     principal_type: str
     org_id: str
     project_id: str | None = None
-    role: Role
+    # A built-in role name or a custom role's slug. Not the Role enum: whether
+    # a name is valid depends on the organization, which a schema cannot know.
+    role: str
     permissions: list[str]
     organization: OrganizationResponse | None = None
     projects: list[ProjectResponse] = Field(default_factory=list)
@@ -162,18 +166,22 @@ class MemberResponse(APIModel):
     user_id: str
     email: str
     full_name: str
-    role: Role
+    # A built-in role name or a custom role's slug. Not the Role enum: whether
+    # a name is valid depends on the organization, which a schema cannot know.
+    role: str
     accepted_at: datetime | None = None
     created_at: datetime
 
 
 class MemberInvite(APIModel):
     email: EmailStr
-    role: Role = "developer"
+    # A built-in role name or a custom role's slug. The handler checks it
+    # against the organization's own roles, which an enum here could not.
+    role: str = "developer"
 
 
 class MemberUpdate(APIModel):
-    role: Role
+    role: str
 
 
 # --------------------------------------------------------------------------
@@ -188,7 +196,9 @@ class ApiKeyResponse(APIModel):
     environment: KeyEnvironment
     project_prefix: str
     display: str
-    role: Role
+    # A built-in role name or a custom role's slug. Not the Role enum: whether
+    # a name is valid depends on the organization, which a schema cannot know.
+    role: str
     is_service_principal: bool
     session_cap: int | None = None
     last_used_at: datetime | None = None
@@ -203,7 +213,9 @@ class ApiKeyResponse(APIModel):
 class ApiKeyCreate(APIModel):
     name: str = Field(min_length=1, max_length=160)
     environment: KeyEnvironment = "test"
-    role: Role = "developer"
+    # A built-in role name or a custom role's slug. Not the Role enum: whether
+    # a name is valid depends on the organization, which a schema cannot know.
+    role: str = "developer"
     expires_in_days: int | None = Field(default=None, ge=1, le=3650)
     is_service_principal: bool = False
     session_cap: int | None = Field(default=None, ge=1)

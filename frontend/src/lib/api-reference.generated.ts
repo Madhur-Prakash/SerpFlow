@@ -3,7 +3,7 @@
  *
  * Do not edit by hand: run `make api-reference` (or
  * `python scripts/generate_api_reference.py`) after changing a router. A
- * hand-maintained list of 78 operations is a list that goes stale.
+ * hand-maintained list of 83 operations is a list that goes stale.
  */
 
 export type ApiParameter = {
@@ -33,8 +33,8 @@ export type ApiGroup = { tag: string; title: string; blurb: string };
 
 export const API_TITLE = "SerpFlow";
 export const API_VERSION = "0.1.0";
-export const API_OPERATION_COUNT = 78;
-export const API_PATH_COUNT = 69;
+export const API_OPERATION_COUNT = 83;
+export const API_PATH_COUNT = 72;
 
 export const API_GROUPS: ApiGroup[] = [
   {
@@ -1119,6 +1119,251 @@ export const API_OPERATIONS: ApiOperation[] = [
         "name": "reason",
         "location": "query",
         "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "access_token",
+        "location": "query",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "authorization",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "X-API-Key",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "body": null,
+    "responses": [
+      {
+        "status": "200",
+        "description": "Successful Response",
+        "type": "OkResponse"
+      },
+      {
+        "status": "422",
+        "description": "Validation Error",
+        "type": "HTTPValidationError"
+      }
+    ]
+  },
+  {
+    "id": "list_permissions_v1_roles_permissions_get",
+    "method": "GET",
+    "path": "/v1/roles/permissions",
+    "tag": "organizations",
+    "summary": "List Permissions",
+    "description": "Every permission, grouped and described.",
+    "deprecated": false,
+    "parameters": [
+      {
+        "name": "access_token",
+        "location": "query",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "authorization",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "X-API-Key",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "body": null,
+    "responses": [
+      {
+        "status": "200",
+        "description": "Successful Response",
+        "type": "RoleCatalogue"
+      },
+      {
+        "status": "422",
+        "description": "Validation Error",
+        "type": "HTTPValidationError"
+      }
+    ]
+  },
+  {
+    "id": "list_roles_v1_roles_get",
+    "method": "GET",
+    "path": "/v1/roles",
+    "tag": "organizations",
+    "summary": "List Roles",
+    "description": "",
+    "deprecated": false,
+    "parameters": [
+      {
+        "name": "access_token",
+        "location": "query",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "authorization",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "X-API-Key",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "body": null,
+    "responses": [
+      {
+        "status": "200",
+        "description": "Successful Response",
+        "type": "object"
+      },
+      {
+        "status": "422",
+        "description": "Validation Error",
+        "type": "HTTPValidationError"
+      }
+    ]
+  },
+  {
+    "id": "create_role_v1_roles_post",
+    "method": "POST",
+    "path": "/v1/roles",
+    "tag": "organizations",
+    "summary": "Create Role",
+    "description": "",
+    "deprecated": false,
+    "parameters": [
+      {
+        "name": "access_token",
+        "location": "query",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "authorization",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "X-API-Key",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "body": {
+      "type": "CustomRoleCreate",
+      "required": true
+    },
+    "responses": [
+      {
+        "status": "201",
+        "description": "Successful Response",
+        "type": "object"
+      },
+      {
+        "status": "422",
+        "description": "Validation Error",
+        "type": "HTTPValidationError"
+      }
+    ]
+  },
+  {
+    "id": "update_role_v1_roles__role_id__patch",
+    "method": "PATCH",
+    "path": "/v1/roles/{role_id}",
+    "tag": "organizations",
+    "summary": "Update Role",
+    "description": "",
+    "deprecated": false,
+    "parameters": [
+      {
+        "name": "role_id",
+        "location": "path",
+        "required": true,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "access_token",
+        "location": "query",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "authorization",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "X-API-Key",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "body": {
+      "type": "CustomRoleUpdate",
+      "required": true
+    },
+    "responses": [
+      {
+        "status": "200",
+        "description": "Successful Response",
+        "type": "object"
+      },
+      {
+        "status": "422",
+        "description": "Validation Error",
+        "type": "HTTPValidationError"
+      }
+    ]
+  },
+  {
+    "id": "delete_role_v1_roles__role_id__delete",
+    "method": "DELETE",
+    "path": "/v1/roles/{role_id}",
+    "tag": "organizations",
+    "summary": "Delete Role",
+    "description": "",
+    "deprecated": false,
+    "parameters": [
+      {
+        "name": "role_id",
+        "location": "path",
+        "required": true,
         "type": "string",
         "description": ""
       },

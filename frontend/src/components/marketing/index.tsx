@@ -137,7 +137,7 @@ export function SectionHeading({
       ) : null}
       <h2
         data-split
-        className="text-balance text-[clamp(1.75rem,3.4vw,2.65rem)] font-semibold leading-[1.1] tracking-[-0.03em]"
+        className="display text-balance text-[clamp(1.75rem,3.4vw,2.65rem)] leading-[1.08]"
       >
         {title}
       </h2>

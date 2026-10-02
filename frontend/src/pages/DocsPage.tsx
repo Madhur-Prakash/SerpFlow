@@ -295,7 +295,7 @@ export function DocsPage() {
               <BookOpen className="h-3 w-3" />
               documentation
             </MonoLabel>
-            <h1 className="max-w-3xl text-balance text-[clamp(2rem,4.6vw,3.2rem)] font-semibold leading-[1.06] tracking-[-0.035em]">
+            <h1 className="display max-w-3xl text-balance text-[clamp(2rem,4.6vw,3.2rem)] leading-[1.03]">
               Every page links to the code it describes.
             </h1>
             <p className="max-w-2xl text-pretty text-[15px] leading-[1.75] text-ink-muted">

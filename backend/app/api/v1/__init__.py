@@ -2,11 +2,21 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import auth, catalog, credentials, governance, organizations, runs, search
+from app.api.v1 import (
+    auth,
+    catalog,
+    credentials,
+    governance,
+    organizations,
+    roles,
+    runs,
+    search,
+)
 
 api_router = APIRouter()
 api_router.include_router(auth.router)
 api_router.include_router(organizations.router)
+api_router.include_router(roles.router)
 api_router.include_router(credentials.router)
 api_router.include_router(search.router)
 api_router.include_router(runs.router)

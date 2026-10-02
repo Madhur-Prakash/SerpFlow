@@ -797,7 +797,7 @@ export function CallToAction() {
         </div>
         <h2
           data-split
-          className="text-balance text-[clamp(2rem,5vw,3.4rem)] font-semibold leading-[1.06] tracking-[-0.035em]"
+          className="display text-balance text-[clamp(2.1rem,5vw,3.5rem)] leading-[1.03]"
         >
           Run it, and watch the plan change.
         </h2>

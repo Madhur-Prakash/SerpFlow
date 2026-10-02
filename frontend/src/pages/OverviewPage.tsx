@@ -61,7 +61,7 @@ export function OverviewPage() {
         actions={
           <>
             {health.data ? (
-              <ModeBadge mode={health.data.mode} reason="Configured SERPFLOW_MODE." />
+              <ModeBadge mode={health.data.mode} />
             ) : null}
             <Button asChild variant="primary" size="sm">
               <Link to="/app/search">

@@ -235,3 +235,30 @@ __all__ = [
     "ServicePrincipalSession",
     "User",
 ]
+
+
+class CustomRole(Base, TimestampMixin):
+    """A role an owner defines, with a permission set they choose.
+
+    The five built-in roles cover the common shapes; this is for the ones they
+    do not. A membership's or key's ``role`` column holds either a built-in
+    role name or this table's ``slug``, which is why the slug is unique per
+    organization and may not collide with a built-in name.
+
+    Permissions are stored as the string values of ``Permission``. Anything
+    unrecognised at read time is dropped rather than granted, so removing a
+    permission from the enum cannot silently widen a role that referenced it.
+    """
+
+    __tablename__ = "custom_roles"
+    __table_args__ = (UniqueConstraint("org_id", "slug", name="uq_custom_roles_org_slug"),)
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True, default=new_id("role"))
+    org_id: Mapped[str] = mapped_column(
+        String(40), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    slug: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    description: Mapped[str] = mapped_column(String(300), default="", nullable=False)
+    permissions: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    created_by: Mapped[str | None] = mapped_column(String(40), nullable=True)

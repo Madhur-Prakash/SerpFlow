@@ -20,12 +20,12 @@ import {
   Wallet,
 } from "lucide-react";
 import * as React from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { pageVariants, startSmoothScroll, stopSmoothScroll } from "@/animations";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
-import { ModeBadge } from "@/components/shared";
+import { useCardReveal, useFigureCounters } from "@/hooks/useConsoleMotion";
 import {
   Badge,
   Button,
@@ -35,7 +35,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Tooltip,
 } from "@/components/ui";
 import { useHealth } from "@/hooks/useQueries";
 import { cn } from "@/lib/utils";
@@ -95,6 +94,13 @@ export function AppShell() {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const health = useHealth();
 
+  // Cards rise into place as they cross the fold, and figures count up. Keyed
+  // on the path so a navigation re-runs it against the page that just
+  // mounted; `motion.main` is re-keyed on the same value, so the ref is fresh.
+  const motionRef = React.useRef<HTMLElement>(null);
+  useCardReveal(motionRef, { stagger: 0.04 });
+  useFigureCounters(motionRef);
+
   React.useEffect(() => {
     startSmoothScroll(scrollRef.current);
     return () => stopSmoothScroll();
@@ -111,26 +117,24 @@ export function AppShell() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const healthTone =
-    health.data?.status === "ok"
-      ? "bg-warm"
-      : health.data?.status === "degraded"
-        ? "bg-caution"
-        : "bg-danger";
 
   return (
     <div className="flex h-dvh overflow-hidden bg-ground">
       {/* ----------------------------------------------------- sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-surface-sunken lg:flex">
-        <div className="flex h-14 items-center gap-2.5 border-b border-line px-4">
+        <Link
+          to="/"
+          aria-label="SerpFlow home"
+          className="group flex h-14 items-center gap-2.5 border-b border-line px-4 transition-colors duration-300 hover:bg-surface"
+        >
           <Mark />
           <div className="min-w-0">
             <p className="truncate text-[13px] font-semibold leading-none text-ink">SerpFlow</p>
-            <p className="mono mt-1 truncate text-[10px] leading-none text-ink-subtle">
+            <p className="mono mt-1 truncate text-[10px] leading-none text-ink-subtle transition-colors duration-300 group-hover:text-ink-muted">
               {health.data?.catalog_version ?? "catalog loading"}
             </p>
           </div>
-        </div>
+        </Link>
 
         <nav className="scrollbar-none flex-1 space-y-5 overflow-y-auto px-3 py-4">
           {NAVIGATION.map((section) => {
@@ -239,23 +243,7 @@ export function AppShell() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="mt-2 flex items-center justify-between px-0.5">
-            <Tooltip
-              content={
-                health.data
-                  ? health.data.status + " - postgres, redis, kafka, object storage"
-                  : "checking"
-              }
-            >
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-subtle">
-                <span className={cn("size-1.5 rounded-full", healthTone)} />
-                {health.data?.status ?? "..."}
-              </span>
-            </Tooltip>
-            {health.data ? (
-              <ModeBadge mode={health.data.mode} reason="Configured SERPFLOW_MODE." />
-            ) : null}
-          </div>
+
         </div>
       </aside>
 
@@ -347,6 +335,7 @@ export function AppShell() {
           <AnimatePresence mode="wait">
             <motion.main
               key={location.pathname}
+              ref={motionRef}
               variants={pageVariants}
               initial="initial"
               animate="animate"

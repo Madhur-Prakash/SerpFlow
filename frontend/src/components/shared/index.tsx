@@ -35,13 +35,42 @@ import { cn } from "@/lib/utils";
 import type { CacheLayer, Coverage, ExecutionMode, Freshness } from "@/types/api";
 
 // ------------------------------------------------------------- ModeBadge
-const MODE_TONE: Record<string, { tone: Parameters<typeof Badge>[0]["tone"]; icon: typeof Zap }> =
-  {
-    LIVE: { tone: "warm", icon: Zap },
-    MOCK: { tone: "accent", icon: Terminal },
-    REPLAY: { tone: "replay", icon: History },
-    RECORD: { tone: "spend", icon: Server },
-  };
+type ModeConfig = {
+  tone: Parameters<typeof Badge>[0]["tone"];
+  icon: typeof Zap;
+  /** What this mode means for the reader, in terms of money and truth. */
+  help: string;
+};
+
+/**
+ * Every mode carries its own explanation.
+ *
+ * The badge is on screen permanently, so it has to answer "what is that?"
+ * without anyone having read the documentation - and the answer that matters
+ * is whether what you are looking at is real and whether it cost anything.
+ */
+const MODE_TONE: Record<string, ModeConfig> = {
+  LIVE: {
+    tone: "warm",
+    icon: Zap,
+    help: "Live. Searches run against SerpApi and spend credits from your account.",
+  },
+  MOCK: {
+    tone: "accent",
+    icon: Terminal,
+    help: "Mock. Results are generated sample data - no SerpApi call, no credits spent.",
+  },
+  REPLAY: {
+    tone: "replay",
+    icon: History,
+    help: "Replay. Results come from previously recorded searches - no SerpApi call, no credits spent. Nothing here is live.",
+  },
+  RECORD: {
+    tone: "spend",
+    icon: Server,
+    help: "Record. Searches run live, spend credits, and are saved so they can be replayed later.",
+  },
+};
 
 /**
  * Section 21: the resolved mode is surfaced on every request. Replayed or
@@ -60,8 +89,10 @@ export function ModeBadge({
   const key = String(mode).toUpperCase();
   const config = MODE_TONE[key] ?? MODE_TONE.MOCK;
   const Icon = config.icon;
+  // The mode's own meaning first; anything the caller adds is context on top.
+  const help = reason ? config.help + " " + reason : config.help;
   return (
-    <Tooltip content={reason}>
+    <Tooltip content={help}>
       <Badge tone={config.tone} className={cn("uppercase tracking-[0.08em]", className)}>
         <Icon />
         {key}
@@ -424,7 +455,7 @@ export function PageHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="rule pb-5">
+    <header className="rule animate-page-enter pb-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0">
           {Icon ? (
@@ -433,7 +464,7 @@ export function PageHeader({
             </div>
           ) : null}
           <div className="min-w-0">
-            <h1 className="text-lg font-semibold tracking-[-0.01em] text-ink">{title}</h1>
+            <h1 className="display text-[1.35rem] leading-tight text-ink">{title}</h1>
             {description ? (
               <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-ink-subtle text-pretty">
                 {description}
