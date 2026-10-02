@@ -180,3 +180,69 @@ def test_query_classification():
     assert classify_query("cheapest flight to Hanoi") == "flights"
     assert classify_query("GOOGL share price") == "finance"
     assert classify_query("recent reviews for a cafe") == "reviews"
+
+
+# --------------------------------------------------------------------------
+# Catalog loading failures
+# --------------------------------------------------------------------------
+def test_a_malformed_engine_names_itself(tmp_path, monkeypatch):
+    """A bad catalog must say which engine and which field.
+
+    This reached the API as a bare 500 with no hint once. Tracing it back to a
+    single unknown key on one engine took far longer than it should have, so
+    the message now carries the file, the engine and the offending field.
+    """
+    import yaml
+
+    from app.core.exceptions import CatalogError
+    from app.services.catalog import loader
+
+    version = tmp_path / "v1"
+    version.mkdir()
+    (version / "_meta.yaml").write_text(
+        yaml.safe_dump(
+            {"version": "v1.0.0", "released": "2026-01-01", "source": "x", "capability_tags": {}}
+        ),
+        encoding="utf-8",
+    )
+    (version / "engines.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "engines": [
+                    {
+                        "engine": "google_news",
+                        "purpose": "News search.",
+                        "capability_tags": ["web_search"],
+                        # One key the schema does not know, which is exactly
+                        # the shape of the original failure.
+                        "requires": {"q": {"type": "string", "caller_suppliabl": True}},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(loader, "DATA_ROOT", tmp_path)
+    loader.load_catalog.cache_clear()
+    try:
+        with pytest.raises(CatalogError) as caught:
+            loader.load_catalog("v1")
+    finally:
+        loader.load_catalog.cache_clear()
+
+    message = str(caught.value)
+    assert "google_news" in message
+    assert "engines.yaml" in message
+    assert "caller_suppliabl" in message
+    assert caught.value.code == "CATALOG_ERROR"
+
+
+def test_the_committed_catalog_still_loads():
+    """The guard above must not be hiding a real problem in the real catalog."""
+    from app.services.catalog.loader import load_catalog
+
+    index = load_catalog()
+    assert len(index.engines) == 54
+    # The field whose absence caused the original failure.
+    assert index.engines["google"].requires["q"].caller_suppliable is True

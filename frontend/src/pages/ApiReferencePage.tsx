@@ -270,7 +270,7 @@ export function ApiReferencePage() {
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
         <div className="grid gap-10 py-12 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-12">
           {/* Group index. Sticky on desktop; a plain list above the content
               on narrow screens, where a sidebar would just push content down. */}

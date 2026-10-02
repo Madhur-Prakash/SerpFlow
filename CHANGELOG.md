@@ -29,6 +29,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A malformed engine in the catalog reached the API as a bare `INTERNAL_ERROR`
+  with no indication of what was wrong. The loader now raises `CATALOG_ERROR`
+  naming the file, the engine and the offending field.
+- The `Makefile` had CRLF line endings, which silently break recipe line
+  continuations under `/bin/sh`.
+
 - **The MCP server could not start.** `mcp` 2.x renamed `FastMCP` to
   `MCPServer`, and nothing in the suite imported `app.mcp.server`, so
   `serpflow-mcp` was failing at startup while every other test passed. The
@@ -58,8 +64,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   before the first paint, so there is no flash. The light theme is a separate
   design rather than a tinted inversion: the accent darkens to hold contrast on
   white and shadows take over the structural work borders do on a dark ground.
-- `make test-ui` renders every public page in a real browser in both themes and
-  fails on console errors or on any element a scroll reveal left invisible.
+- `make test-ui` builds, serves and checks the public pages in a real browser in
+  both themes, failing on console errors, on any element a scroll reveal left
+  invisible, and on the pinned story's counter disagreeing with its cards.
 - `make api-reference` regenerates the reference page; `make docs-check`
   verifies that all 374 relative links and 95 cited paths resolve.
 

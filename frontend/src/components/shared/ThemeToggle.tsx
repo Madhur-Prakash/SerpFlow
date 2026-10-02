@@ -86,7 +86,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         </DropdownMenuTrigger>
       </Tooltip>
 
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel>Appearance</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {OPTIONS.map((option) => {
@@ -113,7 +113,7 @@ export function ThemeToggle({ className }: { className?: string }) {
                   {option.label}
                 </span>
                 <span className="text-[11.5px] leading-none text-ink-subtle">
-                  {option.value === "system" ? `${option.hint}, now ${resolved}` : option.hint}
+                  {option.value === "system" ? `${option.hint} (${resolved})` : option.hint}
                 </span>
               </span>
               {/* A check, not a dot: it says "this is the one in use" without

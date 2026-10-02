@@ -152,9 +152,8 @@ test-integration:  ## Run integration tests (needs postgres and redis)
 test-e2e:  ## Run the end-to-end suite, including the thesis assertion
 	cd $(BACKEND) && $(PYTHON) -m pytest tests/e2e -q
 
-test-ui:  ## Render the public pages in a real browser, in both themes
-	cd $(FRONTEND) && npm run build
-	cd $(FRONTEND) && (npx vite preview --port 4178 --strictPort & echo $$! > .preview.pid) 		&& sleep 4 		&& node scripts/smoke.mjs http://localhost:4178; 		status=$$?; kill `cat $(FRONTEND)/.preview.pid` 2>/dev/null; 		rm -f $(FRONTEND)/.preview.pid; exit $$status
+test-ui:  ## Build, serve and check the public pages in a real browser
+	cd $(FRONTEND) && node scripts/verify-ui.mjs
 
 lint:  ## Lint backend and frontend
 	cd $(BACKEND) && $(PYTHON) -m ruff check .

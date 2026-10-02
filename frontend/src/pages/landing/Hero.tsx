@@ -93,7 +93,7 @@ export function Hero() {
       <div className="pointer-events-none absolute inset-0 grid-field-dense opacity-40" aria-hidden />
 
       <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-5 pb-20 pt-14 sm:px-8 sm:pb-28 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16">
-        <div className="flex flex-col items-start gap-7">
+        <div className="flex flex-col items-start gap-6">
           <div data-hero-label>
             <MonoLabel>cache-aware marginal-cost replanning</MonoLabel>
           </div>

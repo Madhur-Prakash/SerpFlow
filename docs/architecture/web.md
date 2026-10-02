@@ -158,6 +158,18 @@ That last check is the failure mode this kind of interface actually has. A
 `gsap.set(el, { opacity: 0 })` whose ScrollTrigger never fires leaves a section
 invisible, and every other check still passes.
 
+A second check walks the pinned thesis story and asserts that the beat counter,
+the progress rail and the cards agree - that Plan B is never shown as selected
+while the counter still reads an earlier beat. The timeline is one unit per
+beat precisely so that cannot drift.
+
+The whole thing is one script
+([`frontend/scripts/verify-ui.mjs`](../../frontend/scripts/verify-ui.mjs)) that builds,
+starts the preview server, runs both checks and tears it down. A `make` recipe
+that backgrounds a server, sleeps and kills it by pid depends on shell quoting,
+line continuations and line endings all being right at once; on Windows they
+are not.
+
 ## Related
 
 - [Frontend architecture](frontend.md) - the console

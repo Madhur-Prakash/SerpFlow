@@ -123,8 +123,31 @@ export function Problem() {
         label="the problem"
         title="Four things every team builds on top of SerpApi, badly."
         lede="Each is solvable alone. Solved separately, in four services, they do not compose - the cache cannot tell the router what it is choosing between, so the router keeps picking the cold rival of a plan that was already warm."
+        aside={
+          <div className="rounded-xl border border-line bg-surface p-5">
+            <div className="mono mb-3 text-[10.5px] uppercase tracking-[0.16em] text-ink-subtle">
+              what that costs
+            </div>
+            <dl className="flex flex-col divide-y divide-line">
+              {[
+                ["A paraphrase of yesterday", "full price"],
+                ["A warm plan's cold rival", "selected anyway"],
+                ["A chain one person knows", "not reusable"],
+                ["Spend by team or feature", "unknown"],
+              ].map(([term, value]) => (
+                <div
+                  key={term}
+                  className="flex items-baseline justify-between gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <dt className="text-[13px] text-ink-muted">{term}</dt>
+                  <dd className="mono shrink-0 text-[12px] text-danger">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        }
       />
-      <div className="mt-14 grid gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid gap-3.5 sm:grid-cols-2">
         {PROBLEMS.map((item) => {
           const Icon = item.icon;
           return (
@@ -198,17 +221,36 @@ export function HowItWorks() {
     <section
       ref={ref}
       id="how-it-works"
-      className="relative scroll-mt-24 overflow-hidden border-t border-line py-24 sm:py-32"
+      className="relative scroll-mt-24 overflow-hidden border-t border-line py-16 sm:py-20"
     >
       <Atmosphere variant="band" />
-      <div className="relative mx-auto w-full max-w-6xl px-5 sm:px-8">
+      <div className="relative mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
         <SectionHeading
           label="the planner"
           title="Four stages, and a candidate set at the end of them."
           lede="Stage D is the one the thesis needs. It produces competing plans rather than a single answer, and every candidate is persisted - so the Plan Inspector can show why the winner won instead of asserting that it did."
+          aside={
+            <div className="flex flex-wrap gap-2">
+              {[
+                "54 engines",
+                "30 dependency edges",
+                "69 substitutes",
+                "28 capability tags",
+                "max 4 hops",
+                "up to 6 candidates",
+              ].map((item) => (
+                <span
+                  key={item}
+                  className="mono rounded-full border border-line bg-surface px-3 py-1.5 text-[11.5px] text-ink-muted transition-colors duration-300 hover:border-line-strong hover:text-ink"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          }
         />
 
-        <div className="mt-14 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
+        <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
           <ol className="flex flex-col">
             {STAGES.map((stage, index) => (
               <li
@@ -276,6 +318,20 @@ export function HowItWorks() {
 // Cache
 // --------------------------------------------------------------------------
 
+/** The four layers in the order the executor tries them, with real latencies. */
+const LOOKUP_ORDER = `hot       redis      exact key        ~1ms
+exact     postgres   request hash     ~4ms
+semantic  pgvector   + entity guard  ~40ms
+archive   serpapi    searches api   ~300ms
+miss      live call  full price`;
+
+const FAILURE_MODES = [
+  { label: "correct", count: 46, tone: "bg-warm" },
+  { label: "wrong engine", count: 58, tone: "bg-danger" },
+  { label: "wrong parameters", count: 9, tone: "bg-caution" },
+  { label: "label disputed", count: 2, tone: "bg-ink-subtle" },
+] as const;
+
 const LAYERS = [
   { name: "hot", store: "Redis", detail: "Exact match, in memory", tone: "warm" },
   { name: "exact", store: "PostgreSQL", detail: "Request hash, durable", tone: "warm" },
@@ -290,9 +346,21 @@ export function CacheLayers() {
         label="the cache"
         title="Four layers, and a guard that does not look at the score."
         lede="The semantic layer is what makes a paraphrase free instead of full price. It is also the most dangerous component in the system, so it is the one with a deterministic veto in front of it."
+        aside={
+          <div className="overflow-hidden rounded-xl border border-line bg-[oklch(0.125_0.006_265)]">
+            <div className="border-b border-line/60 px-4 py-2">
+              <span className="mono text-[10.5px] uppercase tracking-[0.14em] text-ink-subtle">
+                lookup order
+              </span>
+            </div>
+            <pre className="code-block overflow-x-auto p-4 text-[oklch(0.9_0.004_265)]">
+              <code>{LOOKUP_ORDER}</code>
+            </pre>
+          </div>
+        }
       />
 
-      <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
         {LAYERS.map((layer, index) => (
           <SpotlightCard
             key={layer.name}
@@ -320,7 +388,7 @@ export function CacheLayers() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="mt-3.5 grid gap-3.5 lg:grid-cols-2">
         <SpotlightCard
           tilt={false}
           className="rounded-xl border border-line bg-surface p-6"
@@ -400,9 +468,32 @@ export function Benchmark() {
         label="the evidence"
         title="120 hand-authored tasks, and the honest number."
         lede="38.3% is what the deterministic adapter scores - the one that runs with no API keys at all. It is not a ceiling and it is not a marketing figure: the dominant failure mode is still wrong-engine selection on 58 of 120 tasks."
+        aside={
+          <div className="rounded-xl border border-line bg-surface p-5">
+            <div className="mono mb-3 text-[10.5px] uppercase tracking-[0.16em] text-ink-subtle">
+              outcome on 120 tasks
+            </div>
+            <div className="flex flex-col gap-2.5">
+              {FAILURE_MODES.map((row) => (
+                <div key={row.label} className="flex items-center gap-3">
+                  <span className="w-32 shrink-0 text-[12.5px] text-ink-muted">{row.label}</span>
+                  <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-sunken">
+                    <span
+                      className={cn("block h-full rounded-full", row.tone)}
+                      style={{ width: `${(row.count / 120) * 100}%` }}
+                    />
+                  </span>
+                  <span className="mono w-6 shrink-0 text-right text-[11.5px] text-ink-subtle">
+                    {row.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        }
       />
 
-      <div data-reveal className="mt-12 overflow-hidden rounded-xl border border-line bg-surface">
+      <div data-reveal className="mt-9 overflow-hidden rounded-xl border border-line bg-surface">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[34rem] border-collapse text-left">
             <thead>
@@ -524,9 +615,28 @@ export function Capabilities() {
       <SectionHeading
         label="what it does"
         title="A control plane, not a wrapper."
-        align="center"
+        lede="All of it runs against the same catalog the demo uses, in the same repository."
+        aside={
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { value: "69", label: "API paths" },
+              { value: "33", label: "tables" },
+              { value: "180", label: "tests" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="rounded-xl border border-line bg-surface px-4 py-3.5 text-center transition-colors duration-300 hover:border-line-strong"
+              >
+                <div className="mono text-[20px] font-semibold leading-none text-ink">
+                  {item.value}
+                </div>
+                <div className="mt-1.5 text-[11.5px] text-ink-subtle">{item.label}</div>
+              </div>
+            ))}
+          </div>
+        }
       />
-      <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
         {CAPABILITIES.map((item) => {
           const Icon = item.icon;
           return (
@@ -568,7 +678,7 @@ const COMMANDS = [
 export function QuickStart() {
   return (
     <Revealed id="quick-start" className="bg-surface-sunken/40">
-      <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-16">
+      <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
         <SectionHeading
           label="quick start"
           title="Five commands, and no API keys at all."
@@ -641,7 +751,7 @@ const FAQ = [
 export function Faq() {
   return (
     <Revealed id="faq">
-      <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+      <div className="grid gap-8 lg:grid-cols-[1fr_1.4fr] lg:gap-12">
         <SectionHeading label="questions" title="The ones worth asking first." />
         <div data-reveal>
           <Accordion type="single" collapsible className="flex flex-col gap-2">
@@ -676,7 +786,7 @@ export function CallToAction() {
   useTextReveal(ref);
 
   return (
-    <section ref={ref} className="relative overflow-hidden border-t border-line py-24 sm:py-32">
+    <section ref={ref} className="relative overflow-hidden border-t border-line py-20 sm:py-24">
       <Atmosphere variant="hero" />
       <div className="relative mx-auto flex w-full max-w-3xl flex-col items-center gap-8 px-5 text-center sm:px-8">
         <div data-reveal>

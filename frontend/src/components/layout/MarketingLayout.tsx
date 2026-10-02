@@ -6,7 +6,7 @@
  * this - different job, different motion budget.
  */
 
-import { ArrowUpRight, BookOpen, Github, Menu, Terminal, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Github, History, Menu, Terminal, X } from "lucide-react";
 import * as React from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 
@@ -16,10 +16,18 @@ import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { scrollToAnchor, scrollToTop } from "@/lib/scroll";
 import { cn } from "@/lib/utils";
 
-const NAV = [
+/**
+ * `route` items are pages; `hash` items are sections of the landing page.
+ *
+ * "Console" is deliberately absent: it is the primary button at the other end
+ * of the same bar, and a nav that repeats its own call to action wastes the
+ * one row a reader actually scans.
+ */
+const NAV: { to: string; label: string; hash?: boolean }[] = [
   { to: "/docs", label: "Docs" },
   { to: "/api", label: "API" },
-  { to: "/app", label: "Console" },
+  { to: "/#how-it-works", label: "How it works", hash: true },
+  { to: "/#benchmark", label: "Benchmark", hash: true },
 ];
 
 const YEAR = new Date().getFullYear();
@@ -73,43 +81,61 @@ function MarketingHeader() {
         <Wordmark onClick={() => scrollToTop(false)} />
 
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  "relative rounded-md px-3 py-2 text-[13.5px] text-ink-muted transition-colors duration-300 hover:text-ink",
-                  isActive && "text-ink",
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {item.label}
-                  <span
-                    className={cn(
-                      "absolute inset-x-3 -bottom-px h-px origin-left bg-accent transition-transform duration-400 ease-out-quint",
-                      isActive ? "scale-x-100" : "scale-x-0",
-                    )}
-                  />
-                </>
-              )}
-            </NavLink>
-          ))}
+          {NAV.map((item) =>
+            item.hash ? (
+              // A section link is never "active": its pathname is the landing
+              // page, which would light it up on every scroll position.
+              <Link
+                key={item.to}
+                to={item.to}
+                className="group relative rounded-md px-3 py-2 text-[13.5px] text-ink-muted transition-colors duration-300 hover:text-ink"
+              >
+                {item.label}
+                <span className="absolute inset-x-3 -bottom-px h-px origin-left scale-x-0 bg-accent transition-transform duration-400 ease-out-quint group-hover:scale-x-100" />
+              </Link>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  cn(
+                    "group relative rounded-md px-3 py-2 text-[13.5px] text-ink-muted transition-colors duration-300 hover:text-ink",
+                    isActive && "text-ink",
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {item.label}
+                    <span
+                      className={cn(
+                        "absolute inset-x-3 -bottom-px h-px origin-left bg-accent transition-transform duration-400 ease-out-quint",
+                        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+                      )}
+                    />
+                  </>
+                )}
+              </NavLink>
+            ),
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
-          <Tooltip content="Source on GitHub">
-            <a
-              href="https://github.com/serpflow/serpflow"
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="Source on GitHub"
+          <Tooltip
+            content={
+              <span className="flex flex-col gap-0.5">
+                <span className="font-medium text-ink">What changed</span>
+                <span className="text-ink-muted">Release notes and catalog version</span>
+              </span>
+            }
+          >
+            <Link
+              to="/docs/readme:CHANGELOG"
+              aria-label="Changelog"
               className="hidden h-9 w-9 items-center justify-center rounded-lg border border-line bg-surface/70 text-ink-muted backdrop-blur transition-[color,transform,border-color] duration-300 ease-out-quint hover:-translate-y-px hover:border-line-strong hover:text-ink sm:inline-flex"
             >
-              <Github className="h-[17px] w-[17px]" />
-            </a>
+              <History className="h-[17px] w-[17px]" />
+            </Link>
           </Tooltip>
           <ThemeToggle />
           <Link
@@ -142,14 +168,20 @@ function MarketingHeader() {
         <div className="min-h-0">
           <nav className="flex flex-col gap-1 px-5 py-4">
             {NAV.map((item) => (
-              <NavLink
+              <Link
                 key={item.to}
                 to={item.to}
                 className="rounded-md px-3 py-2.5 text-[15px] text-ink-muted transition-colors hover:bg-surface hover:text-ink"
               >
                 {item.label}
-              </NavLink>
+              </Link>
             ))}
+            <Link
+              to="/docs/readme:CHANGELOG"
+              className="rounded-md px-3 py-2.5 text-[15px] text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+            >
+              Changelog
+            </Link>
             <Link
               to="/app"
               className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-[14px] font-medium text-[oklch(0.14_0.01_265)]"
@@ -336,11 +368,18 @@ function ScrollProgress() {
   }, []);
 
   return (
-    <div aria-hidden className="fixed inset-x-0 top-0 z-[60] h-px bg-transparent">
+    <div
+      aria-hidden
+      className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-[var(--color-line)]/40"
+    >
       <div
         ref={ref}
-        className="scroll-progress h-full bg-gradient-to-r from-accent via-accent-strong to-warm"
-      />
+        className="scroll-progress relative h-full bg-gradient-to-r from-accent via-accent-strong to-warm"
+      >
+        {/* A lit tip at the leading edge, so the bar reads as moving rather
+            than as a static rule that happens to be a different width. */}
+        <span className="absolute right-0 top-1/2 h-[7px] w-[7px] -translate-y-1/2 translate-x-1/2 rounded-full bg-warm shadow-[0_0_10px_2px_var(--color-warm)]" />
+      </div>
     </div>
   );
 }

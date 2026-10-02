@@ -102,6 +102,7 @@ export function SectionHeading({
   align = "left",
   className,
   tone,
+  aside,
 }: {
   label?: React.ReactNode;
   title: React.ReactNode;
@@ -109,13 +110,22 @@ export function SectionHeading({
   align?: "left" | "center";
   className?: string;
   tone?: "accent" | "warm" | "muted";
+  /**
+   * Content for the right of the heading row.
+   *
+   * A heading capped at 3xl on a 1280px page leaves half the row empty. Where
+   * a section has something worth putting there - a figure, a definition, a
+   * fragment of the thing being described - it goes here rather than being
+   * stacked underneath.
+   */
+  aside?: React.ReactNode;
 }) {
-  return (
+  const heading = (
     <div
       className={cn(
-        "flex max-w-3xl flex-col gap-5",
-        align === "center" && "mx-auto items-center text-center",
-        className,
+        "flex flex-col gap-4",
+        align === "center" ? "mx-auto max-w-3xl items-center text-center" : "max-w-2xl",
+        !aside && className,
       )}
     >
       {label ? (
@@ -125,7 +135,7 @@ export function SectionHeading({
       ) : null}
       <h2
         data-split
-        className="text-balance text-[clamp(1.9rem,4.2vw,3.1rem)] font-semibold leading-[1.08] tracking-[-0.03em]"
+        className="text-balance text-[clamp(1.75rem,3.4vw,2.65rem)] font-semibold leading-[1.1] tracking-[-0.03em]"
       >
         {title}
       </h2>
@@ -133,13 +143,29 @@ export function SectionHeading({
         <p
           data-reveal
           className={cn(
-            "text-pretty text-[15px] leading-[1.7] text-ink-muted sm:text-base",
+            "text-pretty text-[14.5px] leading-[1.7] text-ink-muted sm:text-[15.5px]",
             align === "center" && "max-w-2xl",
           )}
         >
           {lede}
         </p>
       ) : null}
+    </div>
+  );
+
+  if (!aside) return heading;
+
+  return (
+    <div
+      className={cn(
+        "grid items-end gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12",
+        className,
+      )}
+    >
+      {heading}
+      <div data-reveal className="lg:pb-1">
+        {aside}
+      </div>
     </div>
   );
 }
@@ -163,12 +189,12 @@ export function Band({
       id={id}
       className={cn(
         "relative scroll-mt-24",
-        tight ? "py-16 sm:py-20" : "py-24 sm:py-32",
+        tight ? "py-12 sm:py-14" : "py-16 sm:py-20",
         divided && "border-t border-line",
         className,
       )}
     >
-      <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">{children}</div>
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">{children}</div>
     </section>
   );
 }

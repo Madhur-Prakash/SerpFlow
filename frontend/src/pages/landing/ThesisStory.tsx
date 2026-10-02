@@ -44,6 +44,16 @@ const PLANS: Plan[] = [
   },
 ];
 
+/**
+ * Beat boundaries on the timeline, one unit each.
+ *
+ * The ScrollTrigger scrubs 0 to 1 across the pinned distance and the timeline
+ * is `BEATS.length` units long, so unit N and beat N are the same place.
+ */
+const BEAT_2 = 1;
+const BEAT_3 = 2;
+const BEAT_4 = 3;
+
 const BEATS = [
   {
     title: "Two plans reach the same answer",
@@ -68,6 +78,7 @@ export function ThesisStory() {
   const [beat, setBeat] = React.useState(0);
   const [warm, setWarm] = React.useState(false);
   const [flipped, setFlipped] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
 
   const desktop = useIsDesktop();
   const reduced = useReducedMotion();
@@ -79,18 +90,27 @@ export function ThesisStory() {
       const q = gsap.utils.selector(el);
       const tl = gsap.timeline();
 
-      // Beat 1 -> 2: the cold figures settle, Plan A gets the ring.
-      tl.to(q("[data-plan='local']"), { borderColor: "var(--color-accent)", duration: 0.4 }, 0.6)
-        .to(q("[data-winner='cold']"), { opacity: 1, y: 0, duration: 0.4 }, 0.7)
-        // Beat 3: the warm-up sweeps across Plan B's steps.
-        .to(q("[data-warm-sweep]"), { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, 1.5)
-        // Beat 4: the ring moves, and the marginal column takes over.
-        .to(q("[data-plan='local']"), { borderColor: "var(--color-line)", duration: 0.35 }, 2.5)
-        .to(q("[data-winner='cold']"), { opacity: 0, y: -8, duration: 0.3 }, 2.5)
-        .to(q("[data-plan='maps']"), { borderColor: "var(--color-warm)", duration: 0.4 }, 2.6)
-        .to(q("[data-winner='marginal']"), { opacity: 1, y: 0, duration: 0.4 }, 2.7)
-        .to(q("[data-cold-col]"), { opacity: 0.35, duration: 0.4 }, 2.6)
-        .to(q("[data-marginal-col]"), { opacity: 1, duration: 0.4 }, 2.6);
+      // One timeline unit per beat, so the rail, the beat label and what the
+      // cards are doing cannot disagree. Previously the counter read 04/04
+      // while the flip was still a fifth of the scroll away.
+      tl.to(q("[data-plan='local']"), { borderColor: "var(--color-accent)", duration: 0.3 }, BEAT_2)
+        .to(q("[data-winner='cold']"), { opacity: 1, y: 0, duration: 0.3 }, BEAT_2 + 0.1)
+        .to(
+          q("[data-warm-sweep]"),
+          { scaleX: 1, duration: 0.6, ease: "power2.inOut" },
+          BEAT_3 + 0.1,
+        )
+        // Beat 4 opens with the flip rather than ending on it, so the last
+        // stretch of scrolling is spent reading the result.
+        .to(q("[data-plan='local']"), { borderColor: "var(--color-line)", duration: 0.25 }, BEAT_4)
+        .to(q("[data-winner='cold']"), { opacity: 0, y: -8, duration: 0.2 }, BEAT_4)
+        .to(q("[data-plan='maps']"), { borderColor: "var(--color-warm)", duration: 0.3 }, BEAT_4 + 0.1)
+        .to(q("[data-cold-col]"), { opacity: 0.35, duration: 0.3 }, BEAT_4 + 0.1)
+        .to(q("[data-marginal-col]"), { opacity: 1, duration: 0.3 }, BEAT_4 + 0.1)
+        .to(q("[data-winner='marginal']"), { opacity: 1, y: 0, duration: 0.3 }, BEAT_4 + 0.2)
+        // A beat of stillness, so the timeline's last unit is readable rather
+        // than a frame that only exists at the very bottom of the scroll.
+        .to({}, { duration: 0.4 }, BEAT_4 + 0.6);
 
       return tl;
     },
@@ -98,9 +118,12 @@ export function ThesisStory() {
       distance: 3.2,
       enabled,
       onProgress: (p) => {
+        setProgress(p);
         setBeat(Math.min(BEATS.length - 1, Math.floor(p * BEATS.length)));
-        setWarm(p > 0.42);
-        setFlipped(p > 0.68);
+        // Thresholds sit just inside their beat, so the badge and the card
+        // change together rather than a scroll-tick apart.
+        setWarm(p >= 0.52);
+        setFlipped(p >= 0.76);
       },
     },
   );
@@ -123,17 +146,56 @@ export function ThesisStory() {
       <div
         className={cn(
           "relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 py-20 sm:px-8",
-          enabled && "min-h-dvh justify-center py-24",
+          enabled && "min-h-dvh justify-center py-16",
         )}
       >
-        <div className="flex flex-col gap-4">
-          <MonoLabel>the thesis</MonoLabel>
-          <h2 className="max-w-3xl text-balance text-[clamp(1.9rem,4.2vw,3.1rem)] font-semibold leading-[1.08] tracking-[-0.03em]">
-            Same intent. Same catalog. A different plan wins.
-          </h2>
+        <div className="grid items-end gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12">
+          <div className="flex flex-col gap-4">
+            <MonoLabel>the thesis</MonoLabel>
+            <h2 className="text-balance text-[clamp(1.75rem,3.4vw,2.65rem)] font-semibold leading-[1.1] tracking-[-0.03em]">
+              Same intent. Same catalog. A different plan wins.
+            </h2>
+          </div>
+
+          {/* The story's own progress. On a pinned section the page scrollbar
+              stops moving, so without this there is nothing telling a reader
+              that scrolling is still doing something. */}
+          {enabled ? (
+            <div className="flex flex-col gap-2.5 lg:pb-1">
+              <div className="flex items-center justify-between">
+                <span className="mono text-[10.5px] uppercase tracking-[0.16em] text-ink-subtle">
+                  keep scrolling
+                </span>
+                <span className="mono text-[10.5px] text-ink-subtle">
+                  {String(Math.min(BEATS.length, beat + 1)).padStart(2, "0")} / 0{BEATS.length}
+                </span>
+              </div>
+              <div className="flex gap-1.5">
+                {BEATS.map((item, index) => {
+                  // Each segment fills across its own quarter of the timeline.
+                  const span = 1 / BEATS.length;
+                  const fill = Math.max(0, Math.min(1, (progress - index * span) / span));
+                  return (
+                    <span
+                      key={item.title}
+                      className="h-1 flex-1 overflow-hidden rounded-full bg-surface-raised"
+                    >
+                      <span
+                        className="block h-full rounded-full bg-gradient-to-r from-accent to-warm"
+                        style={{ width: `${fill * 100}%` }}
+                      />
+                    </span>
+                  );
+                })}
+              </div>
+              <p className="text-[12px] leading-snug text-ink-subtle">
+                {BEATS[beat].title}
+              </p>
+            </div>
+          ) : null}
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:items-start lg:gap-14">
+        <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start lg:gap-10">
           {/* The beats. On desktop the active one is lit; elsewhere all are. */}
           <ol className="flex flex-col gap-4">
             {BEATS.map((item, index) => {

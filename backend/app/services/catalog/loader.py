@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
+from pydantic import ValidationError as PydanticValidationError
 
 from app.core.exceptions import CatalogError
 from app.core.logging import get_logger
@@ -255,11 +256,28 @@ def validate_catalog(index: CatalogIndex) -> list[str]:
     return problems
 
 
+def _describe(exc: PydanticValidationError, filename: str, engine: str) -> str:
+    """Turn a pydantic error into one line an operator can act on."""
+    problems = []
+    for error in exc.errors()[:3]:
+        location = ".".join(str(part) for part in error.get("loc", ()))
+        problems.append((location or "<root>") + ": " + str(error.get("msg", "invalid")))
+    detail = "; ".join(problems)
+    if len(exc.errors()) > 3:
+        detail += " (and " + str(len(exc.errors()) - 3) + " more)"
+    return (
+        "Engine '" + engine + "' in " + filename + " does not match the catalog schema - " + detail
+    )
+
+
 def _load_version(version_dir: Path) -> CatalogIndex:
     meta_path = version_dir / "_meta.yaml"
     if not meta_path.exists():
         raise CatalogError("Catalog version directory has no _meta.yaml: " + str(version_dir))
-    meta = CatalogMeta.model_validate(_read_yaml(meta_path))
+    try:
+        meta = CatalogMeta.model_validate(_read_yaml(meta_path))
+    except PydanticValidationError as exc:
+        raise CatalogError(_describe(exc, meta_path.name, "_meta")) from exc
 
     engines: dict[str, EngineSpec] = {}
     for path in sorted(version_dir.glob("*.yaml")):
@@ -267,7 +285,16 @@ def _load_version(version_dir: Path) -> CatalogIndex:
             continue
         payload = _read_yaml(path)
         for raw in payload.get("engines", []) or []:
-            spec = EngineSpec.model_validate(raw)
+            try:
+                spec = EngineSpec.model_validate(raw)
+            except PydanticValidationError as exc:
+                # A raw pydantic error here reaches the API as a bare 500 with
+                # no hint, which is a long afternoon for whoever has to work
+                # out that one engine has a field the model does not know. Name
+                # the file, the engine and the field instead.
+                raise CatalogError(
+                    _describe(exc, path.name, str(raw.get("engine", "<unnamed>")))
+                ) from exc
             if spec.engine in engines:
                 raise CatalogError("Duplicate engine in catalog: " + spec.engine)
             engines[spec.engine] = spec
