@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.serpflow-objects/
+logs/
+*.log
+tests/
+.env
+.env.*

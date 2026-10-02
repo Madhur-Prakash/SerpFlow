@@ -1,0 +1,299 @@
+@import "tailwindcss";
+
+/*
+  SerpFlow design tokens.
+
+  The target is infrastructure software - an observability console, a cloud
+  control plane - not a marketing site. That means: a near-black ground, one
+  restrained accent, borders doing the structural work instead of shadows,
+  and a monospace face for every identifier, credit figure and engine name so
+  columns of numbers line up and stay scannable.
+*/
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  /* Ground and surfaces */
+  --color-ground: oklch(0.145 0.006 265);
+  --color-surface: oklch(0.178 0.007 265);
+  --color-surface-raised: oklch(0.206 0.008 265);
+  --color-surface-sunken: oklch(0.126 0.006 265);
+
+  /* Text */
+  --color-ink: oklch(0.962 0.004 265);
+  --color-ink-muted: oklch(0.704 0.013 265);
+  --color-ink-subtle: oklch(0.556 0.014 265);
+
+  /* Lines */
+  --color-line: oklch(0.272 0.011 265);
+  --color-line-strong: oklch(0.345 0.014 265);
+
+  /* Accent: a technical blue, used sparingly */
+  --color-accent: oklch(0.682 0.153 248);
+  --color-accent-strong: oklch(0.754 0.158 248);
+  --color-accent-muted: oklch(0.42 0.09 248);
+  --color-accent-ghost: oklch(0.27 0.045 248);
+
+  /* Semantics */
+  --color-warm: oklch(0.746 0.154 155);
+  --color-warm-ghost: oklch(0.29 0.055 155);
+  --color-cold: oklch(0.63 0.019 265);
+  --color-spend: oklch(0.745 0.157 60);
+  --color-spend-ghost: oklch(0.3 0.06 60);
+  --color-danger: oklch(0.672 0.192 22);
+  --color-danger-ghost: oklch(0.3 0.08 22);
+  --color-caution: oklch(0.79 0.153 85);
+  --color-caution-ghost: oklch(0.32 0.06 85);
+  --color-replay: oklch(0.73 0.14 300);
+  --color-replay-ghost: oklch(0.3 0.06 300);
+
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
+
+  --shadow-raise: 0 1px 2px oklch(0 0 0 / 0.35), 0 4px 16px oklch(0 0 0 / 0.22);
+  --shadow-float: 0 8px 36px oklch(0 0 0 / 0.42);
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* Light theme. The product is dark-first; this stays legible rather than
+   trying to be a second design. */
+:root:not(.dark) {
+  --color-ground: oklch(0.985 0.002 265);
+  --color-surface: oklch(1 0 0);
+  --color-surface-raised: oklch(0.985 0.002 265);
+  --color-surface-sunken: oklch(0.965 0.003 265);
+  --color-ink: oklch(0.208 0.008 265);
+  --color-ink-muted: oklch(0.44 0.012 265);
+  --color-ink-subtle: oklch(0.58 0.012 265);
+  --color-line: oklch(0.91 0.004 265);
+  --color-line-strong: oklch(0.84 0.006 265);
+  --color-accent-ghost: oklch(0.94 0.028 248);
+  --color-warm-ghost: oklch(0.93 0.04 155);
+  --color-spend-ghost: oklch(0.95 0.045 60);
+  --color-danger-ghost: oklch(0.95 0.04 22);
+  --color-caution-ghost: oklch(0.96 0.05 85);
+  --color-replay-ghost: oklch(0.95 0.04 300);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    font-variant-ligatures: contextual;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+  }
+
+  /* Identifiers, credits and engine names are tabular data. */
+  code,
+  kbd,
+  pre,
+  samp,
+  .mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "zero" 1;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-muted);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border: 3px solid var(--color-ground);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-subtle);
+  }
+}
+
+@layer components {
+  /* A faint technical grid, used behind the search hero and empty states. */
+  .grid-field {
+    background-image:
+      linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 78%);
+  }
+
+  .hairline {
+    box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.04);
+  }
+
+  /* A single thin rule under a section heading, instead of a card border. */
+  .rule {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Section 5: animations must respect prefers-reduced-motion. Lenis is also
+   disabled in JS; this is the backstop for CSS and library animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes serpflow-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-accent-ghost);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes serpflow-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes serpflow-dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-pulse-ring {
+  animation: serpflow-pulse-ring 1.9s var(--ease-out-quint) infinite;
+}
+
+.animate-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(1 0 0 / 0.07),
+    transparent
+  );
+  animation: serpflow-sweep 1.6s var(--ease-in-out-quart) infinite;
+}
+
+/*
+  Radix state animations.
+
+  tailwindcss-animate is a v3-era plugin; these are the handful of utilities
+  the primitives in components/ui actually use, defined directly so there is
+  one less dependency and no version coupling.
+*/
+@keyframes serpflow-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes serpflow-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes serpflow-zoom-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes serpflow-zoom-in-plain {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes serpflow-slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes serpflow-slide-out-right {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+@keyframes serpflow-accordion-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes serpflow-accordion-up {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+@layer utilities {
+  .animate-in { animation-duration: 180ms; animation-timing-function: var(--ease-out-quint); animation-fill-mode: both; }
+  .animate-out { animation-duration: 140ms; animation-timing-function: var(--ease-in-out-quart); animation-fill-mode: both; }
+  .fade-in { animation-name: serpflow-fade-in; }
+  .fade-out { animation-name: serpflow-fade-out; }
+  .zoom-in-95 { animation-name: serpflow-zoom-in-plain; }
+  .zoom-out-95 { animation-name: serpflow-fade-out; }
+  .slide-in-from-right { animation-name: serpflow-slide-in-right; animation-duration: 260ms; }
+  .slide-out-to-right { animation-name: serpflow-slide-out-right; animation-duration: 200ms; }
+  .animate-accordion-down { animation: serpflow-accordion-down 200ms var(--ease-out-quint); }
+  .animate-accordion-up { animation: serpflow-accordion-up 180ms var(--ease-in-out-quart); }
+}
+
+/* The centred dialog translates as well as scales, so it needs its own name. */
+[data-radix-popper-content-wrapper] .zoom-in-95 { animation-name: serpflow-zoom-in-plain; }
+.fixed.left-1\/2.top-1\/2.zoom-in-95 { animation-name: serpflow-zoom-in; }

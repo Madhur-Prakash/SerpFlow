@@ -1,0 +1,83 @@
+{
+  "system": "serpflow",
+  "suite_version": "v1",
+  "catalog_version": "v1.0.0",
+  "llm_model": "deterministic-v1",
+  "task_count": 120,
+  "correct_count": 46,
+  "partial_count": 10,
+  "accuracy": 0.3833,
+  "engine_accuracy": 0.4667,
+  "param_accuracy": 0.7917,
+  "freshness_accuracy": 0.55,
+  "matched_alternative_count": 23,
+  "mean_confidence": 0.8702,
+  "mean_latency_ms": 4.27,
+  "mean_candidate_count": 5.43,
+  "by_category": {
+    "single_engine": {
+      "total": 40,
+      "correct": 13,
+      "accuracy": 0.325
+    },
+    "multi_hop": {
+      "total": 26,
+      "correct": 10,
+      "accuracy": 0.3846
+    },
+    "locale": {
+      "total": 20,
+      "correct": 7,
+      "accuracy": 0.35
+    },
+    "freshness": {
+      "total": 16,
+      "correct": 8,
+      "accuracy": 0.5
+    },
+    "substitute": {
+      "total": 18,
+      "correct": 8,
+      "accuracy": 0.4444
+    }
+  },
+  "failure_modes": {
+    "wrong_engine": 58,
+    "extra_hop": 8,
+    "no_plan": 2,
+    "locale_miss": 3,
+    "missing_hop": 3
+  },
+  "failure_examples": {
+    "wrong_engine": [
+      "bm_003: expected google, predicted naver",
+      "bm_015: expected google_scholar_profiles, predicted naver",
+      "bm_021: expected google_maps -> google_maps_reviews -> google_maps_contributor_reviews, predicted yelp -> yelp_reviews",
+      "bm_022: expected google_images, predicted google_maps -> google_maps_photos",
+      "bm_023: expected google_maps -> google_maps_reviews, predicted naver"
+    ],
+    "extra_hop": [
+      "bm_004: expected google_patents, predicted google_patents -> google_patents_details",
+      "bm_010: expected google_scholar, predicted google_scholar -> google_scholar_cite",
+      "bm_011: expected home_depot, predicted home_depot -> home_depot_product",
+      "bm_031: expected google_play, predicted google_play -> google_play_product",
+      "bm_041: expected google_scholar, predicted google_scholar -> google_scholar_cite"
+    ],
+    "no_plan": [
+      "bm_008: expected google_maps -> google_maps_directions, predicted (nothing)",
+      "bm_061: expected google_flights, predicted (nothing)"
+    ],
+    "locale_miss": [
+      "bm_012: expected google_flights, predicted google_flights",
+      "bm_077: expected google_patents -> google_patents_details, predicted google_patents -> google_patents_details",
+      "bm_117: expected google_maps, predicted google_maps"
+    ],
+    "missing_hop": [
+      "bm_032: expected home_depot -> home_depot_product, predicted home_depot",
+      "bm_089: expected google_shopping -> google_immersive_product, predicted google_shopping",
+      "bm_111: expected google_local -> google_maps_reviews -> google_maps_contributor_reviews, predicted google_local -> google_maps_reviews"
+    ]
+  },
+  "error_analysis": "Dominant failure mode: wrong engine (58 tasks). Weakest category: single_engine at 32.5%. extra hop: 8. locale miss: 3. missing hop: 3.",
+  "generated_at": "2026-10-01T22:52:50.875605+00:00"
+}

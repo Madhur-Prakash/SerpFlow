@@ -1,0 +1,292 @@
+# Retail and commerce engines. Two substitute groups live here
+# (product_search and product_reviews) plus the Walmart and Home Depot
+# search -> product -> reviews chains.
+
+engines:
+  - engine: google_shopping
+    purpose: Product listings aggregated across retailers.
+    capability_tags: [product_search]
+    substitutes:
+      - engine: amazon
+        coverage: partial
+        note: >
+          One retailer rather than an aggregate, but with first-party stock,
+          variant and review-count data Shopping does not expose.
+      - engine: walmart
+        coverage: narrow
+        note: US-only catalog; irrelevant outside Walmart's served markets.
+      - engine: ebay
+        coverage: partial
+        note: >
+          Heavily weighted toward used and auction listings, so price
+          comparisons against new-goods retailers are misleading.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [location, hl, gl, google_domain, tbs, num, direct_link]
+    produces:
+      "shopping_results[].product_id":
+        type: string
+        feeds:
+          - google_product.product_id
+          - google_immersive_product.page_token
+        fan_out_hint: 20
+      "shopping_results[].price":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, location, google_domain]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-shopping-api
+
+  - engine: google_product
+    purpose: Detail, offers and reviews for one Google Shopping product.
+    capability_tags: [product_detail, product_reviews]
+    substitutes:
+      - engine: walmart_product_reviews
+        coverage: narrow
+        note: Walmart catalog only, and the product identifier space differs.
+      - engine: apple_reviews
+        coverage: narrow
+        note: Applications only; not a substitute for physical goods.
+    requires:
+      product_id:
+        type: string
+        satisfied_by:
+          - google_shopping.shopping_results[].product_id
+    optional: [hl, gl, google_domain, offers, reviews, filter]
+    produces:
+      "reviews_results.reviews[].rating":
+        type: number
+        feeds: []
+      "sellers_results.online_sellers[].name":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, google_domain]
+    pii_risk: medium
+    docs_url: https://serpapi.com/google-product-api
+
+  - engine: google_immersive_product
+    purpose: Expanded immersive product panel for a shopping result.
+    capability_tags: [product_detail]
+    substitutes:
+      - engine: google_product
+        coverage: full
+        note: Stable product-id addressing rather than an expiring page token.
+    requires:
+      page_token:
+        type: string
+        satisfied_by:
+          - google_shopping.shopping_results[].immersive_product_page_token
+    optional: [hl, gl]
+    produces:
+      "product_results.title":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-immersive-product-api
+
+  - engine: amazon
+    purpose: Amazon product search.
+    capability_tags: [product_search]
+    substitutes:
+      - engine: google_shopping
+        coverage: partial
+        note: >
+          Aggregates many retailers, so price floors are usually lower, but it
+          lacks Amazon-specific ranking signals and Prime availability.
+      - engine: ebay
+        coverage: partial
+        note: Auction and used inventory skews the comparison.
+    requires:
+      k:
+        type: string
+        satisfied_by: []
+    optional: [amazon_domain, s, page, language]
+    produces:
+      "organic_results[].asin":
+        type: string
+        feeds: []
+      "organic_results[].price":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [amazon_domain, language]
+    pii_risk: low
+    docs_url: https://serpapi.com/amazon-search-api
+
+  - engine: walmart
+    purpose: Walmart product search.
+    capability_tags: [product_search]
+    substitutes:
+      - engine: amazon
+        coverage: partial
+        note: Wider catalog, different fulfilment and pricing model.
+      - engine: google_shopping
+        coverage: partial
+        note: Cross-retailer aggregate including Walmart itself.
+    requires:
+      query:
+        type: string
+        satisfied_by: []
+    optional: [store_id, page, sort, min_price, max_price, ps]
+    produces:
+      "organic_results[].us_item_id":
+        type: string
+        feeds:
+          - walmart_product.us_item_id
+          - walmart_product_reviews.us_item_id
+        fan_out_hint: 20
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [store_id]
+    pii_risk: low
+    docs_url: https://serpapi.com/walmart-search-api
+
+  - engine: walmart_product
+    purpose: Detail for one Walmart item.
+    capability_tags: [product_detail]
+    substitutes:
+      - engine: google_product
+        coverage: partial
+        note: Cross-retailer view; Walmart-specific stock fields are absent.
+    requires:
+      us_item_id:
+        type: string
+        satisfied_by:
+          - walmart.organic_results[].us_item_id
+    optional: [store_id]
+    produces:
+      "product_result.us_item_id":
+        type: string
+        feeds:
+          - walmart_product_reviews.us_item_id
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [store_id]
+    pii_risk: low
+    docs_url: https://serpapi.com/walmart-product-api
+
+  - engine: walmart_product_reviews
+    purpose: Reviews for one Walmart item.
+    capability_tags: [product_reviews]
+    substitutes:
+      - engine: google_product
+        coverage: partial
+        note: >
+          Aggregates reviews across retailers, so per-retailer review counts
+          and verified-purchase flags do not line up.
+    requires:
+      us_item_id:
+        type: string
+        satisfied_by:
+          - walmart.organic_results[].us_item_id
+          - walmart_product.product_result.us_item_id
+    optional: [page, sort, rating]
+    produces:
+      "reviews[].rating":
+        type: number
+        feeds: []
+      "reviews[].user_nickname":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: []
+    pii_risk: high
+    docs_url: https://serpapi.com/walmart-product-reviews-api
+
+  - engine: ebay
+    purpose: eBay listing search.
+    capability_tags: [product_search]
+    substitutes:
+      - engine: amazon
+        coverage: partial
+        note: New-goods focus; eBay is the better source for used and rare items.
+      - engine: google_shopping
+        coverage: partial
+        note: Cross-retailer aggregate, weaker on auction inventory.
+    requires:
+      _nkw:
+        type: string
+        satisfied_by: []
+    optional: [ebay_domain, _pgn, _salic, LH_BIN, _udlo, _udhi]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 1h
+    locale_sensitive: [ebay_domain]
+    pii_risk: low
+    docs_url: https://serpapi.com/ebay-search-api
+
+  - engine: home_depot
+    purpose: Home Depot product search.
+    capability_tags: [product_search]
+    substitutes:
+      - engine: walmart
+        coverage: narrow
+        note: >
+          Overlaps only on general merchandise; trade and building materials
+          are largely absent.
+      - engine: amazon
+        coverage: partial
+        note: Wider catalog, weaker on in-store availability and bulk materials.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [delivery_zip, store_id, page, lowerbound, upperbound, sortby]
+    produces:
+      "products[].product_id":
+        type: string
+        feeds:
+          - home_depot_product.product_id
+        fan_out_hint: 20
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [delivery_zip, store_id]
+    pii_risk: low
+    docs_url: https://serpapi.com/home-depot-search-api
+
+  - engine: home_depot_product
+    purpose: Detail and reviews for one Home Depot product.
+    capability_tags: [product_detail, product_reviews]
+    substitutes:
+      - engine: google_product
+        coverage: partial
+        note: Cross-retailer, so in-store stock and aisle data are missing.
+    requires:
+      product_id:
+        type: string
+        satisfied_by:
+          - home_depot.products[].product_id
+    optional: [delivery_zip, store_id, country]
+    produces:
+      "reviews[].rating":
+        type: number
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [country, store_id]
+    pii_risk: medium
+    docs_url: https://serpapi.com/home-depot-product-api

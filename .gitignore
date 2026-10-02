@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+dist/
+build/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+.npm/
+
+# Environment and secrets. Never commit a real key.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!backend/fixtures/**/*.json
+
+# Runtime artefacts
+logs/
+*.log
+.serpflow-objects/
+backend/.serpflow-objects/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

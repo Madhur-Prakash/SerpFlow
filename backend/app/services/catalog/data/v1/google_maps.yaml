@@ -1,0 +1,250 @@
+# Google Maps family - the reference demo chain lives here.
+#
+#   google_maps -> google_maps_reviews -> google_maps_contributor_reviews
+#
+# google_maps_contributor_reviews has effectively zero usage in the SerpApi
+# ecosystem. The planner reaching it through typed dependency edges, rather
+# than a model guessing, is the discovery proof (section 70).
+
+engines:
+  - engine: google_maps
+    purpose: Find places, businesses and points of interest on Google Maps.
+    capability_tags: [place_search, local_business]
+    substitutes:
+      - engine: google_local
+        coverage: partial
+        note: >
+          Returns the local pack rather than the map corpus. Cheaper and often
+          warm from an adjacent web search, but it carries fewer place
+          identifiers and no coordinate-level pagination.
+      - engine: yelp
+        coverage: narrow
+        note: >
+          Sparse coverage outside US metros. For an Indian neighbourhood like
+          Koramangala the result set is a small, biased subset.
+    requires:
+      q:
+        type: string
+        description: Search query, for example "cafes in Koramangala".
+        satisfied_by: []
+    optional:
+      - ll
+      - type
+      - data_id
+      - place_id
+      - hl
+      - gl
+      - google_domain
+      - start
+    produces:
+      "local_results[].data_id":
+        type: string
+        feeds:
+          - google_maps_reviews.data_id
+          - google_maps_photos.data_id
+        fan_out_hint: 20
+      "local_results[].place_id":
+        type: string
+        feeds:
+          - google_maps_reviews.place_id
+          - google_maps_directions.start_place_id
+        fan_out_hint: 20
+      "place_results.data_id":
+        type: string
+        feeds:
+          - google_maps_reviews.data_id
+          - google_maps_photos.data_id
+      "local_results[].title":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [hl, gl, ll]
+    pii_risk: low
+    docs_url: https://serpapi.com/maps-api
+
+  - engine: google_maps_reviews
+    purpose: Reviews for a specific place.
+    capability_tags: [place_reviews]
+    substitutes:
+      - engine: yelp_reviews
+        coverage: partial
+        note: >
+          Sparse coverage outside US metros, and the reviewer identity shape
+          differs, so contributor-history chaining is not available downstream.
+      - engine: google_product
+        coverage: narrow
+        note: >
+          Product reviews, not place reviews. Only substitutable when the
+          subject is a retail item rather than a venue.
+    requires:
+      data_id:
+        type: string
+        description: Opaque Google Maps place identifier.
+        satisfied_by:
+          - google_maps.local_results[].data_id
+          - google_maps.place_results.data_id
+      place_id:
+        type: string
+        description: Alternative place identifier; one of data_id or place_id.
+        alternative_to: data_id
+        satisfied_by:
+          - google_maps.local_results[].place_id
+          - google_local.local_results[].place_id
+    optional:
+      - hl
+      - gl
+      - sort_by
+      - next_page_token
+      - topic_id
+      - reviews_limit
+    produces:
+      "reviews[].user.contributor_id":
+        type: string
+        feeds:
+          - google_maps_contributor_reviews.contributor_id
+        # Distinct contributors sampled per place. With 20 places this yields
+        # the 80-call full-scale projection in section 70.
+        fan_out_hint: 4
+      "reviews[].rating":
+        type: number
+        feeds: []
+      "reviews[].snippet":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [hl, gl]
+    pii_risk: high
+    docs_url: https://serpapi.com/google-maps-reviews-api
+
+  - engine: google_maps_contributor_reviews
+    purpose: Every review written by one Google Maps contributor.
+    capability_tags: [contributor_history]
+    substitutes:
+      - engine: yelp_reviews
+        coverage: narrow
+        note: >
+          Yelp exposes reviewer display names but no stable contributor
+          identity, so cross-venue linkage degrades to name matching rather
+          than identity matching, and coverage outside US metros is sparse.
+          It answers the question, far less reliably and far more cheaply.
+    requires:
+      contributor_id:
+        type: string
+        description: Google Maps contributor identity.
+        satisfied_by:
+          - google_maps_reviews.reviews[].user.contributor_id
+    optional:
+      - hl
+      - gl
+      - next_page_token
+    produces:
+      "reviews[].place_info.data_id":
+        type: string
+        feeds:
+          - google_maps_reviews.data_id
+      "reviews[].date":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    # Contributor histories are append-only and change slowly. This long prior
+    # is exactly why these steps stay warm across demo runs and shift the
+    # marginal cost of any plan that includes them.
+    volatility_prior: 30d
+    locale_sensitive: [hl]
+    pii_risk: high
+    docs_url: https://serpapi.com/google-maps-contributor-reviews-api
+
+  - engine: google_maps_photos
+    purpose: Photographs attached to a specific place.
+    capability_tags: [place_photos]
+    substitutes:
+      - engine: google_images
+        coverage: narrow
+        note: >
+          Query-driven rather than place-anchored, so photographs may belong to
+          a different venue of the same name.
+    requires:
+      data_id:
+        type: string
+        satisfied_by:
+          - google_maps.local_results[].data_id
+          - google_maps.place_results.data_id
+    optional: [hl, gl, next_page_token, category_id]
+    produces:
+      "photos[].image":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 30d
+    locale_sensitive: [hl]
+    pii_risk: medium
+    docs_url: https://serpapi.com/google-maps-photos-api
+
+  - engine: google_maps_directions
+    purpose: Routing and travel time between two places.
+    capability_tags: [directions]
+    substitutes: []
+    single_source_note: Only Maps exposes turn-level routing in this catalog.
+    requires:
+      start_addr:
+        type: string
+        satisfied_by: []
+      end_addr:
+        type: string
+        satisfied_by: []
+      start_place_id:
+        type: string
+        alternative_to: start_addr
+        satisfied_by:
+          - google_maps.local_results[].place_id
+    optional: [travel_mode, hl, gl, distance_unit]
+    produces:
+      "directions[].duration":
+        type: number
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 1h
+    locale_sensitive: [hl, gl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-maps-directions-api
+
+  - engine: google_local
+    purpose: Google local pack results for a query.
+    capability_tags: [place_search, local_business]
+    substitutes:
+      - engine: google_maps
+        coverage: full
+        note: >
+          The map corpus is richer and paginates further, at the same credit
+          cost. Prefer it unless a local-pack snapshot is specifically wanted.
+      - engine: yelp
+        coverage: narrow
+        note: Sparse coverage outside US metros.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [location, hl, gl, google_domain, start]
+    produces:
+      "local_results[].place_id":
+        type: string
+        feeds:
+          - google_maps_reviews.place_id
+        # The local pack returns ten results, not the map corpus's twenty.
+        fan_out_hint: 10
+      "local_results[].title":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, location]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-local-api

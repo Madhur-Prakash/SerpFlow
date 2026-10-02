@@ -1,0 +1,70 @@
+{
+  "system": "unaided_llm",
+  "suite_version": "v1",
+  "catalog_version": "v1.0.0",
+  "llm_model": "deterministic-v1",
+  "task_count": 120,
+  "correct_count": 0,
+  "partial_count": 13,
+  "accuracy": 0.0,
+  "engine_accuracy": 0.1083,
+  "param_accuracy": 0.0417,
+  "freshness_accuracy": 0.0,
+  "matched_alternative_count": 0,
+  "mean_confidence": 0.0,
+  "mean_latency_ms": 0.0,
+  "mean_candidate_count": 1.0,
+  "by_category": {
+    "single_engine": {
+      "total": 40,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "multi_hop": {
+      "total": 26,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "locale": {
+      "total": 20,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "freshness": {
+      "total": 16,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "substitute": {
+      "total": 18,
+      "correct": 0,
+      "accuracy": 0.0
+    }
+  },
+  "failure_modes": {
+    "wrong_engine": 106,
+    "locale_miss": 13,
+    "missing_hop": 1
+  },
+  "failure_examples": {
+    "wrong_engine": [
+      "bm_001: expected google_finance, predicted google",
+      "bm_002: expected google_maps -> google_maps_reviews -> google_maps_contributor_reviews, predicted google",
+      "bm_004: expected google_patents, predicted google",
+      "bm_005: expected google_news, predicted google",
+      "bm_006: expected amazon, predicted google"
+    ],
+    "locale_miss": [
+      "bm_003: expected google, predicted google",
+      "bm_016: expected google, predicted google",
+      "bm_047: expected google, predicted google",
+      "bm_056: expected google, predicted google",
+      "bm_063: expected google, predicted google"
+    ],
+    "missing_hop": [
+      "bm_109: expected google -> google_related_questions, predicted google"
+    ]
+  },
+  "error_analysis": "Dominant failure mode: wrong engine (106 tasks). Weakest category: single_engine at 0.0%. locale miss: 13. missing hop: 1.",
+  "generated_at": "2026-10-01T22:52:50.207922+00:00"
+}

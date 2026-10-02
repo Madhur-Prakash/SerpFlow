@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>{{ subject }}</title>
+  <style>
+    body { margin: 0; padding: 0; width: 100% !important; background-color: #EDF0F5; }
+    table { border-collapse: collapse; }
+    img { border: 0; outline: none; text-decoration: none; }
+    a { color: #2F6BFF; }
+    @media only screen and (max-width: 620px) {
+      .sf-container { width: 100% !important; }
+      .sf-pad { padding-left: 20px !important; padding-right: 20px !important; }
+      .sf-heading { font-size: 22px !important; line-height: 30px !important; }
+      .sf-button a { display: block !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#EDF0F5; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#111827;">
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#EDF0F5;">
+    {% block preheader %}{% endblock %}
+  </div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#EDF0F5;">
+    <tr>
+      <td align="center" style="padding:32px 12px;">
+        <table role="presentation" class="sf-container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(10,15,30,0.08);">
+          <tr>
+            <td class="sf-pad" style="background-color:#0A0F1E; padding:24px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-size:22px; line-height:28px; font-weight:700; letter-spacing:-0.3px; color:#FFFFFF;">
+                    Serp<span style="color:#2F6BFF;">Flow</span>
+                  </td>
+                  <td align="right" style="font-size:12px; line-height:16px; color:#8A94AB; text-transform:uppercase; letter-spacing:1px;">
+                    {% block eyebrow %}{% endblock %}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="height:3px; background-color:#2F6BFF; font-size:0; line-height:0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="sf-pad" style="padding:36px 40px 12px 40px;">
+              <h1 class="sf-heading" style="margin:0 0 16px 0; font-size:24px; line-height:32px; font-weight:700; color:#0A0F1E;">{% block heading %}{% endblock %}</h1>
+              {% if recipient_name %}
+              <p style="margin:0 0 16px 0; font-size:16px; line-height:24px; color:#111827;">Hi {{ recipient_name }},</p>
+              {% endif %}
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+          {% if details %}
+          <tr>
+            <td class="sf-pad" style="padding:4px 40px 8px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F6F8FC; border:1px solid #E2E7F0; border-radius:8px;">
+                {% for label, value in details %}
+                <tr>
+                  <td style="padding:10px 16px; font-size:13px; line-height:20px; color:#5A6683; width:40%;">{{ label }}</td>
+                  <td align="right" style="padding:10px 16px; font-size:13px; line-height:20px; color:#0A0F1E; font-weight:600;">{{ value }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+            </td>
+          </tr>
+          {% endif %}
+          {% if action_url %}
+          <tr>
+            <td class="sf-pad" style="padding:12px 40px 8px 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="sf-button">
+                <tr>
+                  <td align="center" style="border-radius:8px; background-color:#2F6BFF;">
+                    <a href="{{ action_url }}" target="_blank" rel="noopener" style="display:inline-block; padding:14px 28px; font-size:16px; line-height:20px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:8px;">{{ action_label }}</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:20px 0 0 0; font-size:13px; line-height:20px; color:#5A6683;">
+                If the button does not work, copy and paste this link into your browser:<br>
+                <a href="{{ action_url }}" style="color:#2F6BFF; word-break:break-all;">{{ action_url }}</a>
+              </p>
+            </td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td class="sf-pad" style="padding:20px 40px 36px 40px;">
+              {% block after_action %}{% endblock %}
+            </td>
+          </tr>
+          <tr>
+            <td class="sf-pad" style="background-color:#F6F8FC; border-top:1px solid #E2E7F0; padding:20px 40px; font-size:12px; line-height:18px; color:#75819B;">
+              {% block footer %}
+              You are receiving this email because you have a {{ app_name }} account.
+              {% if preferences_url %}Manage which emails you receive in <a href="{{ preferences_url }}" style="color:#2F6BFF;">notification settings</a>.{% endif %}
+              {% endblock %}
+              <br>&copy; {{ year }} {{ app_name }}. A search control plane for SerpApi.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

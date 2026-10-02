@@ -1,0 +1,752 @@
+# Google verticals plus the local-reviews competitor group, the scholar chain
+# and the app-store chain.
+
+engines:
+  - engine: yelp
+    purpose: Find local businesses on Yelp.
+    capability_tags: [place_search, local_business]
+    substitutes:
+      - engine: google_maps
+        coverage: full
+        note: >
+          Far broader place coverage worldwide at the same credit cost, and it
+          carries the identifiers the contributor-history chain needs.
+      - engine: google_local
+        coverage: partial
+        note: Local pack snapshot rather than a full place corpus.
+    requires:
+      find_desc:
+        type: string
+        satisfied_by: []
+      find_loc:
+        type: string
+        satisfied_by: []
+    optional: [yelp_domain, l, sortby, start, attrs]
+    produces:
+      "organic_results[].place_ids[]":
+        type: string
+        feeds:
+          - yelp_reviews.place_id
+        fan_out_hint: 10
+      "organic_results[].title":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [yelp_domain, find_loc]
+    pii_risk: low
+    docs_url: https://serpapi.com/yelp-search-api
+
+  - engine: yelp_reviews
+    purpose: Reviews for a specific Yelp business.
+    capability_tags: [place_reviews]
+    substitutes:
+      - engine: google_maps_reviews
+        coverage: full
+        note: >
+          Broader coverage and, critically, it exposes contributor_id, which is
+          the only path into cross-venue reviewer history.
+    requires:
+      place_id:
+        type: string
+        satisfied_by:
+          - yelp.organic_results[].place_ids[]
+    optional: [yelp_domain, num, start, sortby, q]
+    produces:
+      "reviews[].rating":
+        type: number
+        feeds: []
+      "reviews[].user.name":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [yelp_domain]
+    pii_risk: high
+    docs_url: https://serpapi.com/yelp-reviews-api
+
+  - engine: google_news
+    purpose: Recent news coverage for a topic.
+    capability_tags: [news_search]
+    substitutes:
+      - engine: bing_news
+        coverage: partial
+        note: Different publisher mix and a shorter retention window.
+      - engine: google
+        coverage: partial
+        note: >
+          With tbm=nws the base engine returns news too, but without the topic
+          and publication clustering this engine provides.
+    requires:
+      q:
+        type: string
+        caller_suppliable: true
+        satisfied_by:
+          - google_autocomplete.suggestions[].value
+          - google_trends.related_queries[].query
+    optional: [gl, hl, topic_token, publication_token, so]
+    produces:
+      "news_results[].link":
+        type: string
+        feeds: []
+      "news_results[].date":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 15m
+    locale_sensitive: [hl, gl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-news-api
+
+  - engine: bing_news
+    purpose: Bing news search.
+    capability_tags: [news_search]
+    substitutes:
+      - engine: google_news
+        coverage: full
+        note: Broader publisher coverage and better topic clustering.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [cc, mkt, count, first, qft]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 15m
+    locale_sensitive: [cc, mkt]
+    pii_risk: low
+    docs_url: https://serpapi.com/bing-news-api
+
+  - engine: google_images
+    purpose: Image results for a query.
+    capability_tags: [image_search]
+    substitutes:
+      - engine: yandex_images
+        coverage: partial
+        note: Stronger reverse-matching, weaker English-language recall.
+      - engine: google_maps_photos
+        coverage: narrow
+        note: Place-anchored rather than query-driven.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [hl, gl, location, tbs, imgar, image_color, safe, chips]
+    produces:
+      "images_results[].original":
+        type: string
+        feeds:
+          - google_lens.url
+          - google_reverse_image.image_url
+        fan_out_hint: 10
+    cost: 1
+    latency_class: fast
+    volatility_prior: 7d
+    locale_sensitive: [hl, gl, location]
+    pii_risk: medium
+    docs_url: https://serpapi.com/images-results
+
+  - engine: yandex_images
+    purpose: Yandex image search.
+    capability_tags: [image_search]
+    substitutes:
+      - engine: google_images
+        coverage: full
+        note: Broader index for non-CIS queries.
+    requires:
+      text:
+        type: string
+        satisfied_by: []
+    optional: [yandex_domain, p, isize, icolor]
+    produces:
+      "image_results[].original_image.link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [yandex_domain]
+    pii_risk: medium
+    docs_url: https://serpapi.com/yandex-images-api
+
+  - engine: google_lens
+    purpose: Visual lookup for an image URL.
+    capability_tags: [image_lookup]
+    substitutes:
+      - engine: google_reverse_image
+        coverage: partial
+        note: >
+          Finds pages hosting the same image rather than identifying the
+          subject, so it answers "where else" not "what is this".
+    requires:
+      url:
+        type: string
+        # A caller with an image URL in hand can call this directly.
+        caller_suppliable: true
+        satisfied_by:
+          - google_images.images_results[].original
+    optional: [hl, country, type]
+    produces:
+      "visual_matches[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: slow
+    volatility_prior: 30d
+    locale_sensitive: [hl, country]
+    pii_risk: medium
+    docs_url: https://serpapi.com/google-lens-api
+
+  - engine: google_reverse_image
+    purpose: Pages that host a given image.
+    capability_tags: [image_lookup]
+    substitutes:
+      - engine: google_lens
+        coverage: partial
+        note: Identifies the subject rather than enumerating host pages.
+    requires:
+      image_url:
+        type: string
+        caller_suppliable: true
+        satisfied_by:
+          - google_images.images_results[].original
+    optional: [hl, gl]
+    produces:
+      "image_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 30d
+    locale_sensitive: [hl, gl]
+    pii_risk: medium
+    docs_url: https://serpapi.com/google-reverse-image-api
+
+  - engine: google_videos
+    purpose: Video results for a query.
+    capability_tags: [video_search]
+    substitutes:
+      - engine: youtube
+        coverage: partial
+        note: >
+          One platform only, but with view counts, channel identity and
+          publication dates Google Videos does not consistently return.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [hl, gl, location, tbs, num, start]
+    produces:
+      "video_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, location]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-videos-api
+
+  - engine: youtube
+    purpose: YouTube search.
+    capability_tags: [video_search]
+    substitutes:
+      - engine: google_videos
+        coverage: partial
+        note: Cross-platform, weaker on channel and engagement metadata.
+    requires:
+      search_query:
+        type: string
+        satisfied_by: []
+    optional: [gl, hl, sp]
+    produces:
+      "video_results[].link":
+        type: string
+        feeds: []
+      "video_results[].channel.link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl]
+    pii_risk: low
+    docs_url: https://serpapi.com/youtube-search-api
+
+  - engine: google_scholar
+    purpose: Scholarly article search.
+    capability_tags: [academic_search]
+    substitutes:
+      - engine: google_patents
+        coverage: narrow
+        note: >
+          Patents only. Substitutable solely when the intent is prior art
+          rather than peer-reviewed literature.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [hl, as_ylo, as_yhi, start, num, scisbd, cites, as_sdt]
+    produces:
+      "organic_results[].publication_info.authors[].author_id":
+        type: string
+        feeds:
+          - google_scholar_author.author_id
+        fan_out_hint: 10
+      "organic_results[].result_id":
+        type: string
+        feeds:
+          - google_scholar_cite.q
+        fan_out_hint: 10
+    cost: 1
+    latency_class: medium
+    volatility_prior: 30d
+    locale_sensitive: [hl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-scholar-api
+
+  - engine: google_scholar_author
+    purpose: Publication list and metrics for one scholar.
+    capability_tags: [academic_author]
+    substitutes: []
+    single_source_note: >
+      No other catalog engine resolves a scholar identity to its full
+      publication history.
+    requires:
+      author_id:
+        type: string
+        satisfied_by:
+          - google_scholar.organic_results[].publication_info.authors[].author_id
+          - google_scholar_profiles.profiles[].author_id
+    optional: [hl, view_op, sortby, start, num]
+    produces:
+      "articles[].citation_id":
+        type: string
+        feeds: []
+      "cited_by.table":
+        type: object
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 30d
+    locale_sensitive: [hl]
+    pii_risk: medium
+    docs_url: https://serpapi.com/google-scholar-author-api
+
+  - engine: google_scholar_profiles
+    purpose: Find scholar profiles matching a name or affiliation.
+    capability_tags: [academic_author]
+    substitutes:
+      - engine: google_scholar
+        coverage: partial
+        note: >
+          Reaches authors only through their papers, so prolific authors are
+          over-represented and new researchers are missed.
+    requires:
+      mauthors:
+        type: string
+        satisfied_by: []
+    optional: [hl, after_author, before_author]
+    produces:
+      "profiles[].author_id":
+        type: string
+        feeds:
+          - google_scholar_author.author_id
+        fan_out_hint: 10
+    cost: 1
+    latency_class: medium
+    volatility_prior: 30d
+    locale_sensitive: [hl]
+    pii_risk: medium
+    docs_url: https://serpapi.com/google-scholar-profiles-api
+
+  - engine: google_scholar_cite
+    purpose: Formatted citations for one scholarly result.
+    capability_tags: [academic_search]
+    substitutes: []
+    single_source_note: Citation formatting is exposed by this engine alone.
+    requires:
+      q:
+        type: string
+        description: A Scholar result_id.
+        satisfied_by:
+          - google_scholar.organic_results[].result_id
+    optional: [hl]
+    produces:
+      "citations[].snippet":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 365d
+    locale_sensitive: [hl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-scholar-cite-api
+
+  - engine: google_patents
+    purpose: Patent document search.
+    capability_tags: [patent_search]
+    substitutes:
+      - engine: google_scholar
+        coverage: narrow
+        note: Peer-reviewed literature, not granted patents.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [page, num, sort, before, after, country, status, language]
+    produces:
+      "organic_results[].patent_id":
+        type: string
+        feeds:
+          - google_patents_details.patent_id
+        fan_out_hint: 10
+    cost: 1
+    latency_class: medium
+    volatility_prior: 30d
+    locale_sensitive: [country, language]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-patents-api
+
+  - engine: google_patents_details
+    purpose: Full record for one patent.
+    capability_tags: [patent_search]
+    substitutes: []
+    single_source_note: Only this engine returns claims and the full citation graph.
+    requires:
+      patent_id:
+        type: string
+        satisfied_by:
+          - google_patents.organic_results[].patent_id
+    optional: []
+    produces:
+      "claims[]":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 365d
+    locale_sensitive: []
+    pii_risk: low
+    docs_url: https://serpapi.com/google-patents-details-api
+
+  - engine: google_jobs
+    purpose: Job postings for a role and location.
+    capability_tags: [job_search]
+    substitutes:
+      - engine: google
+        coverage: narrow
+        note: >
+          Returns job board landing pages rather than structured postings, so
+          salary, posting age and apply links must be scraped downstream.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [location, hl, gl, uds, ltype, next_page_token, google_domain]
+    produces:
+      "jobs_results[].job_id":
+        type: string
+        feeds: []
+      "jobs_results[].apply_options[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, location]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-jobs-api
+
+  - engine: google_flights
+    purpose: Flight itineraries and fares between two airports.
+    capability_tags: [flight_search]
+    substitutes: []
+    single_source_note: >
+      The only fare-level engine in the catalog. Nothing else returns priced
+      itineraries, so flight intents are single-candidate by construction.
+    requires:
+      departure_id:
+        type: string
+        satisfied_by: []
+      arrival_id:
+        type: string
+        satisfied_by: []
+      outbound_date:
+        type: date
+        satisfied_by: []
+    optional:
+      - return_date
+      - type
+      - travel_class
+      - adults
+      - children
+      - currency
+      - hl
+      - gl
+      - stops
+      - max_price
+      - departure_token
+    produces:
+      "best_flights[].price":
+        type: number
+        feeds: []
+      "best_flights[].departure_token":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: slow
+    volatility_prior: 15m
+    locale_sensitive: [hl, gl, currency]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-flights-api
+
+  - engine: google_hotels
+    purpose: Lodging availability and nightly rates.
+    capability_tags: [hotel_search]
+    substitutes:
+      - engine: google_maps
+        coverage: narrow
+        note: >
+          Finds the property but returns no availability or rate data, so it
+          cannot answer a booking-shaped intent.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+      check_in_date:
+        type: date
+        satisfied_by: []
+      check_out_date:
+        type: date
+        satisfied_by: []
+    optional: [adults, children, currency, hl, gl, sort_by, min_price, max_price, vacation_rentals]
+    produces:
+      "properties[].property_token":
+        type: string
+        feeds: []
+      "properties[].rate_per_night.lowest":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: slow
+    volatility_prior: 1h
+    locale_sensitive: [hl, gl, currency]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-hotels-api
+
+  - engine: google_events
+    purpose: Local and online events.
+    capability_tags: [event_search]
+    substitutes:
+      - engine: google
+        coverage: narrow
+        note: Ticketing pages without normalised dates, venues or coordinates.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [location, hl, gl, htichips, start]
+    produces:
+      "events_results[].link":
+        type: string
+        feeds: []
+      "events_results[].date.start_date":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, location]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-events-api
+
+  - engine: google_trends
+    purpose: Interest over time, regional breakdown and related queries.
+    capability_tags: [trend_analysis, query_expansion]
+    substitutes:
+      - engine: google_autocomplete
+        coverage: narrow
+        note: >
+          Suggestion volume is a weak proxy for interest and carries no time
+          series, so it cannot answer a trend-shaped intent.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [geo, date, data_type, tz, cat, hl]
+    produces:
+      "related_queries[].query":
+        type: string
+        feeds:
+          - google.q
+          - google_news.q
+        fan_out_hint: 10
+      "interest_over_time.timeline_data[]":
+        type: object
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [geo, hl, tz]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-trends-api
+
+  - engine: google_trends_autocomplete
+    purpose: Resolve a term to Google Trends topic entities.
+    capability_tags: [query_expansion, trend_analysis]
+    substitutes:
+      - engine: google_autocomplete
+        coverage: partial
+        note: Raw query strings rather than disambiguated topic entities.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [hl]
+    produces:
+      "suggestions[].mid":
+        type: string
+        feeds:
+          - google_trends.q
+        fan_out_hint: 5
+    cost: 1
+    latency_class: fast
+    volatility_prior: 30d
+    locale_sensitive: [hl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-trends-autocomplete-api
+
+  - engine: google_finance
+    purpose: Quote, chart and news for one security.
+    capability_tags: [finance_quote]
+    substitutes:
+      - engine: google
+        coverage: narrow
+        note: >
+          The answer box carries a price but no time series or exchange
+          metadata, so it cannot support analysis.
+    requires:
+      q:
+        type: string
+        description: Ticker with exchange, for example "GOOGL:NASDAQ".
+        satisfied_by: []
+    optional: [hl, window]
+    produces:
+      "summary.price":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 15m
+    locale_sensitive: [hl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-finance-api
+
+  - engine: google_play
+    purpose: Google Play application search.
+    capability_tags: [app_search]
+    substitutes:
+      - engine: apple_app_store
+        coverage: partial
+        note: A different store and a disjoint app identifier space.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [store, hl, gl, apps_category, age, price]
+    produces:
+      "organic_results[].items[].product_id":
+        type: string
+        feeds:
+          - google_play_product.product_id
+        fan_out_hint: 10
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [hl, gl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-play-api
+
+  - engine: google_play_product
+    purpose: Detail and reviews for one Play application.
+    capability_tags: [app_search, app_reviews]
+    substitutes:
+      - engine: apple_reviews
+        coverage: narrow
+        note: App Store only; review populations are not comparable.
+    requires:
+      product_id:
+        type: string
+        satisfied_by:
+          - google_play.organic_results[].items[].product_id
+    optional: [store, hl, gl, all_reviews, num, sort_by]
+    produces:
+      "reviews[].rating":
+        type: number
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [hl, gl]
+    pii_risk: high
+    docs_url: https://serpapi.com/google-play-product-api
+
+  - engine: apple_app_store
+    purpose: Apple App Store application search.
+    capability_tags: [app_search]
+    substitutes:
+      - engine: google_play
+        coverage: partial
+        note: Android store with a disjoint identifier space and different ranking.
+    requires:
+      term:
+        type: string
+        satisfied_by: []
+    optional: [country, lang, num, page, property]
+    produces:
+      "organic_results[].id":
+        type: string
+        feeds:
+          - apple_reviews.product_id
+        fan_out_hint: 10
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [country, lang]
+    pii_risk: low
+    docs_url: https://serpapi.com/apple-app-store
+
+  - engine: apple_reviews
+    purpose: Reviews for one App Store application.
+    capability_tags: [app_reviews]
+    substitutes:
+      - engine: google_play_product
+        coverage: narrow
+        note: Play Store reviews, a different user population entirely.
+    requires:
+      product_id:
+        type: string
+        satisfied_by:
+          - apple_app_store.organic_results[].id
+    optional: [country, page, sort]
+    produces:
+      "reviews[].rating":
+        type: number
+        feeds: []
+      "reviews[].author.name":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 7d
+    locale_sensitive: [country]
+    pii_risk: high
+    docs_url: https://serpapi.com/apple-reviews-api

@@ -1,0 +1,65 @@
+{
+  "system": "embedding_only",
+  "suite_version": "v1",
+  "catalog_version": "v1.0.0",
+  "llm_model": "deterministic-v1",
+  "task_count": 120,
+  "correct_count": 0,
+  "partial_count": 14,
+  "accuracy": 0.0,
+  "engine_accuracy": 0.1167,
+  "param_accuracy": 0.0417,
+  "freshness_accuracy": 0.0,
+  "matched_alternative_count": 3,
+  "mean_confidence": 0.1698,
+  "mean_latency_ms": 1.25,
+  "mean_candidate_count": 1.0,
+  "by_category": {
+    "single_engine": {
+      "total": 40,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "multi_hop": {
+      "total": 26,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "locale": {
+      "total": 20,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "freshness": {
+      "total": 16,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "substitute": {
+      "total": 18,
+      "correct": 0,
+      "accuracy": 0.0
+    }
+  },
+  "failure_modes": {
+    "wrong_engine": 102,
+    "missing_hop": 4
+  },
+  "failure_examples": {
+    "wrong_engine": [
+      "bm_001: expected google_finance, predicted google_flights",
+      "bm_002: expected google_maps -> google_maps_reviews -> google_maps_contributor_reviews, predicted apple_reviews",
+      "bm_003: expected google, predicted bing_news",
+      "bm_004: expected google_patents, predicted google_patents_details",
+      "bm_005: expected google_news, predicted google"
+    ],
+    "missing_hop": [
+      "bm_017: expected walmart -> walmart_product -> walmart_product_reviews, predicted walmart",
+      "bm_032: expected home_depot -> home_depot_product, predicted home_depot",
+      "bm_046: expected apple_app_store -> apple_reviews, predicted apple_app_store",
+      "bm_058: expected google_scholar_profiles -> google_scholar_author, predicted google_scholar_profiles"
+    ]
+  },
+  "error_analysis": "Dominant failure mode: wrong engine (102 tasks). Weakest category: single_engine at 0.0%. missing hop: 4.",
+  "generated_at": "2026-10-01T22:52:50.359046+00:00"
+}

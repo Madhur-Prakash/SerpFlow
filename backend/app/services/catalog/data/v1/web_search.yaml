@@ -1,0 +1,330 @@
+# General web search engines. The densest substitute group in the catalog, and
+# the one that matters most for the showcase problem: 111 of 185 community
+# projects use only engine=google out of 62 available engines.
+
+engines:
+  - engine: google
+    purpose: General Google web search.
+    capability_tags: [web_search, related_questions]
+    substitutes:
+      - engine: google_light
+        coverage: partial
+        note: >
+          Same corpus, materially faster, but drops ads, inline images and most
+          rich blocks. Choose it when only organic results are consumed.
+      - engine: bing
+        coverage: partial
+        note: >
+          Different index and ranking. Useful as a cross-check, weaker on
+          long-tail local and non-English queries.
+      - engine: duckduckgo
+        coverage: partial
+        note: No personalisation and a shallower index; result counts are lower.
+      - engine: yandex
+        coverage: narrow
+        note: Strongest for Russian-language and CIS-region queries only.
+      - engine: baidu
+        coverage: narrow
+        note: Mainland China corpus; near-useless outside Chinese-language intent.
+      - engine: naver
+        coverage: narrow
+        note: >
+          Korean corpus with blog and cafe verticals Google does not index.
+          Preferred for Korean-language local intent, useless elsewhere.
+    requires:
+      q:
+        type: string
+        # The caller always has a query; autocomplete and trends can also
+        # supply one, which is what the satisfied_by list expresses.
+        caller_suppliable: true
+        satisfied_by:
+          - google_autocomplete.suggestions[].value
+          - google_trends.related_queries[].query
+    optional:
+      - location
+      - hl
+      - gl
+      - google_domain
+      - tbm
+      - tbs
+      - num
+      - start
+      - safe
+      - device
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+      "related_questions[].question":
+        type: string
+        feeds: []
+      "knowledge_graph.title":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, location, google_domain]
+    pii_risk: low
+    docs_url: https://serpapi.com/search-api
+
+  - engine: google_light
+    purpose: Reduced-payload Google web search optimised for latency.
+    capability_tags: [web_search]
+    substitutes:
+      - engine: google
+        coverage: full
+        note: >
+          Full block coverage including ads, inline images and knowledge panel
+          at the same credit cost but higher latency.
+    requires:
+      q:
+        type: string
+        caller_suppliable: true
+        satisfied_by:
+          - google_autocomplete.suggestions[].value
+    optional: [location, hl, gl, google_domain, num, start]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl, location]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-light-api
+
+  - engine: bing
+    purpose: Bing web search.
+    capability_tags: [web_search]
+    substitutes:
+      - engine: google
+        coverage: full
+        note: Larger index and better long-tail recall for most locales.
+      - engine: duckduckgo
+        coverage: partial
+        note: DuckDuckGo is largely Bing-derived, so results correlate heavily.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [location, cc, mkt, count, first, safeSearch]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 24h
+    locale_sensitive: [cc, mkt, location]
+    pii_risk: low
+    docs_url: https://serpapi.com/bing-search-api
+
+  - engine: duckduckgo
+    purpose: DuckDuckGo web search.
+    capability_tags: [web_search]
+    substitutes:
+      - engine: bing
+        coverage: full
+        note: Upstream of most DuckDuckGo organic results.
+      - engine: google
+        coverage: full
+        note: Broader index, personalisation-free when no location is supplied.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [kl, safe, start]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: fast
+    volatility_prior: 24h
+    locale_sensitive: [kl]
+    pii_risk: low
+    docs_url: https://serpapi.com/duckduckgo-search-api
+
+  - engine: yandex
+    purpose: Yandex web search.
+    capability_tags: [web_search]
+    substitutes:
+      - engine: google
+        coverage: partial
+        note: Better globally, materially worse for Russian-language queries.
+    requires:
+      text:
+        type: string
+        satisfied_by: []
+    optional: [lr, yandex_domain, p, lang]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [lr, lang, yandex_domain]
+    pii_risk: low
+    docs_url: https://serpapi.com/yandex-search-api
+
+  - engine: baidu
+    purpose: Baidu web search.
+    capability_tags: [web_search]
+    substitutes:
+      - engine: google
+        coverage: narrow
+        note: >
+          Google indexes very little of the mainland Chinese web, so this is
+          not a real substitute for Chinese-language intent.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [ct, pn, rn, device]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [ct]
+    pii_risk: low
+    docs_url: https://serpapi.com/baidu-search-api
+
+  - engine: naver
+    purpose: Naver search across the Korean web, blogs and cafes.
+    capability_tags: [web_search, place_search]
+    substitutes:
+      - engine: google
+        coverage: partial
+        note: >
+          Google indexes Korean blog and cafe content poorly. For Korean-locale
+          local intent Naver has materially better recall; for anything else it
+          is not competitive.
+    requires:
+      query:
+        type: string
+        satisfied_by: []
+    optional: [where, start, page]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+      "place_results[].title":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [where]
+    pii_risk: low
+    docs_url: https://serpapi.com/naver-search-api
+
+  - engine: yahoo
+    purpose: Yahoo web search.
+    capability_tags: [web_search]
+    substitutes:
+      - engine: bing
+        coverage: full
+        note: Yahoo organic results are Bing-derived.
+    requires:
+      p:
+        type: string
+        satisfied_by: []
+    optional: [yahoo_domain, vl, b]
+    produces:
+      "organic_results[].link":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: medium
+    volatility_prior: 24h
+    locale_sensitive: [vl, yahoo_domain]
+    pii_risk: low
+    docs_url: https://serpapi.com/yahoo-search-api
+
+  - engine: google_autocomplete
+    purpose: Query suggestions for a partial query.
+    capability_tags: [query_expansion]
+    substitutes:
+      - engine: google_trends_autocomplete
+        coverage: partial
+        note: >
+          Returns trend entities rather than raw suggestion strings, so it is
+          only a substitute when the downstream step wants a topic, not a query.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [hl, gl, client]
+    produces:
+      "suggestions[].value":
+        type: string
+        feeds:
+          - google.q
+          - google_light.q
+          - google_news.q
+        fan_out_hint: 10
+    cost: 1
+    latency_class: fast
+    volatility_prior: 24h
+    locale_sensitive: [hl, gl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-autocomplete-api
+
+  - engine: google_related_questions
+    purpose: Expand a people-also-ask node into its follow-up questions.
+    capability_tags: [related_questions, query_expansion]
+    substitutes:
+      - engine: google
+        coverage: partial
+        note: >
+          The base search already returns a first page of related questions;
+          this engine is only needed to expand beyond that page.
+    requires:
+      next_page_token:
+        type: string
+        satisfied_by:
+          - google.related_questions[].next_page_token
+    optional: [hl, gl]
+    produces:
+      "related_questions[].question":
+        type: string
+        feeds:
+          - google.q
+        fan_out_hint: 6
+    cost: 1
+    latency_class: fast
+    volatility_prior: 7d
+    locale_sensitive: [hl, gl]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-related-questions-api
+
+  - engine: google_ai_mode
+    purpose: Model-generated answer grounded in Google search results.
+    capability_tags: [answer_synthesis, web_search]
+    substitutes:
+      - engine: google
+        coverage: partial
+        note: >
+          Returns ranked links rather than a synthesised answer. Prefer it when
+          the caller needs citations it can verify independently.
+    requires:
+      q:
+        type: string
+        satisfied_by: []
+    optional: [hl, gl, location]
+    produces:
+      "text_blocks[].snippet":
+        type: string
+        feeds: []
+    cost: 1
+    latency_class: slow
+    volatility_prior: 1h
+    locale_sensitive: [hl, gl, location]
+    pii_risk: low
+    docs_url: https://serpapi.com/google-ai-mode-api

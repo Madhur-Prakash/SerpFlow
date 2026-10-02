@@ -1,0 +1,66 @@
+# SerpFlow engine catalog - version metadata.
+#
+# The committed catalog is the source of truth (section 12). It is NOT a
+# runtime scrape. `make catalog-build` regenerates *drafts* from the SerpApi
+# documentation; steps 3 and 4 of the authoring method (dependency edges and
+# substitute groups) require a human review pass and are hand-maintained here.
+#
+# Every Plan persists the catalog_version it was planned against, so routing
+# accuracy can be tracked per version and regressions attributed.
+
+version: "v1.0.0"
+released: "2026-10-02"
+source: "https://serpapi.com/search-api"
+notes: >
+  Initial hand-reviewed catalog. Covers the full reference demo chain
+  (google_maps -> google_maps_reviews -> google_maps_contributor_reviews) plus
+  eight substitute groups so the planner always has genuine alternatives to
+  re-rank on marginal cost.
+
+# Capability tags are the competition axis. Engines sharing a tag are candidate
+# substitutes for one another; dependency edges are a separate, typed mechanism.
+capability_tags:
+  web_search: General open-web result retrieval.
+  place_search: Find a physical business or point of interest.
+  local_business: Local listings with address, rating and identifiers.
+  place_reviews: Reviews attached to a specific place.
+  contributor_history: Every review written by one reviewer identity.
+  place_photos: Photographs attached to a specific place.
+  product_search: Find products across a retail catalog.
+  product_detail: Full detail for one identified product.
+  product_reviews: Reviews attached to a specific product.
+  news_search: Recent news articles.
+  image_search: Images matching a query.
+  image_lookup: Reverse or visual lookup from an image.
+  video_search: Video results.
+  academic_search: Scholarly papers and citations.
+  academic_author: Scholarly author profiles and publication lists.
+  job_search: Job postings.
+  flight_search: Flight itineraries and fares.
+  hotel_search: Lodging availability and rates.
+  event_search: Local and online events.
+  trend_analysis: Interest over time and related queries.
+  query_expansion: Candidate query suggestions.
+  finance_quote: Security quotes and market data.
+  patent_search: Patent documents.
+  app_search: Mobile application listings.
+  app_reviews: Reviews attached to a specific application.
+  directions: Routing between two places.
+  answer_synthesis: Model-generated answers grounded in search.
+  related_questions: People-also-ask style follow-up questions.
+
+# Coverage vocabulary used by every `substitutes` entry.
+coverage_levels:
+  full: Returns an equivalent result set for the same capability.
+  partial: Overlapping but materially different coverage or field shape.
+  narrow: Usable only inside a restricted geography, vertical or corpus.
+
+# volatility_prior seeds adaptive TTL (section 20). The controller moves away
+# from the prior as it observes real churn.
+volatility_priors:
+  15m: Results change within minutes.
+  1h: Results change within the hour.
+  24h: Results change daily.
+  7d: Results change weekly.
+  30d: Results change monthly.
+  365d: Effectively static.
