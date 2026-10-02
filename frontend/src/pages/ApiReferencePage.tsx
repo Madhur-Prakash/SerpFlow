@@ -243,7 +243,7 @@ export function ApiReferencePage() {
     <div className="relative">
       <section className="relative overflow-hidden border-b border-line">
         <Atmosphere variant="band" />
-        <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-20">
+        <div className="page-shell page-shell-wide relative flex flex-col gap-6 py-14 sm:py-18">
           <MonoLabel>api reference</MonoLabel>
           <h1 className="max-w-3xl text-balance text-[clamp(2rem,4.6vw,3.2rem)] font-semibold leading-[1.06] tracking-[-0.035em]">
             Every endpoint, generated from the schema.
@@ -270,7 +270,7 @@ export function ApiReferencePage() {
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+      <div className="page-shell">
         <div className="grid gap-10 py-12 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-12">
           {/* Group index. Sticky on desktop; a plain list above the content
               on narrow screens, where a sidebar would just push content down. */}

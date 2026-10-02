@@ -16,6 +16,27 @@ Implementation:
 [`pages/landing/`](../../frontend/src/pages/landing),
 [`animations/scroll.ts`](../../frontend/src/animations/scroll.ts).
 
+## Width
+
+One container, `.page-shell`, defined once in
+[`globals.css`](../../frontend/src/styles/globals.css) rather than repeated as
+a utility string, so the site's width is a single decision:
+
+```css
+.page-shell {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 90rem;
+  padding-inline: 1.25rem;  /* 2rem at 640, 2.5rem at 1024, 3.5rem at 1536 */
+}
+```
+
+90rem rather than Tailwind's `max-w-7xl` (80rem): on an 1800px display the
+narrower cap leaves about 260px of empty gutter each side, which reads as a
+column floating in the middle of the screen rather than as a page. The docs and
+the API reference add `.page-shell-wide` (96rem), because they run a sidebar
+beside the content.
+
 ## Theme
 
 Three states, not two: `dark`, `light` and `system`. The default is `system`,

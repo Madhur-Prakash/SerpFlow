@@ -145,12 +145,12 @@ export function ThesisStory() {
 
       <div
         className={cn(
-          "relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 py-20 sm:px-8",
+          "page-shell relative flex min-w-0 flex-col gap-8 py-14",
           enabled && "min-h-dvh justify-center py-16",
         )}
       >
-        <div className="grid items-end gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12">
-          <div className="flex flex-col gap-4">
+        <div className="grid min-w-0 items-end gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12">
+          <div className="flex min-w-0 flex-col gap-4">
             <MonoLabel>the thesis</MonoLabel>
             <h2 className="text-balance text-[clamp(1.75rem,3.4vw,2.65rem)] font-semibold leading-[1.1] tracking-[-0.03em]">
               Same intent. Same catalog. A different plan wins.
@@ -195,9 +195,9 @@ export function ThesisStory() {
           ) : null}
         </div>
 
-        <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start lg:gap-10">
+        <div className="grid min-w-0 gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start lg:gap-10">
           {/* The beats. On desktop the active one is lit; elsewhere all are. */}
-          <ol className="flex flex-col gap-4">
+          <ol className="flex min-w-0 flex-col gap-4">
             {BEATS.map((item, index) => {
               const active = staticState || index <= beat;
               const current = !staticState && index === beat;

@@ -290,7 +290,7 @@ export function DocsPage() {
       {slug === "" ? (
         <section className="relative overflow-hidden border-b border-line">
           <Atmosphere variant="band" />
-          <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-14 sm:px-8 sm:py-20">
+          <div className="page-shell page-shell-wide relative flex flex-col gap-5 py-12 sm:py-16">
             <MonoLabel>
               <BookOpen className="h-3 w-3" />
               documentation
@@ -306,7 +306,7 @@ export function DocsPage() {
         </section>
       ) : null}
 
-      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
+      <div className="page-shell">
         <div className="grid gap-8 py-10 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem] xl:gap-10">
           {/* Sidebar */}
           <aside className="lg:sticky lg:top-24 lg:self-start">

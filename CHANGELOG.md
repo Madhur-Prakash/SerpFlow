@@ -34,6 +34,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   naming the file, the engine and the offending field.
 - The `Makefile` had CRLF line endings, which silently break recipe line
   continuations under `/bin/sh`.
+- The public pages scrolled sideways on a phone. Grid and flex children default
+  to a `min-content` minimum, so one unbroken identifier in a code block
+  widened the whole document; `min-w-0` on the containers and
+  `overflow-wrap: anywhere` on prose fixes it. `make test-ui` now checks four
+  pages at five widths from 320px up and fails on any horizontal overflow.
 
 - **The MCP server could not start.** `mcp` 2.x renamed `FastMCP` to
   `MCPServer`, and nothing in the suite imported `app.mcp.server`, so

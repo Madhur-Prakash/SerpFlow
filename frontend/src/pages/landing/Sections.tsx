@@ -69,7 +69,7 @@ export function Numbers() {
 
   return (
     <section ref={ref} className="relative border-t border-line bg-surface-sunken/40">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 sm:grid-cols-2 sm:px-8 lg:grid-cols-4 lg:py-20">
+      <div className="page-shell grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:py-14">
         <Stat value={54} label="Engines in the catalog" note="Hand-reviewed, committed as YAML" />
         <Stat
           value={30}
@@ -224,7 +224,7 @@ export function HowItWorks() {
       className="relative scroll-mt-24 overflow-hidden border-t border-line py-16 sm:py-20"
     >
       <Atmosphere variant="band" />
-      <div className="relative mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+      <div className="relative page-shell">
         <SectionHeading
           label="the planner"
           title="Four stages, and a candidate set at the end of them."
@@ -250,7 +250,7 @@ export function HowItWorks() {
           }
         />
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
+        <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
           <ol className="flex flex-col">
             {STAGES.map((stage, index) => (
               <li
@@ -274,7 +274,7 @@ export function HowItWorks() {
             ))}
           </ol>
 
-          <div data-reveal data-parallax="0.25" className="flex flex-col gap-4">
+          <div data-reveal data-parallax="0.25" className="flex min-w-0 flex-col gap-4">
             <div className="rounded-xl border border-line bg-surface p-5">
               <div className="mono mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-ink-subtle">
                 <Radio className="h-3 w-3 text-accent" />
@@ -678,14 +678,14 @@ const COMMANDS = [
 export function QuickStart() {
   return (
     <Revealed id="quick-start" className="bg-surface-sunken/40">
-      <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
+      <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-12">
         <SectionHeading
           label="quick start"
           title="Five commands, and no API keys at all."
           lede="The planner falls back to a deterministic adapter, execution falls back to cassettes, and a test key returns mock results with zero SerpApi credits. make dev and make seed must work on a machine that has never seen a SerpApi key - and they do."
         />
 
-        <div data-reveal className="overflow-hidden rounded-xl border border-line bg-[oklch(0.12_0.006_265)] shadow-float">
+        <div data-reveal className="min-w-0 overflow-hidden rounded-xl border border-line bg-[oklch(0.12_0.006_265)] shadow-float">
           <div className="flex items-center gap-2 border-b border-line/60 px-4 py-2.5">
             <div className="flex gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
@@ -695,7 +695,7 @@ export function QuickStart() {
             <span className="mono flex-1 text-center text-[11px] text-ink-subtle">bash</span>
             <span className="w-12" />
           </div>
-          <div className="code-block flex flex-col gap-2.5 p-5">
+          <div className="code-block flex flex-col gap-2.5 overflow-x-auto p-5">
             {COMMANDS.map((line) => (
               <div key={line.cmd} className="group/cmd flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
@@ -751,7 +751,7 @@ const FAQ = [
 export function Faq() {
   return (
     <Revealed id="faq">
-      <div className="grid gap-8 lg:grid-cols-[1fr_1.4fr] lg:gap-12">
+      <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-12">
         <SectionHeading label="questions" title="The ones worth asking first." />
         <div data-reveal>
           <Accordion type="single" collapsible className="flex flex-col gap-2">

@@ -41,7 +41,7 @@ function Wordmark({ onClick }: { onClick?: () => void }) {
     <Link
       to="/"
       onClick={onClick}
-      className="group inline-flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.02em]"
+      className="group inline-flex min-w-0 shrink-0 items-center gap-2.5 text-[15px] font-semibold tracking-[-0.02em]"
     >
       <span className="relative inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md border border-line bg-surface">
         <span className="absolute inset-0 bg-gradient-to-br from-accent-ghost to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -77,7 +77,7 @@ function MarketingHeader() {
           : "border-b border-transparent bg-transparent",
       )}
     >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-5 sm:px-8">
+      <div className="page-shell flex h-16 items-center justify-between gap-3 px-4 sm:gap-6 sm:px-8 lg:px-10">
         <Wordmark onClick={() => scrollToTop(false)} />
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -120,7 +120,7 @@ function MarketingHeader() {
           )}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Tooltip
             content={
               <span className="flex flex-col gap-0.5">
@@ -246,7 +246,7 @@ function MarketingFooter() {
     <footer className="relative border-t border-line bg-surface-sunken">
       <div className="pointer-events-none absolute inset-0 grid-field opacity-30" aria-hidden />
 
-      <div className="relative mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+      <div className="page-shell relative py-14 sm:py-16">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_3fr]">
           <div className="flex flex-col gap-5">
             <Wordmark />
@@ -278,9 +278,9 @@ function MarketingFooter() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          <div className="grid min-w-0 grid-cols-2 gap-8 sm:grid-cols-4">
             {FOOTER_GROUPS.map((group) => (
-              <div key={group.title} className="flex flex-col gap-3.5">
+              <div key={group.title} className="flex min-w-0 flex-col gap-3.5">
                 <h3 className="mono text-[11px] uppercase tracking-[0.16em] text-ink-subtle">
                   {group.title}
                 </h3>

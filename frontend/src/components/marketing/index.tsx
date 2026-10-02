@@ -123,7 +123,7 @@ export function SectionHeading({
   const heading = (
     <div
       className={cn(
-        "flex flex-col gap-4",
+        "flex min-w-0 flex-col gap-4",
         align === "center" ? "mx-auto max-w-3xl items-center text-center" : "max-w-2xl",
         !aside && className,
       )}
@@ -158,12 +158,12 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        "grid items-end gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12",
+        "grid min-w-0 items-end gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12",
         className,
       )}
     >
       {heading}
-      <div data-reveal className="lg:pb-1">
+      <div data-reveal className="min-w-0 lg:pb-1">
         {aside}
       </div>
     </div>
@@ -194,7 +194,7 @@ export function Band({
         className,
       )}
     >
-      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">{children}</div>
+      <div className="page-shell">{children}</div>
     </section>
   );
 }
@@ -424,7 +424,9 @@ export function AppWindow({
           <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
           <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
         </div>
-        <div className="mono flex-1 truncate text-center text-[11px] text-ink-subtle">{title}</div>
+        <div className="mono min-w-0 flex-1 truncate text-center text-[11px] text-ink-subtle">
+          {title}
+        </div>
         <div className="w-12" />
       </div>
       {children}

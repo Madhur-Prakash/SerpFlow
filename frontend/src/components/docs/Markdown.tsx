@@ -58,7 +58,7 @@ function inline(text: string, fromSlug: string, keyPrefix = ""): React.ReactNode
       nodes.push(
         <code
           key={key}
-          className="mono rounded border border-line bg-surface-sunken px-[0.35em] py-[0.12em] text-[0.88em] text-ink"
+          className="mono [overflow-wrap:anywhere] rounded border border-line bg-surface-sunken px-[0.35em] py-[0.12em] text-[0.88em] text-ink"
         >
           {token.slice(1, -1)}
         </code>,
@@ -117,7 +117,7 @@ function MarkdownLink({
         href={resolved ?? href}
         target="_blank"
         rel="noreferrer noopener"
-        className="link-underline text-accent-strong transition-colors hover:text-accent"
+        className="link-underline [overflow-wrap:anywhere] text-accent-strong transition-colors hover:text-accent"
       >
         {children}
       </a>
@@ -442,7 +442,7 @@ export function Markdown({ source, slug }: { source: string; slug: string }) {
   const blocks = React.useMemo(() => parse(source), [source]);
 
   return (
-    <div className="text-[15px] leading-[1.78] text-ink-muted">
+    <div className="min-w-0 text-[15px] leading-[1.78] text-ink-muted">
       {blocks.map((block, index) => {
         switch (block.kind) {
           case "heading": {
@@ -466,7 +466,7 @@ export function Markdown({ source, slug }: { source: string; slug: string }) {
 
           case "paragraph":
             return (
-              <p key={index} className="my-4 text-pretty">
+              <p key={index} className="my-4 text-pretty [overflow-wrap:anywhere]">
                 {inline(block.text, slug, `p${index}`)}
               </p>
             );
@@ -486,7 +486,7 @@ export function Markdown({ source, slug }: { source: string; slug: string }) {
                 )}
               >
                 {block.items.map((item, itemIndex) => (
-                  <li key={itemIndex} className="pl-1 text-pretty">
+                  <li key={itemIndex} className="pl-1 text-pretty [overflow-wrap:anywhere]">
                     {inline(item, slug, `l${index}-${itemIndex}`)}
                   </li>
                 ))}

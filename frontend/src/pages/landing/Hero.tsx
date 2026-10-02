@@ -92,7 +92,7 @@ export function Hero() {
       <Atmosphere variant="hero" />
       <div className="pointer-events-none absolute inset-0 grid-field-dense opacity-40" aria-hidden />
 
-      <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-5 pb-20 pt-14 sm:px-8 sm:pb-28 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16">
+      <div className="page-shell relative grid gap-10 pb-16 pt-12 sm:pb-20 sm:pt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-14">
         <div className="flex flex-col items-start gap-6">
           <div data-hero-label>
             <MonoLabel>cache-aware marginal-cost replanning</MonoLabel>
@@ -107,7 +107,7 @@ export function Hero() {
 
           <p
             data-hero-lede
-            className="max-w-xl text-pretty text-[15.5px] leading-[1.75] text-ink-muted sm:text-[16.5px]"
+            className="max-w-[34rem] text-pretty text-[15.5px] leading-[1.75] text-ink-muted sm:text-[16.5px]"
           >
             Not just make the same plan cheaper. SerpFlow takes a natural-language intent,
             discovers the engine chain that answers it, inspects what is already warm, and ranks
@@ -147,9 +147,9 @@ export function Hero() {
           </div>
         </div>
 
-        <div data-hero-panel data-parallax="0.35" className="relative">
+        <div data-hero-panel data-parallax="0.35" className="relative min-w-0">
           <AppWindow title="serpflow plan --budget 20">
-            <div className="flex flex-col gap-5 p-5 sm:p-6">
+            <div className="flex min-w-0 flex-col gap-5 p-4 sm:p-6">
               <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
                 <div className="flex flex-col gap-1">
                   <span className="mono text-[11px] uppercase tracking-[0.14em] text-ink-subtle">

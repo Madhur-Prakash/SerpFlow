@@ -17,7 +17,11 @@ import { fileURLToPath } from "node:url";
 
 const PORT = 4178;
 const BASE = `http://localhost:${PORT}`;
-const CHECKS = ["scripts/smoke.mjs", "scripts/story-check.mjs"];
+const CHECKS = [
+  "scripts/smoke.mjs",
+  "scripts/story-check.mjs",
+  "scripts/responsive-check.mjs",
+];
 
 // Vite's JS entry, reached by path rather than by `npx`: Node refuses to
 // spawn a .cmd without a shell, and going through one would put Windows
