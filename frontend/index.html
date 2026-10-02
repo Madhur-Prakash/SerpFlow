@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/serpflow.svg" />
@@ -10,6 +10,30 @@
       content="SerpFlow is a search control plane for SerpApi. It routes intents to the right engine chain, re-plans around what is already cached, and executes only the searches that are actually required."
     />
     <title>SerpFlow</title>
+    <script>
+      // Apply the stored theme before the first paint. Without this, a light
+      // reader gets a full-screen flash of the dark ground on every load,
+      // because React cannot run until after the browser has painted.
+      (function () {
+        try {
+          var stored = JSON.parse(localStorage.getItem("serpflow.ui") || "{}");
+          var theme = (stored.state && stored.state.theme) || "system";
+          var resolved =
+            theme === "system"
+              ? window.matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark"
+              : theme;
+          var root = document.documentElement;
+          root.classList.toggle("dark", resolved === "dark");
+          root.style.colorScheme = resolved;
+          root.dataset.theme = resolved;
+        } catch (e) {
+          // Storage can be blocked entirely; the dark default in the markup
+          // is already correct in that case.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

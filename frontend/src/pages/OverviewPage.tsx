@@ -74,7 +74,10 @@ export function OverviewPage() {
       />
 
       {/* ------------------------------------------------ headline stats */}
-      <motion.div variants={itemVariants} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <motion.div
+        variants={itemVariants}
+        className="stagger-children grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+      >
         {dashboard.isLoading ? (
           Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-28" />

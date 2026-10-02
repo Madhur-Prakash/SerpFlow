@@ -121,6 +121,13 @@ redis-cli:  ## Open a redis-cli shell
 kafka-topics:  ## Create every Kafka topic
 	cd $(BACKEND) && $(PYTHON) -m app.workers.topics
 
+# ---------------------------------------------------------------- docs
+api-reference:  ## Regenerate the API reference page from the OpenAPI schema
+	$(PYTHON) scripts/generate_api_reference.py $(ARGS)
+
+docs-check:  ## Verify every relative link in every markdown file resolves
+	$(PYTHON) scripts/check_doc_links.py
+
 # ---------------------------------------------------------------- catalog
 catalog-build:  ## Regenerate catalog drafts from the SerpApi docs (ARGS=--diff)
 	cd $(BACKEND) && $(PYTHON) scripts/catalog_build.py $(ARGS)
@@ -144,6 +151,10 @@ test-integration:  ## Run integration tests (needs postgres and redis)
 
 test-e2e:  ## Run the end-to-end suite, including the thesis assertion
 	cd $(BACKEND) && $(PYTHON) -m pytest tests/e2e -q
+
+test-ui:  ## Render the public pages in a real browser, in both themes
+	cd $(FRONTEND) && npm run build
+	cd $(FRONTEND) && (npx vite preview --port 4178 --strictPort & echo $$! > .preview.pid) 		&& sleep 4 		&& node scripts/smoke.mjs http://localhost:4178; 		status=$$?; kill `cat $(FRONTEND)/.preview.pid` 2>/dev/null; 		rm -f $(FRONTEND)/.preview.pid; exit $$status
 
 lint:  ## Lint backend and frontend
 	cd $(BACKEND) && $(PYTHON) -m ruff check .

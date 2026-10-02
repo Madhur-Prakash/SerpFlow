@@ -1,10 +1,34 @@
-# SerpFlow documentation
+<div align="center">
 
-[![Docs](https://img.shields.io/badge/docs-complete-3fcf8e)](.)
-[![License](https://img.shields.io/badge/License-Apache%202.0-D22128)](../LICENSE)
+<h1>SerpFlow documentation</h1>
 
-Every page here links to the implementation it describes. If a path in these
-docs does not exist in the repository, that is a bug.
+<p align="center">
+  Every page links to the implementation it describes.<br>
+  If a path in these docs does not exist in the repository, that is a bug.
+</p>
+
+<p align="center">
+  <a href="."><img alt="pages: 53" src="https://img.shields.io/badge/pages-53-2F6BFF"></a>
+  <a href="adr/README.md"><img alt="decision records: 14" src="https://img.shields.io/badge/decision%20records-14-2F6BFF"></a>
+  <a href="../LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
+</p>
+
+<p align="center">
+  <a href="#architecture">Architecture</a> &middot;
+  <a href="#api">API</a> &middot;
+  <a href="#database">Database</a> &middot;
+  <a href="#security">Security</a> &middot;
+  <a href="#deployment">Deployment</a> &middot;
+  <a href="#operations">Operations</a> &middot;
+  <a href="#product">Product</a> &middot;
+  <a href="#decisions">Decisions</a>
+</p>
+
+</div>
+
+> These pages are also served by the running application at **`/docs`**, with a
+> sidebar, filtering and an on-page contents. The API reference at **`/api`** is
+> generated from the OpenAPI schema rather than written by hand.
 
 ## Start here
 
@@ -29,6 +53,7 @@ docs does not exist in the repository, that is a bug.
 | [Executor](architecture/executor.md) | execution, modes, provenance |
 | [Backend](architecture/backend.md) | FastAPI structure, services, sessions |
 | [Frontend](architecture/frontend.md) | React, the pipeline, the inspectors |
+| [Web surface](architecture/web.md) | The landing page, docs browser, theme and motion |
 
 ## API
 
@@ -89,9 +114,28 @@ obvious, with the alternative that was rejected and the cost that was accepted.
 
 ## Repository
 
-- [README](../README.md)
-- [Contributing](../CONTRIBUTING.md)
-- [Security policy](../SECURITY.md)
-- [Changelog](../CHANGELOG.md)
-- [SDKs](../sdk/README.md) — TypeScript and Python clients
-- [License](../LICENSE) — Apache-2.0
+| File | What it is |
+| --- | --- |
+| [README](../README.md) | The project overview, the evidence and the quick start |
+| [Contributing](../CONTRIBUTING.md) | How to work on it, and what the bar is |
+| [Security policy](../SECURITY.md) | How to report something |
+| [Changelog](../CHANGELOG.md) | What changed, and why |
+| [SDKs](../sdk/README.md) | The TypeScript and Python clients |
+| [License](../LICENSE) | Apache-2.0 |
+
+---
+
+<div align="center">
+
+<p align="center">
+  <a href="../README.md">Project README</a> &middot;
+  <a href="architecture/overview.md">Architecture</a> &middot;
+  <a href="api/overview.md">API</a> &middot;
+  <a href="product/product-overview.md">Product</a> &middot;
+  <a href="adr/README.md">Decisions</a> &middot;
+  <a href="operations/troubleshooting.md">Troubleshooting</a>
+</p>
+
+<sub>&copy; 2026 SerpFlow. All rights reserved. Released under the Apache-2.0 licence.</sub>
+
+</div>

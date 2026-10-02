@@ -34,3 +34,11 @@ decoration: a decision with no downside was not a decision.
 
 - [Architecture overview](../architecture/overview.md)
 - [Product overview](../product/product-overview.md)
+- [Documentation index](../README.md)
+- [Project README](../../README.md)
+
+---
+
+<div align="center">
+<sub>&copy; 2026 SerpFlow. All rights reserved.</sub>
+</div>

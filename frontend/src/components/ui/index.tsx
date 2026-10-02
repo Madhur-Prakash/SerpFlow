@@ -29,12 +29,12 @@ import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------- Button
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-sm)] text-[13px] font-medium transition-[background-color,border-color,color,opacity] duration-150 disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 select-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-sm)] text-[13px] font-medium transition-[background-color,border-color,color,opacity,transform,box-shadow] duration-200 ease-out-quint active:scale-[0.985] disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-300 select-none",
   {
     variants: {
       variant: {
         primary:
-          "bg-accent text-ground hover:bg-accent-strong active:bg-accent font-semibold",
+          "bg-accent text-ground hover:bg-accent-strong hover:shadow-raise active:bg-accent font-semibold",
         secondary:
           "bg-surface-raised text-ink border border-line hover:border-line-strong hover:bg-surface",
         outline:
@@ -158,12 +158,18 @@ export function Field({
 export function Card({
   className,
   children,
+  interactive = false,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  /** Lift and brighten the border on hover. For cards that are links. */
+  interactive?: boolean;
+}) {
   return (
     <div
       className={cn(
         "rounded-[var(--radius-md)] border border-line bg-surface hairline",
+        interactive &&
+          "transition-[border-color,transform,box-shadow] duration-300 ease-out-quint hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raise",
         className,
       )}
       {...props}
@@ -383,15 +389,25 @@ export function Tooltip({
   children,
   side = "top",
   delay = 180,
+  suppressed = false,
 }: {
   content: React.ReactNode;
   children: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   delay?: number;
+  /**
+   * Force the tooltip closed without unmounting it.
+   *
+   * For a trigger that also opens something else - a dropdown, a popover -
+   * where the tooltip would otherwise sit on top of what it just opened.
+   * Returning `children` bare instead would remount the trigger and the open
+   * menu would lose its anchor.
+   */
+  suppressed?: boolean;
 }) {
   if (!content) return <>{children}</>;
   return (
-    <TooltipPrimitive.Root delayDuration={delay}>
+    <TooltipPrimitive.Root delayDuration={delay} {...(suppressed ? { open: false } : {})}>
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Content

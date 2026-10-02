@@ -24,6 +24,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { pageVariants, startSmoothScroll, stopSmoothScroll } from "@/animations";
 import { CommandPalette } from "@/components/layout/CommandPalette";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { ModeBadge } from "@/components/shared";
 import {
   Badge,
@@ -280,6 +281,8 @@ export function AppShell() {
                 {project.key_prefix}
               </Badge>
             ) : null}
+
+            <ThemeToggle className="h-8 w-8" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

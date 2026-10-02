@@ -4,6 +4,7 @@ import * as React from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { AppShell } from "@/components/layout/AppShell";
+import { MarketingLayout } from "@/components/layout/MarketingLayout";
 import { Skeleton } from "@/components/ui";
 import {
   ForgotPasswordPage,
@@ -25,6 +26,32 @@ import { RunsPage } from "@/pages/RunsPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { SettingsRoutes } from "@/pages/SettingsPage";
 import { useSession } from "@/stores/session";
+
+// The marketing surface is a separate bundle: GSAP, the docs tree and the API
+// reference are large, and a signed-in operator going straight to /app should
+// not download any of it.
+const LandingPage = React.lazy(() =>
+  import("@/pages/LandingPage").then((m) => ({ default: m.LandingPage })),
+);
+const DocsPage = React.lazy(() =>
+  import("@/pages/DocsPage").then((m) => ({ default: m.DocsPage })),
+);
+const ApiReferencePage = React.lazy(() =>
+  import("@/pages/ApiReferencePage").then((m) => ({ default: m.ApiReferencePage })),
+);
+
+function PageFallback() {
+  return (
+    <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8">
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-10 w-2/3 max-w-lg" />
+        <Skeleton className="h-4 w-full max-w-xl" />
+        <Skeleton className="h-4 w-4/5 max-w-lg" />
+        <Skeleton className="mt-6 h-64 w-full" />
+      </div>
+    </div>
+  );
+}
 
 function Protected({ children }: { children: React.ReactNode }) {
   const status = useSession((state) => state.status);
@@ -79,8 +106,19 @@ export function AppRoutes() {
         <Route path="settings/*" element={<SettingsRoutes />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/app" replace />} />
-      <Route path="*" element={<Navigate to="/app" replace />} />
+      <Route
+        element={
+          <React.Suspense fallback={<PageFallback />}>
+            <MarketingLayout />
+          </React.Suspense>
+        }
+      >
+        <Route index path="/" element={<LandingPage />} />
+        <Route path="/docs/*" element={<DocsPage />} />
+        <Route path="/api" element={<ApiReferencePage />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

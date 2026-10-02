@@ -1,21 +1,75 @@
-# SerpFlow
+<div align="center">
 
-[![Python 3.13+](https://img.shields.io/badge/Python-3.13%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.118-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
-[![Apache Kafka](https://img.shields.io/badge/Kafka-4.0%20KRaft-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
-[![Alembic](https://img.shields.io/badge/Alembic-migrations-6BA81E)](https://alembic.sqlalchemy.org/)
-[![Tests](https://img.shields.io/badge/tests-180%20passing-3fcf8e)](backend/tests)
-[![License](https://img.shields.io/badge/License-Apache%202.0-D22128)](LICENSE)
+<h1>SerpFlow</h1>
+
+<p align="center">
+  <strong>The cache should change which plan wins, not just make the same plan cheaper.</strong><br>
+  A search control plane for SerpApi with cache-aware marginal-cost replanning.
+</p>
+
+<p align="center">
+  <a href="docs/product/product-overview.md"><img alt="thesis: marginal-cost replanning" src="https://img.shields.io/badge/thesis-marginal--cost%20replanning-2F6BFF"></a>
+  <a href="docs/product/benchmark.md"><img alt="routing accuracy 38.3%" src="https://img.shields.io/badge/routing%20accuracy-38.3%25-3fcf8e"></a>
+  <a href="backend/tests"><img alt="tests: 180 passing" src="https://img.shields.io/badge/tests-180%20passing-3fcf8e"></a>
+  <a href="docs/product/demo.md"><img alt="demo: proven" src="https://img.shields.io/badge/make%20demo-PROVEN-3fcf8e"></a>
+  <a href="LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
+</p>
+
+<p align="center">
+  <img alt="Python 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.118-009688?logo=fastapi&logoColor=white">
+  <img alt="PostgreSQL 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
+  <img alt="Redis 7" src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white">
+  <img alt="Apache Kafka 4 KRaft" src="https://img.shields.io/badge/Kafka-4.0%20KRaft-231F20?logo=apachekafka&logoColor=white">
+  <img alt="SQLAlchemy 2" src="https://img.shields.io/badge/SQLAlchemy-2-D71F00?logo=sqlalchemy&logoColor=white">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black">
+  <img alt="TypeScript 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
+  <img alt="Vite 6" src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white">
+  <img alt="Tailwind CSS 4" src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="GSAP" src="https://img.shields.io/badge/GSAP-ScrollTrigger-88CE02?logo=greensock&logoColor=black">
+  <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
+</p>
+
+<p align="center">
+  <a href="#the-evidence">Evidence</a> &middot;
+  <a href="#the-thesis">Thesis</a> &middot;
+  <a href="#how-it-works">How it works</a> &middot;
+  <a href="#quick-start">Quick start</a> &middot;
+  <a href="#make-targets">Commands</a> &middot;
+  <a href="#api">API</a> &middot;
+  <a href="#documentation">Documentation</a> &middot;
+  <a href="#security">Security</a> &middot;
+  <a href="#contributing">Contributing</a> &middot;
+  <a href="#license">License</a>
+</p>
+
+</div>
 
 **A search control plane for SerpApi.** SerpFlow takes a natural-language
 intent, discovers the engine or engine chain that answers it, inspects what is
 already cached, computes the **marginal** cost of every candidate plan,
 re-ranks on that, and executes only the searches that still need a live call.
+
+> The claim is falsifiable, and the build checks it. `make demo` exits non-zero
+> unless cache-aware replanning **changed the selected plan** - a cache hit on
+> the same plan is explicitly not sufficient.
+
+---
+
+## Contents
+
+| Understand it | Run it | Build on it |
+| --- | --- | --- |
+| [The evidence](#the-evidence) | [Quick start](#quick-start) | [API](#api) |
+| [The problem](#the-problem) | [Modes](#modes-live-mock-replay) | [MCP](#mcp) |
+| [The thesis](#the-thesis) | [Make targets](#make-targets) | [SDKs](#sdks) |
+| [How it works](#how-it-works) | [Project structure](#project-structure) | [Observability](#observability) |
+| [Features](#features) | [Testing](#testing) | [Documentation](#documentation) |
+
+| Before you trust it | | |
+| --- | --- | --- |
+| [Security](#security) | [The free tier](#the-free-tier) | [AI tool disclosure](#ai-tool-disclosure) |
+| [Contributing](#contributing) | [License](#license) | |
 
 ---
 
@@ -556,11 +610,13 @@ The benchmark makes real LLM calls and is deliberately **not** part of CI.
 
 ## Documentation
 
-Index: [`docs/README.md`](docs/README.md).
+Everything is in [`docs/`](docs/README.md), and the running app serves the same
+pages at `/docs` with a sidebar, search and an on-page contents. The API
+reference at `/api` is generated from the OpenAPI schema.
 
 | | |
 | --- | --- |
-| **Architecture** | [overview](docs/architecture/overview.md) · [backend](docs/architecture/backend.md) · [frontend](docs/architecture/frontend.md) · [catalog](docs/architecture/catalog.md) · [planner](docs/architecture/planner.md) · [marginal replanning](docs/architecture/marginal-replanning.md) · [executor](docs/architecture/executor.md) · [caching](docs/architecture/caching.md) |
+| **Architecture** | [overview](docs/architecture/overview.md) · [backend](docs/architecture/backend.md) · [frontend](docs/architecture/frontend.md) · [web surface](docs/architecture/web.md) · [catalog](docs/architecture/catalog.md) · [planner](docs/architecture/planner.md) · [marginal replanning](docs/architecture/marginal-replanning.md) · [executor](docs/architecture/executor.md) · [caching](docs/architecture/caching.md) |
 | **API** | [overview](docs/api/overview.md) · [streaming](docs/api/streaming.md) · [examples](docs/api/examples.md) |
 | **Database** | [schema](docs/database/schema.md) · [migrations](docs/database/migrations.md) · [RLS](docs/database/rls.md) |
 | **Security** | [threat model](docs/security/threat-model.md) · [credentials](docs/security/credentials.md) · [API keys](docs/security/api-keys.md) · [secrets](docs/security/secrets.md) |
@@ -597,3 +653,25 @@ it, or that Yelp's coverage collapses outside US metros.
 ## License
 
 [Apache-2.0](LICENSE).
+
+---
+
+<div align="center">
+
+<strong>SerpFlow</strong><br>
+<sub>A search control plane for SerpApi.</sub>
+
+<p align="center">
+  <a href="docs/README.md">Documentation</a> &middot;
+  <a href="docs/architecture/overview.md">Architecture</a> &middot;
+  <a href="docs/api/overview.md">API</a> &middot;
+  <a href="docs/adr/README.md">Decisions</a> &middot;
+  <a href="sdk/README.md">SDKs</a> &middot;
+  <a href="CONTRIBUTING.md">Contributing</a> &middot;
+  <a href="SECURITY.md">Security</a> &middot;
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+<sub>&copy; 2026 SerpFlow. All rights reserved. Released under the Apache-2.0 licence.</sub>
+
+</div>

@@ -141,7 +141,7 @@ make seed ARGS=--if-absent      # exactly what the startup bootstrap does
 ```
 
 The implementation lives in `app/db/seed.py` rather than in `scripts/` so both
-callers share it. `scripts/seed.py` is the command line around it.
+callers share it. `backend/scripts/seed.py` is the command line around it.
 
 ## Logging note
 

@@ -18,7 +18,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Email.** Transactional mail through the Gmail API, selected by setting
   `GMAIL_CREDENTIALS_B64` and nothing else; with it empty, messages go to the
   log so `make dev` still needs no keys. Jinja2 templates, autoescaped, text
-  and HTML. `scripts/mint_gmail_token.py` produces the credential. See
+  and HTML. `backend/scripts/mint_gmail_token.py` produces the credential. See
   `docs/operations/email.md`.
 - **`TRUSTED_PROXY_HOPS`.** How many proxies in front of the API append to
   `X-Forwarded-For`. The address is now read that many entries from the right,
@@ -47,9 +47,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   extending it, so `.venv` was being linted — 37,831 findings hiding 47 real
   ones, all now fixed, along with 23 real mypy errors.
 
+- **A public web surface.** A landing page that tells the thesis as a pinned,
+  scrubbed scroll story; a documentation browser at `/docs` rendered from the
+  repository's own markdown; and an API reference at `/api` generated from the
+  OpenAPI schema. GSAP, SplitText and ScrollTrigger load on demand, so the
+  console downloads none of it. See `docs/architecture/web.md`.
+- **Light theme, and a theme control.** Three states (dark, light, system,
+  defaulting to system), switched with a View Transitions circle reveal from
+  the control that was pressed. An inline script applies the stored theme
+  before the first paint, so there is no flash. The light theme is a separate
+  design rather than a tinted inversion: the accent darkens to hold contrast on
+  white and shadows take over the structural work borders do on a dark ground.
+- `make test-ui` renders every public page in a real browser in both themes and
+  fails on console errors or on any element a scroll reveal left invisible.
+- `make api-reference` regenerates the reference page; `make docs-check`
+  verifies that all 374 relative links and 95 cited paths resolve.
+
 ### Changed
 
 - `MAX_REQUEST_BYTES` is now `MAX_REQUEST_BODY_BYTES`, default 1 MiB.
+- The README header is centred, with badges and a contents table, and every
+  README now links to the others.
 - The backend image no longer runs `alembic upgrade head` from its `CMD`. A
   shell command in front of the server cannot hold an advisory lock, so
   migration moved into the application's startup path.

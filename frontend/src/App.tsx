@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui";
 import { AppRoutes } from "@/routes";
 import { useSession } from "@/stores/session";
+import { applyTheme, useUiPrefs, watchSystemTheme } from "@/stores/ui-prefs";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +30,14 @@ export default function App() {
   React.useEffect(() => {
     void load();
   }, [load]);
+
+  // The theme is applied once here and then kept in step with the OS while it
+  // is set to "system". The inline script in index.html has already put the
+  // stored value on <html>, so this never causes a flash.
+  React.useEffect(() => {
+    applyTheme(useUiPrefs.getState().theme);
+    return watchSystemTheme();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -64,24 +64,59 @@
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-/* Light theme. The product is dark-first; this stays legible rather than
-   trying to be a second design. */
+/*
+  Light theme.
+
+  Not a tinted inversion of the dark one. On a light ground the accent has to
+  darken to stay readable as text, the semantic colours need more chroma to
+  survive against white, and the shadows have to do the work the borders did -
+  a 1px line that reads as structure at 14% lightness disappears at 97%.
+*/
 :root:not(.dark) {
-  --color-ground: oklch(0.985 0.002 265);
+  /* Ground and surfaces: paper, with the raised surface lighter than the page
+     so cards come forward rather than sinking. */
+  --color-ground: oklch(0.979 0.003 265);
   --color-surface: oklch(1 0 0);
-  --color-surface-raised: oklch(0.985 0.002 265);
-  --color-surface-sunken: oklch(0.965 0.003 265);
-  --color-ink: oklch(0.208 0.008 265);
-  --color-ink-muted: oklch(0.44 0.012 265);
-  --color-ink-subtle: oklch(0.58 0.012 265);
-  --color-line: oklch(0.91 0.004 265);
-  --color-line-strong: oklch(0.84 0.006 265);
-  --color-accent-ghost: oklch(0.94 0.028 248);
-  --color-warm-ghost: oklch(0.93 0.04 155);
-  --color-spend-ghost: oklch(0.95 0.045 60);
-  --color-danger-ghost: oklch(0.95 0.04 22);
-  --color-caution-ghost: oklch(0.96 0.05 85);
-  --color-replay-ghost: oklch(0.95 0.04 300);
+  --color-surface-raised: oklch(1 0 0);
+  --color-surface-sunken: oklch(0.958 0.004 265);
+
+  --color-ink: oklch(0.21 0.012 265);
+  --color-ink-muted: oklch(0.455 0.014 265);
+  --color-ink-subtle: oklch(0.6 0.013 265);
+
+  --color-line: oklch(0.906 0.005 265);
+  --color-line-strong: oklch(0.83 0.008 265);
+
+  /* The accent darkens: the dark theme's blue fails contrast on white. */
+  --color-accent: oklch(0.525 0.182 253);
+  --color-accent-strong: oklch(0.46 0.185 253);
+  --color-accent-muted: oklch(0.8 0.08 253);
+  --color-accent-ghost: oklch(0.955 0.03 253);
+
+  --color-warm: oklch(0.52 0.135 158);
+  --color-warm-ghost: oklch(0.955 0.04 158);
+  --color-cold: oklch(0.56 0.018 265);
+  --color-spend: oklch(0.59 0.145 56);
+  --color-spend-ghost: oklch(0.962 0.045 56);
+  --color-danger: oklch(0.53 0.2 25);
+  --color-danger-ghost: oklch(0.958 0.04 25);
+  --color-caution: oklch(0.63 0.145 78);
+  --color-caution-ghost: oklch(0.965 0.05 78);
+  --color-replay: oklch(0.52 0.17 300);
+  --color-replay-ghost: oklch(0.958 0.038 300);
+
+  /* Softer and tighter: a dark theme's long shadow looks like dirt on paper. */
+  --shadow-raise: 0 1px 2px oklch(0.2 0.02 265 / 0.06), 0 4px 14px oklch(0.2 0.02 265 / 0.07);
+  --shadow-float: 0 10px 34px oklch(0.2 0.02 265 / 0.12);
+}
+
+/* The hairline is an inset white highlight, which does nothing on white. */
+:root:not(.dark) .hairline {
+  box-shadow: inset 0 1px 0 0 oklch(0.2 0.02 265 / 0.04);
+}
+
+:root:not(.dark) .animate-sweep::after {
+  background: linear-gradient(90deg, transparent, oklch(0.2 0.02 265 / 0.06), transparent);
 }
 
 @layer base {
@@ -297,3 +332,263 @@
 /* The centred dialog translates as well as scales, so it needs its own name. */
 [data-radix-popper-content-wrapper] .zoom-in-95 { animation-name: serpflow-zoom-in-plain; }
 .fixed.left-1\/2.top-1\/2.zoom-in-95 { animation-name: serpflow-zoom-in; }
+
+/* ==========================================================================
+   Marketing surface
+   ==========================================================================
+   The landing page, the docs and the API reference. The console does not use
+   any of this; it is kept separate so the two never borrow each other's
+   motion vocabulary by accident.
+   ========================================================================== */
+
+/* --- Theme switching ----------------------------------------------------- */
+
+/* The View Transitions reveal. Both snapshots sit still and the new one is
+   clipped open by lib/theme.ts; the default cross-fade would fight that. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* Fallback for browsers without View Transitions. */
+.theme-fading,
+.theme-fading *,
+.theme-fading *::before,
+.theme-fading *::after {
+  transition:
+    background-color 380ms var(--ease-out-quint),
+    border-color 380ms var(--ease-out-quint),
+    color 380ms var(--ease-out-quint),
+    fill 380ms var(--ease-out-quint),
+    box-shadow 380ms var(--ease-out-quint) !important;
+}
+
+/* --- Atmosphere ---------------------------------------------------------- */
+
+@keyframes serpflow-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(3%, -4%, 0) scale(1.06); }
+  66%      { transform: translate3d(-3%, 3%, 0) scale(0.97); }
+}
+
+.animate-drift-slow {
+  animation: serpflow-drift 26s var(--ease-in-out-quart) infinite;
+}
+.animate-drift-slower {
+  animation: serpflow-drift 38s var(--ease-in-out-quart) infinite reverse;
+}
+
+/* A denser grid for the hero, fading out toward the content. */
+.grid-field-dense {
+  background-image:
+    linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 20%, transparent 72%);
+}
+
+/* --- Marquee ------------------------------------------------------------- */
+
+@keyframes serpflow-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-100%, 0, 0); }
+}
+
+.animate-marquee {
+  animation: serpflow-marquee var(--marquee-duration, 42s) linear infinite;
+}
+.animate-marquee-reverse {
+  animation: serpflow-marquee var(--marquee-duration, 42s) linear infinite reverse;
+}
+
+/* Pausing on hover is what lets somebody actually read a passing item. */
+.marquee:hover .animate-marquee,
+.marquee:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
+
+/* Fade both ends so items enter and leave rather than appearing at a hard edge. */
+.marquee {
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+}
+
+/* --- Spotlight cards ----------------------------------------------------- */
+
+.spotlight-card {
+  --spot-x: 50%;
+  --spot-y: 0%;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition:
+    transform 400ms var(--ease-out-quint),
+    border-color 300ms var(--ease-out-quint),
+    box-shadow 400ms var(--ease-out-quint);
+}
+
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 320ms var(--ease-out-quint);
+  background: radial-gradient(
+    420px circle at var(--spot-x) var(--spot-y),
+    var(--color-accent-ghost),
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+.spotlight-card:hover {
+  border-color: var(--color-line-strong);
+  box-shadow: var(--shadow-float);
+}
+
+/* --- Text reveal --------------------------------------------------------- */
+
+/* SplitText wraps each line; the mask is what makes words rise out of it
+   instead of simply fading. */
+.split-line {
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+/* --- Link underline ------------------------------------------------------ */
+
+/* Grows from the left on hover and retracts to the right on leave, so the
+   direction carries the state change. */
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 340ms var(--ease-out-quint);
+}
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+/* --- Scroll progress ----------------------------------------------------- */
+
+.scroll-progress {
+  transform-origin: 0 50%;
+  transform: scaleX(var(--progress, 0));
+  transition: transform 90ms linear;
+}
+
+/* --- Code ---------------------------------------------------------------- */
+
+.code-block {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  tab-size: 2;
+}
+.code-block .tok-comment { color: var(--color-ink-subtle); font-style: italic; }
+.code-block .tok-string  { color: var(--color-warm); }
+.code-block .tok-key     { color: var(--color-accent-strong); }
+.code-block .tok-number  { color: var(--color-spend); }
+.code-block .tok-literal { color: var(--color-replay); }
+
+/* --- Motion backstop ----------------------------------------------------- */
+
+/* The global reduced-motion rule above shortens transitions but leaves
+   infinite animations running one frame, which is what we want everywhere
+   except these: a paused marquee at frame one hides half its content. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-reverse,
+  .animate-drift-slow,
+  .animate-drift-slower {
+    animation: none !important;
+  }
+  .marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   Console polish
+   ==========================================================================
+   The console is a working surface, so motion here is short and functional:
+   confirmation that a row is under the pointer, not a performance.
+   ========================================================================== */
+
+@layer components {
+  /* A data row that responds without moving, because a table that shifts
+     under the pointer is harder to read down a column. */
+  .row-hover {
+    transition:
+      background-color 180ms var(--ease-out-quint),
+      border-color 180ms var(--ease-out-quint);
+  }
+  .row-hover:hover {
+    background-color: var(--color-surface-sunken);
+  }
+
+  /* An inline link inside console prose. */
+  .link-subtle {
+    color: var(--color-accent);
+    text-underline-offset: 3px;
+    transition: color 200ms var(--ease-out-quint);
+  }
+  .link-subtle:hover {
+    color: var(--color-accent-strong);
+    text-decoration: underline;
+  }
+
+  /* Lift a card that is a navigation target. */
+  .card-lift {
+    transition:
+      transform 280ms var(--ease-out-quint),
+      border-color 280ms var(--ease-out-quint),
+      box-shadow 280ms var(--ease-out-quint);
+  }
+  .card-lift:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-line-strong);
+    box-shadow: var(--shadow-raise);
+  }
+}
+
+@layer utilities {
+  /* Fade-and-rise for a page entering the console. Short - an operator
+     navigating between runs sees this on every click. */
+  @keyframes serpflow-page-enter {
+    from { opacity: 0; transform: translate3d(0, 6px, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  .animate-page-enter {
+    animation: serpflow-page-enter 260ms var(--ease-out-quint) both;
+  }
+
+  /* Stagger immediate children as a list appears. */
+  .stagger-children > * {
+    animation: serpflow-page-enter 300ms var(--ease-out-quint) both;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 35ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 70ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 105ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 140ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 175ms; }
+  .stagger-children > *:nth-child(n + 7) { animation-delay: 210ms; }
+}
