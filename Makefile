@@ -27,7 +27,7 @@ ARGS             ?=
 
 .PHONY: help install install-backend install-frontend dev backend frontend worker mcp \
         up down restart logs ps migrate migration upgrade downgrade seed demo \
-        kafka-topics catalog-build catalog-validate benchmark test test-unit \
+        kafka-topics catalog-build catalog-validate benchmark api-check test test-unit \
         test-integration test-e2e lint format typecheck build clean health \
         docker-build docker-up docker-down shell psql redis-cli
 
@@ -127,6 +127,9 @@ api-reference:  ## Regenerate the API reference page from the OpenAPI schema
 
 docs-check:  ## Verify every relative link in every markdown file resolves
 	$(PYTHON) scripts/check_doc_links.py
+
+api-check:  ## Exercise every API operation against a running instance (ARGS=--verbose)
+	$(PYTHON) scripts/check_api.py $(ARGS)
 
 # ---------------------------------------------------------------- catalog
 catalog-build:  ## Regenerate catalog drafts from the SerpApi docs (ARGS=--diff)

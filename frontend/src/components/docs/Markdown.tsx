@@ -291,6 +291,347 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
 }
 
 // --------------------------------------------------------------------------
+// HTML
+// --------------------------------------------------------------------------
+
+/**
+ * The README files open with a centred block of raw HTML - a heading, badge
+ * images and a row of links - because that is the only way to centre anything
+ * on GitHub. Markdown has no syntax for it, so without this the whole header
+ * renders as literal angle brackets.
+ *
+ * This parses a deliberately small subset into React elements. Nothing is ever
+ * passed to `dangerouslySetInnerHTML`: a tag outside the whitelist renders as
+ * its text content, and an attribute outside the whitelist is dropped, so the
+ * output cannot contain markup this file did not construct.
+ */
+const ALLOWED_TAGS = new Set([
+  "div", "p", "span", "br", "hr",
+  "h1", "h2", "h3", "h4", "h5", "h6",
+  "a", "img", "picture", "source",
+  "strong", "b", "em", "i", "code", "sub", "sup", "small",
+  "ul", "ol", "li", "blockquote",
+  "table", "thead", "tbody", "tr", "th", "td",
+  "details", "summary",
+]);
+
+const VOID_TAGS = new Set(["br", "hr", "img", "source", "input", "meta", "link"]);
+const ALLOWED_ATTRS = new Set(["href", "src", "alt", "align", "title", "width", "height"]);
+
+type HtmlNode =
+  | { type: "text"; value: string }
+  | { type: "element"; tag: string; attrs: Record<string, string>; children: HtmlNode[] };
+
+function decodeEntities(text: string): string {
+  const named: Record<string, string> = {
+    amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: "\u00a0",
+    middot: "\u00b7", bull: "\u2022", copy: "\u00a9", mdash: "\u2014", ndash: "\u2013",
+    hellip: "\u2026", times: "\u00d7", laquo: "\u00ab", raquo: "\u00bb",
+  };
+  return text.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (whole, code: string) => {
+    if (code[0] === "#") {
+      const value = code[1] === "x" || code[1] === "X"
+        ? parseInt(code.slice(2), 16)
+        : parseInt(code.slice(1), 10);
+      return Number.isFinite(value) ? String.fromCodePoint(value) : whole;
+    }
+    return named[code.toLowerCase()] ?? whole;
+  });
+}
+
+function parseAttrs(raw: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  const pattern = /([a-zA-Z-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(raw)) !== null) {
+    const name = match[1].toLowerCase();
+    if (!ALLOWED_ATTRS.has(name)) continue;
+    attrs[name] = decodeEntities(match[2] ?? match[3] ?? match[4] ?? "");
+  }
+  return attrs;
+}
+
+/** Build a node tree from a run of HTML. Unbalanced tags are tolerated. */
+function parseHtml(source: string): HtmlNode[] {
+  const root: HtmlNode = { type: "element", tag: "#root", attrs: {}, children: [] };
+  const stack: HtmlNode[] = [root];
+  const pattern = /<\/?([a-zA-Z][a-zA-Z0-9]*)((?:\s+[^<>]*?)?)\/?>/g;
+
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  const push = (node: HtmlNode) => {
+    const parent = stack[stack.length - 1];
+    if (parent.type === "element") parent.children.push(node);
+  };
+
+  while ((match = pattern.exec(source)) !== null) {
+    if (match.index > cursor) {
+      const text = source.slice(cursor, match.index);
+      if (text.trim()) push({ type: "text", value: decodeEntities(text) });
+    }
+    cursor = pattern.lastIndex;
+
+    const tag = match[1].toLowerCase();
+    const closing = match[0][1] === "/";
+    const selfClosing = match[0].endsWith("/>") || VOID_TAGS.has(tag);
+
+    if (closing) {
+      // Unwind to the matching open tag, if there is one.
+      for (let i = stack.length - 1; i > 0; i -= 1) {
+        const node = stack[i];
+        if (node.type === "element" && node.tag === tag) {
+          stack.length = i;
+          break;
+        }
+      }
+      continue;
+    }
+
+    const node: HtmlNode = { type: "element", tag, attrs: parseAttrs(match[2] || ""), children: [] };
+    push(node);
+    if (!selfClosing) stack.push(node);
+  }
+
+  if (cursor < source.length) {
+    const text = source.slice(cursor);
+    if (text.trim()) push({ type: "text", value: decodeEntities(text) });
+  }
+
+  return (root as Extract<HtmlNode, { type: "element" }>).children;
+}
+
+const HTML_HEADING: Record<string, string> = {
+  h1: "mt-0 mb-4 text-[clamp(1.9rem,3.4vw,2.6rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-ink",
+  h2: "mt-10 mb-3 scroll-mt-28 text-[1.45rem] font-semibold tracking-[-0.02em] text-ink",
+  h3: "mt-8 mb-2.5 scroll-mt-28 text-[1.12rem] font-semibold text-ink",
+  h4: "mt-6 mb-2 text-[0.98rem] font-semibold text-ink",
+  h5: "mt-5 mb-2 text-[0.92rem] font-semibold text-ink-muted",
+  h6: "mt-4 mb-2 text-[0.88rem] font-semibold text-ink-subtle",
+};
+
+function renderHtmlNodes(nodes: HtmlNode[], slug: string, keyPrefix: string): React.ReactNode[] {
+  return nodes.map((node, index) => {
+    const key = `${keyPrefix}-${index}`;
+
+    if (node.type === "text") return node.value;
+
+    const { tag, attrs, children } = node;
+    if (!ALLOWED_TAGS.has(tag)) {
+      // Not markup we understand: keep whatever it was wrapping.
+      return <React.Fragment key={key}>{renderHtmlNodes(children, slug, key)}</React.Fragment>;
+    }
+
+    const centred = attrs.align === "center";
+    const inner = renderHtmlNodes(children, slug, key);
+
+    switch (tag) {
+      case "br":
+        return <br key={key} />;
+      case "hr":
+        return <hr key={key} className="my-8 border-line" />;
+
+      case "img": {
+        const src = attrs.src || "";
+        // Only http(s) sources; a data: or javascript: URL has no business here.
+        if (!/^https?:\/\//i.test(src)) return null;
+        return (
+          <img
+            key={key}
+            src={src}
+            alt={attrs.alt || ""}
+            loading="lazy"
+            className="inline-block h-5 max-w-full align-middle"
+          />
+        );
+      }
+
+      case "a": {
+        const href = attrs.href || "";
+        if (!href || /^javascript:/i.test(href)) {
+          return <React.Fragment key={key}>{inner}</React.Fragment>;
+        }
+        return (
+          <MarkdownLink key={key} href={href} fromSlug={slug}>
+            {inner}
+          </MarkdownLink>
+        );
+      }
+
+      case "h1":
+      case "h2":
+      case "h3":
+      case "h4":
+      case "h5":
+      case "h6": {
+        const Tag = tag as "h1";
+        const text = nodeText(node);
+        return (
+          <Tag key={key} id={slugify(text)} className={cn(HTML_HEADING[tag], centred && "text-center")}>
+            {inner}
+          </Tag>
+        );
+      }
+
+      case "p":
+        return (
+          <p
+            key={key}
+            className={cn("my-3 text-pretty [overflow-wrap:anywhere]", centred && "text-center")}
+          >
+            {inner}
+          </p>
+        );
+
+      case "div":
+        return (
+          <div key={key} className={cn(centred && "text-center [&_p]:justify-center")}>
+            {inner}
+          </div>
+        );
+
+      case "sub":
+      case "small":
+        return (
+          <span key={key} className="text-[0.86em] text-ink-subtle">
+            {inner}
+          </span>
+        );
+
+      case "sup":
+        return <sup key={key}>{inner}</sup>;
+
+      case "strong":
+      case "b":
+        return (
+          <strong key={key} className="font-semibold text-ink">
+            {inner}
+          </strong>
+        );
+
+      case "em":
+      case "i":
+        return (
+          <em key={key} className="italic">
+            {inner}
+          </em>
+        );
+
+      case "code":
+        return (
+          <code
+            key={key}
+            className="mono [overflow-wrap:anywhere] rounded border border-line bg-surface-sunken px-[0.35em] py-[0.12em] text-[0.88em] text-ink"
+          >
+            {inner}
+          </code>
+        );
+
+      case "details":
+        return (
+          <details key={key} className="my-4 rounded-xl border border-line bg-surface px-4 py-3">
+            {inner}
+          </details>
+        );
+
+      case "summary":
+        return (
+          <summary key={key} className="cursor-pointer text-[14px] font-medium text-ink">
+            {inner}
+          </summary>
+        );
+
+      case "ul":
+        return (
+          <ul key={key} className="my-3 flex list-disc flex-col gap-1.5 pl-5 marker:text-ink-subtle">
+            {inner}
+          </ul>
+        );
+
+      case "ol":
+        return (
+          <ol key={key} className="my-3 flex list-decimal flex-col gap-1.5 pl-5 marker:text-ink-subtle">
+            {inner}
+          </ol>
+        );
+
+      case "li":
+        return <li key={key}>{inner}</li>;
+
+      case "blockquote":
+        return (
+          <blockquote
+            key={key}
+            className="my-4 rounded-r-lg border-l-2 border-accent bg-accent-ghost/35 py-2.5 pl-4 pr-4"
+          >
+            {inner}
+          </blockquote>
+        );
+
+      case "table":
+        return (
+          <div key={key} className="my-5 overflow-x-auto rounded-xl border border-line bg-surface">
+            <table className="w-full border-collapse text-left text-[13.5px]">{inner}</table>
+          </div>
+        );
+      case "thead":
+        return <thead key={key}>{inner}</thead>;
+      case "tbody":
+        return <tbody key={key}>{inner}</tbody>;
+      case "tr":
+        return (
+          <tr key={key} className="border-b border-line last:border-0">
+            {inner}
+          </tr>
+        );
+      case "th":
+        return (
+          <th key={key} className="mono px-4 py-2.5 text-[11px] uppercase tracking-[0.1em] text-ink-subtle">
+            {inner}
+          </th>
+        );
+      case "td":
+        return (
+          <td key={key} className="px-4 py-2.5 align-top text-ink-muted">
+            {inner}
+          </td>
+        );
+
+      case "picture":
+      case "source":
+      case "span":
+      default:
+        return <span key={key}>{inner}</span>;
+    }
+  });
+}
+
+function nodeText(node: HtmlNode): string {
+  if (node.type === "text") return node.value;
+  return node.children.map(nodeText).join("");
+}
+
+/** Headings inside an HTML block, so the on-page contents still finds them. */
+function htmlHeadings(source: string): Heading[] {
+  const out: Heading[] = [];
+  const walk = (nodes: HtmlNode[]) => {
+    for (const node of nodes) {
+      if (node.type !== "element") continue;
+      if (/^h[1-6]$/.test(node.tag)) {
+        const level = Number(node.tag[1]);
+        const text = nodeText(node).trim();
+        if (text && (level === 2 || level === 3)) {
+          out.push({ id: slugify(text), text, level });
+        }
+      }
+      walk(node.children);
+    }
+  };
+  walk(parseHtml(source));
+  return out;
+}
+
+// --------------------------------------------------------------------------
 // Block
 // --------------------------------------------------------------------------
 
@@ -301,6 +642,7 @@ type Block =
   | { kind: "list"; ordered: boolean; items: string[] }
   | { kind: "quote"; text: string }
   | { kind: "table"; head: string[]; align: string[]; rows: string[][] }
+  | { kind: "html"; source: string }
   | { kind: "rule" };
 
 function splitRow(line: string): string[] {
@@ -321,6 +663,28 @@ function parse(markdown: string): Block[] {
 
     if (!line.trim()) {
       i += 1;
+      continue;
+    }
+
+    // A run of raw HTML. Collected whole, because its tags span blank lines:
+    // the README headers are a <div align="center"> wrapping several
+    // paragraphs. Depth counting is what tells us where the run ends.
+    const htmlStart = line.match(/^\s*<([a-zA-Z][a-zA-Z0-9]*)\b/);
+    if (htmlStart && ALLOWED_TAGS.has(htmlStart[1].toLowerCase())) {
+      const body: string[] = [];
+      let depth = 0;
+      while (i < lines.length) {
+        const current = lines[i];
+        body.push(current);
+        i += 1;
+        for (const tagMatch of current.matchAll(/<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*?(\/?)>/g)) {
+          const tag = tagMatch[2].toLowerCase();
+          if (VOID_TAGS.has(tag) || tagMatch[3] === "/") continue;
+          depth += tagMatch[1] === "/" ? -1 : 1;
+        }
+        if (depth <= 0) break;
+      }
+      blocks.push({ kind: "html", source: body.join("\n") });
       continue;
     }
 
@@ -419,14 +783,18 @@ function parse(markdown: string): Block[] {
 
 /** Headings, for the on-page table of contents. */
 export function extractHeadings(markdown: string): Heading[] {
-  return parse(markdown)
-    .filter((block): block is Extract<Block, { kind: "heading" }> => block.kind === "heading")
-    .filter((block) => block.level === 2 || block.level === 3)
-    .map((block) => ({
-      id: slugify(block.text),
-      text: block.text.replace(/`/g, ""),
-      level: block.level,
-    }));
+  return parse(markdown).flatMap((block) => {
+    if (block.kind === "html") return htmlHeadings(block.source);
+    if (block.kind !== "heading") return [];
+    if (block.level !== 2 && block.level !== 3) return [];
+    return [
+      {
+        id: slugify(block.text),
+        text: block.text.replace(/`/g, ""),
+        level: block.level,
+      },
+    ];
+  });
 }
 
 const HEADING_CLASS: Record<number, string> = {
@@ -544,6 +912,13 @@ export function Markdown({ source, slug }: { source: string; slug: string }) {
                   </tbody>
                 </table>
               </div>
+            );
+
+          case "html":
+            return (
+              <React.Fragment key={index}>
+                {renderHtmlNodes(parseHtml(block.source), slug, `html${index}`)}
+              </React.Fragment>
             );
 
           case "rule":

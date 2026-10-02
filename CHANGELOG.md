@@ -34,6 +34,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   naming the file, the engine and the offending field.
 - The `Makefile` had CRLF line endings, which silently break recipe line
   continuations under `/bin/sh`.
+- `POST /v1/budgets` returned a bare 500 when a budget already existed for the
+  same scope and period: the unique constraint raised an `IntegrityError` that
+  nothing caught. It now answers `409 CONFLICT` and says what to do instead.
+- The frontend container reported unhealthy while serving correctly. nginx
+  listened on IPv4 only, so the healthcheck's `localhost` resolved to `::1` and
+  was refused. nginx is now dual-stack and the probe uses `127.0.0.1`.
+- The docs browser rendered the README files' centred HTML headers as literal
+  angle brackets. Markdown has no syntax for centring, so those blocks are raw
+  HTML on GitHub; the renderer now parses a whitelisted subset into React
+  elements - never through `dangerouslySetInnerHTML`, so the output cannot
+  contain markup the renderer did not construct.
+- The documentation sidebar ran past the bottom of the window instead of
+  scrolling within it.
 - The public pages scrolled sideways on a phone. Grid and flex children default
   to a `min-content` minimum, so one unbroken identifier in a code block
   widened the whole document; `min-w-0` on the containers and
@@ -69,6 +82,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   before the first paint, so there is no flash. The light theme is a separate
   design rather than a tinted inversion: the accent darkens to hold contrast on
   white and shadows take over the structural work borders do on a dark ground.
+- `make api-check` exercises every operation in the OpenAPI schema against a
+  running instance, filling path parameters from records it creates or fetches,
+  and reports what it skipped and why. 71 of 78 covered.
 - `make test-ui` builds, serves and checks the public pages in a real browser in
   both themes, failing on console errors, on any element a scroll reveal left
   invisible, and on the pinned story's counter disagreeing with its cards.
@@ -76,6 +92,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   verifies that all 374 relative links and 95 cited paths resolve.
 
 ### Changed
+
+- The landing page's top progress bar is replaced by a section rail on the
+  right edge: it says which section you are in, how far through the page that
+  is, and jumps on click. The pinned story's beat indicator is now one
+  continuous track with a travelling head rather than four gradient segments.
+- The light theme's accent was close to navy. Lifted to `oklch(0.58 0.206 255)`,
+  with `accent-strong` kept darker for small text where 4.5:1 is the bar.
 
 - `MAX_REQUEST_BYTES` is now `MAX_REQUEST_BODY_BYTES`, default 1 MiB.
 - The README header is centred, with badges and a contents table, and every

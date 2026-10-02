@@ -87,11 +87,14 @@
   --color-line: oklch(0.906 0.005 265);
   --color-line-strong: oklch(0.83 0.008 265);
 
-  /* The accent darkens: the dark theme's blue fails contrast on white. */
-  --color-accent: oklch(0.525 0.182 253);
-  --color-accent-strong: oklch(0.46 0.185 253);
-  --color-accent-muted: oklch(0.8 0.08 253);
-  --color-accent-ghost: oklch(0.955 0.03 253);
+  /* The accent still darkens against white, but not to navy. 0.58 keeps
+     large text and buttons at AA while reading as a live blue rather than a
+     corporate one; `accent-strong` stays darker for small text and hover,
+     where 4.5:1 is the bar. */
+  --color-accent: oklch(0.58 0.206 255);
+  --color-accent-strong: oklch(0.495 0.196 255);
+  --color-accent-muted: oklch(0.82 0.085 255);
+  --color-accent-ghost: oklch(0.962 0.032 255);
 
   --color-warm: oklch(0.52 0.135 158);
   --color-warm-ghost: oklch(0.955 0.04 158);
@@ -480,14 +483,6 @@
   background-size: 100% 1px;
 }
 
-/* --- Scroll progress ----------------------------------------------------- */
-
-.scroll-progress {
-  transform-origin: 0 50%;
-  transform: scaleX(var(--progress, 0));
-  transition: transform 90ms linear;
-}
-
 /* --- Code ---------------------------------------------------------------- */
 
 .code-block {
@@ -635,5 +630,23 @@
      get a little more room again before the text column stops growing. */
   .page-shell-wide {
     max-width: 96rem;
+  }
+}
+
+
+/* A scroll cue that bobs, gently. Paired with an element that fades out as
+   soon as the reader has actually scrolled, so it never nags. */
+@keyframes serpflow-nudge {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(3px); }
+}
+
+.animate-nudge {
+  animation: serpflow-nudge 1.6s var(--ease-in-out-quart) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-nudge {
+    animation: none !important;
   }
 }

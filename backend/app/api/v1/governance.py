@@ -7,6 +7,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
 from app.api.deps import (
     PaginationDep,
@@ -15,7 +16,7 @@ from app.api.deps import (
     client_ip,
     require,
 )
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError
 from app.core.permissions import Permission
 from app.db.models.benchmark import BenchmarkRun, BenchmarkTask, RoutingEval
 from app.db.models.caching import CacheEntry, SemanticGuardRejection
@@ -115,6 +116,28 @@ async def create_budget(
     principal: Annotated[Principal, Depends(require(Permission.BUDGET_WRITE))],
 ) -> BudgetResponse:
     start, end = period_bounds(payload.period)
+
+    # (scope, scope_id, period) is unique. Without this check the insert fails
+    # on the constraint and the caller gets a bare 500, which says nothing
+    # about what to do; a budget already existing for this scope is an
+    # ordinary, recoverable answer.
+    existing = await session.scalar(
+        select(Budget).where(
+            Budget.org_id == principal.org_id,
+            Budget.scope == payload.scope,
+            Budget.scope_id == payload.scope_id,
+            Budget.period == payload.period,
+        )
+    )
+    if existing is not None:
+        raise ConflictError(
+            "A "
+            + payload.period
+            + " budget already exists for this "
+            + payload.scope
+            + ". Update it instead, or choose another period."
+        )
+
     budget = Budget(
         org_id=principal.org_id,
         scope=payload.scope,
@@ -128,7 +151,15 @@ async def create_budget(
         on_exhausted=payload.on_exhausted,
     )
     session.add(budget)
-    await session.flush()
+    try:
+        await session.flush()
+    except IntegrityError as exc:
+        # The check above loses a race with a concurrent create. Same answer.
+        await session.rollback()
+        raise ConflictError(
+            "A " + payload.period + " budget already exists for this " + payload.scope + "."
+        ) from exc
+
     await AuditService(session, org_id=principal.org_id).record(
         action="budget.created",
         actor_id=principal.id,

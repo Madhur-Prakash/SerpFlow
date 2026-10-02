@@ -10,7 +10,7 @@
  * marginal. Nothing here is illustrative.
  */
 
-import { ArrowRight, Flame, Snowflake } from "lucide-react";
+import { ArrowRight, ChevronDown, Flame, Snowflake } from "lucide-react";
 import * as React from "react";
 
 import { usePinnedStory } from "@/animations/scroll";
@@ -161,36 +161,72 @@ export function ThesisStory() {
               stops moving, so without this there is nothing telling a reader
               that scrolling is still doing something. */}
           {enabled ? (
-            <div className="flex flex-col gap-2.5 lg:pb-1">
-              <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 lg:pb-1">
+              <div className="flex items-baseline justify-between gap-4">
                 <span className="mono text-[10.5px] uppercase tracking-[0.16em] text-ink-subtle">
-                  keep scrolling
+                  {BEATS[beat].title}
                 </span>
-                <span className="mono text-[10.5px] text-ink-subtle">
-                  {String(Math.min(BEATS.length, beat + 1)).padStart(2, "0")} / 0{BEATS.length}
+                <span className="mono shrink-0 text-[10.5px] tabular-nums text-ink-subtle">
+                  <span className="text-accent-strong">
+                    {String(Math.min(BEATS.length, beat + 1)).padStart(2, "0")}
+                  </span>
+                  {" / 0"}
+                  {BEATS.length}
                 </span>
               </div>
-              <div className="flex gap-1.5">
+
+              {/* One continuous track with a head that travels it, rather than
+                  four separate gradient segments. The beat marks stay as
+                  stops on the way, so the structure is still legible. */}
+              <div className="relative h-5">
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 rounded-full bg-line"
+                />
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-1/2 h-px origin-left -translate-y-1/2 rounded-full bg-accent transition-none"
+                  style={{ width: `${progress * 100}%` }}
+                />
+
                 {BEATS.map((item, index) => {
-                  // Each segment fills across its own quarter of the timeline.
-                  const span = 1 / BEATS.length;
-                  const fill = Math.max(0, Math.min(1, (progress - index * span) / span));
+                  const at = (index / (BEATS.length - 1)) * 100;
+                  const reached = progress >= index / BEATS.length - 0.001;
                   return (
                     <span
                       key={item.title}
-                      className="h-1 flex-1 overflow-hidden rounded-full bg-surface-raised"
-                    >
-                      <span
-                        className="block h-full rounded-full bg-gradient-to-r from-accent to-warm"
-                        style={{ width: `${fill * 100}%` }}
-                      />
-                    </span>
+                      aria-hidden
+                      style={{ left: `${at}%` }}
+                      className={cn(
+                        "absolute top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full",
+                        "transition-[background-color,box-shadow,transform] duration-400 ease-out-quint",
+                        reached
+                          ? "scale-100 bg-accent"
+                          : "scale-75 bg-line-strong",
+                      )}
+                    />
                   );
                 })}
+
+                {/* The head: a lit dot that rides the track. */}
+                <span
+                  aria-hidden
+                  style={{ left: `${progress * 100}%` }}
+                  className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_0_4px_var(--color-accent-ghost),0_0_12px_2px_var(--color-accent-ghost)]"
+                />
               </div>
-              <p className="text-[12px] leading-snug text-ink-subtle">
-                {BEATS[beat].title}
-              </p>
+
+              {/* A cue that bows out once the story is moving. */}
+              <div
+                className={cn(
+                  "flex items-center gap-1.5 text-[11.5px] text-ink-subtle",
+                  "transition-opacity duration-500",
+                  progress > 0.04 ? "opacity-0" : "opacity-100",
+                )}
+              >
+                <ChevronDown className="h-3.5 w-3.5 animate-nudge" />
+                Keep scrolling
+              </div>
             </div>
           ) : null}
         </div>

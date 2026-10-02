@@ -12,6 +12,8 @@ import { Link } from "react-router-dom";
 import { useMagnetic } from "@/animations/scroll";
 import { cn } from "@/lib/utils";
 
+export { SectionRail, type RailSection } from "./SectionRail";
+
 // --------------------------------------------------------------------------
 // Atmosphere - the animated ground behind a section
 // --------------------------------------------------------------------------

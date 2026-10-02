@@ -309,7 +309,7 @@ export function DocsPage() {
       <div className="page-shell">
         <div className="grid gap-8 py-10 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem] xl:gap-10">
           {/* Sidebar */}
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside className="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100dvh-7rem)] lg:flex-col lg:self-start">
             <button
               type="button"
               onClick={() => setNavOpen((v) => !v)}
@@ -352,7 +352,7 @@ export function DocsPage() {
                     </button>
                   ) : null}
                 </div>
-                <ScrollArea className="lg:max-h-[calc(100dvh-12rem)]">
+                <ScrollArea className="lg:h-[calc(100dvh-11rem)] lg:overscroll-contain">
                   <SideNav current={slug} query={query} onNavigate={() => setNavOpen(false)} />
                 </ScrollArea>
               </div>

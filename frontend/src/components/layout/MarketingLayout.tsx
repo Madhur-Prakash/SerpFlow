@@ -334,57 +334,6 @@ function MarketingFooter() {
 }
 
 // --------------------------------------------------------------------------
-// Scroll progress
-// --------------------------------------------------------------------------
-
-/**
- * A hairline that fills as the page scrolls.
- *
- * Written straight to a CSS custom property from rAF - putting scroll position
- * in React state re-renders the whole tree sixty times a second for one line.
- */
-function ScrollProgress() {
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const value = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      ref.current?.style.setProperty("--progress", String(value));
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-
-  return (
-    <div
-      aria-hidden
-      className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-[var(--color-line)]/40"
-    >
-      <div
-        ref={ref}
-        className="scroll-progress relative h-full bg-gradient-to-r from-accent via-accent-strong to-warm"
-      >
-        {/* A lit tip at the leading edge, so the bar reads as moving rather
-            than as a static rule that happens to be a different width. */}
-        <span className="absolute right-0 top-1/2 h-[7px] w-[7px] -translate-y-1/2 translate-x-1/2 rounded-full bg-warm shadow-[0_0_10px_2px_var(--color-warm)]" />
-      </div>
-    </div>
-  );
-}
-
-// --------------------------------------------------------------------------
 // Layout
 // --------------------------------------------------------------------------
 
@@ -406,7 +355,6 @@ export function MarketingLayout() {
   return (
     <TooltipProvider delayDuration={220} skipDelayDuration={400}>
       <div className="flex min-h-dvh flex-col bg-ground text-ink">
-        <ScrollProgress />
         <MarketingHeader />
         <main className="flex-1 pt-16">
           <Outlet />
