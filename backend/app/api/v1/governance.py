@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy import func, select
@@ -57,6 +57,7 @@ from app.services.budgets.service import BudgetService, period_bounds
 from app.services.cache.redis_client import hot_stats
 from app.services.cache.service import CacheService
 from app.services.catalog.loader import load_catalog
+from app.services.notifications import audiences as notification_audiences
 
 router = APIRouter(tags=["governance"])
 
@@ -581,6 +582,34 @@ async def update_alert(
     elif payload.status == "resolved":
         alert.resolved_at = now
     return AlertResponse.model_validate(alert)
+
+
+@router.get("/notification-channels/labels")
+async def list_channel_labels(
+    _: Annotated[Principal, Depends(require(Permission.ALERT_READ))],
+) -> dict[str, Any]:
+    """The labels the console offers, and what each changes about the email.
+
+    A label is not decoration: it selects which fixed template an alert is
+    rendered with. Any other label is accepted and renders with the generic
+    one, so this list is a set of shortcuts rather than a constraint.
+    """
+    return {
+        "presets": [
+            {
+                "value": a.label,
+                "slug": a.slug,
+                "description": a.description,
+                "urgent": bool(a.subject_prefix),
+                "includes_detail": a.include_details,
+            }
+            for a in notification_audiences.PRESETS
+        ],
+        "custom": {
+            "slug": notification_audiences.GENERIC.slug,
+            "description": notification_audiences.GENERIC.description,
+        },
+    }
 
 
 @router.get("/notification-channels", response_model=list[NotificationChannelResponse])

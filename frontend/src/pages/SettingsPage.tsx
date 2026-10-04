@@ -1221,6 +1221,17 @@ function SecuritySettings() {
 }
 
 // ------------------------------------------------------ notifications
+/**
+ * The label picker's "none of these" option.
+ *
+ * Not a label itself - it reveals the free-text box. Anything typed there is
+ * accepted and renders with the generic template, so a custom label is a
+ * first-class choice rather than a fallback the UI hides.
+ */
+const CUSTOM_LABEL = "__custom__";
+
+type ChannelLabels = Awaited<ReturnType<typeof api.channelLabels>>;
+
 function NotificationsSettings() {
   const { can } = useSession();
   const canWrite = can(PERMISSIONS.alertWrite);
@@ -1232,9 +1243,23 @@ function NotificationsSettings() {
   const [target, setTarget] = React.useState("");
   const [saving, setSaving] = React.useState(false);
 
+  // The label picker. A preset selects a fixed email template; CUSTOM reveals
+  // a free-text box, and anything typed there renders with the generic one.
+  const [labels, setLabels] = React.useState<ChannelLabels | null>(null);
+  const [labelChoice, setLabelChoice] = React.useState(CUSTOM_LABEL);
+
+  const activeLabel = React.useMemo(
+    () => labels?.presets.find((preset) => preset.value === labelChoice) ?? null,
+    [labels, labelChoice],
+  );
+
   const refresh = React.useCallback(async () => {
-    const rows = await api.channels().catch(() => []);
+    const [rows, labelCatalogue] = await Promise.all([
+      api.channels().catch(() => []),
+      api.channelLabels().catch(() => null),
+    ]);
     setChannels(Array.isArray(rows) ? rows : []);
+    setLabels(labelCatalogue);
     setLoading(false);
   }, []);
 
@@ -1249,11 +1274,12 @@ function NotificationsSettings() {
     }
     setSaving(true);
     try {
-      await api.createChannel({
-        name: name.trim() || (kind === "email" ? "Email" : "Webhook"),
-        kind,
-        target: target.trim(),
-      });
+      // A preset sends its own label; CUSTOM sends whatever was typed.
+      const label =
+        labelChoice === CUSTOM_LABEL
+          ? name.trim() || (kind === "email" ? "Email" : "Webhook")
+          : labelChoice;
+      await api.createChannel({ name: label, kind, target: target.trim() });
       toast.success("Channel added.");
       setName("");
       setTarget("");
@@ -1285,8 +1311,12 @@ function NotificationsSettings() {
         />
         <CardBody>
           {canWrite ? (
-            <div className="mb-4 flex flex-wrap items-end gap-2 rounded-[var(--radius-sm)] border border-line bg-surface-sunken p-3">
-              <Field label="Type" className="w-36">
+            // `items-end` aligns the row on the inputs, which only works while
+            // every Field is the same height. A `hint` renders *below* the
+            // input, so the one carrying "Optional" pushed its own input up and
+            // left the row ragged - the marker lives in the label instead.
+            <div className="mb-4 flex flex-wrap items-end gap-2.5 rounded-[var(--radius-sm)] border border-line bg-surface-sunken p-3">
+              <Field label="Type" className="w-36 shrink-0">
                 <Select value={kind} onValueChange={setKind}>
                   <SelectTrigger>
                     <SelectValue />
@@ -1298,17 +1328,31 @@ function NotificationsSettings() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Label" hint="Optional" className="w-40">
-                <Input
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder={kind === "email" ? "On-call" : "Ops webhook"}
-                />
+              <Field label="Label" className="w-44 shrink-0">
+                <Select value={labelChoice} onValueChange={setLabelChoice}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(labels?.presets ?? []).map((preset) => (
+                      <SelectItem key={preset.slug} value={preset.value}>
+                        {preset.value}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={CUSTOM_LABEL}>Custom...</SelectItem>
+                  </SelectContent>
+                </Select>
               </Field>
-              <Field
-                label={kind === "email" ? "Address" : "URL"}
-                className="min-w-56 flex-1"
-              >
+              {labelChoice === CUSTOM_LABEL ? (
+                <Field label="Custom label" className="w-44 shrink-0">
+                  <Input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder={kind === "email" ? "Growth squad" : "Ops webhook"}
+                  />
+                </Field>
+              ) : null}
+              <Field label={kind === "email" ? "Address" : "URL"} className="min-w-56 flex-1">
                 <Input
                   value={target}
                   onChange={(event) => setTarget(event.target.value)}
@@ -1317,10 +1361,29 @@ function NotificationsSettings() {
                   }
                 />
               </Field>
-              <Button variant="primary" onClick={add} disabled={saving || !target.trim()}>
+              <Button
+                variant="primary"
+                onClick={add}
+                disabled={saving || !target.trim()}
+                className="shrink-0"
+              >
                 <Plus />
                 Add channel
               </Button>
+
+              {/* What the label actually does, at the point of choosing it.
+                  Without this it reads as a name for your own reference. */}
+              <p className="w-full text-[11.5px] leading-relaxed text-ink-subtle">
+                {activeLabel
+                  ? activeLabel.description +
+                    (activeLabel.urgent ? " Subject is marked urgent." : "") +
+                    (activeLabel.includes_detail
+                      ? ""
+                      : " Identifiers are left out of the message.")
+                  : labels
+                    ? labels.custom.description
+                    : "The label decides how an alert to this channel is written."}
+              </p>
             </div>
           ) : null}
 

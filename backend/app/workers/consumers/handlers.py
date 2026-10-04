@@ -357,6 +357,9 @@ async def _deliver_email_channel(channel: Any, event: str, delivery: Any) -> Non
         title=title,
         message=body,
         details=details,
+        # The label selects the presentation: urgency, opening, closing, and
+        # whether the identifiers below are included at all.
+        channel_label=channel.name,
     )
     try:
         await send_rendered(channel.target, rendered)

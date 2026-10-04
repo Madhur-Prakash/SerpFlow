@@ -428,6 +428,17 @@ export const api = {
     get<Page<Alert>>("/v1/alerts", query),
   updateAlert: (id: string, status: string) => patch<Alert>("/v1/alerts/" + id, { status }),
   channels: () => get<Record<string, unknown>[]>("/v1/notification-channels"),
+  channelLabels: () =>
+    get<{
+      presets: {
+        value: string;
+        slug: string;
+        description: string;
+        urgent: boolean;
+        includes_detail: boolean;
+      }[];
+      custom: { slug: string; description: string };
+    }>("/v1/notification-channels/labels"),
   createChannel: (body: Record<string, unknown>) =>
     post<Record<string, unknown>>("/v1/notification-channels", body),
   deleteChannel: (id: string) => del<{ ok: boolean }>("/v1/notification-channels/" + id),

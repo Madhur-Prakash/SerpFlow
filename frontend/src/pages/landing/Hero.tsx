@@ -187,8 +187,11 @@ export function Hero() {
                 <Figure label="spent" value="0" tone="warm" />
               </div>
 
-              <div className="rounded-lg border border-accent-muted/40 bg-accent-ghost/50 p-3.5">
-                <div className="mono mb-1.5 text-[10px] uppercase tracking-[0.14em] text-accent-strong">
+              {/* Set apart by surface and border rather than by hue. The
+                  sentence is the emphasis here; a blue panel around it was a
+                  second claim on the eye competing with the figures above. */}
+              <div className="rounded-lg border border-line bg-surface-sunken p-3.5">
+                <div className="mono mb-1.5 text-[10px] uppercase tracking-[0.14em] text-ink">
                   replan changed the selection
                 </div>
                 <p className="text-[12px] leading-relaxed text-ink-muted">
@@ -200,11 +203,13 @@ export function Hero() {
             </div>
           </AppWindow>
 
-          {/* A soft glow under the panel, parallaxing at a different rate. */}
+          {/* A soft glow under the panel, parallaxing at a different rate.
+              Achromatic, like the rest of the ground - an accent-coloured pool
+              under a white card tinted the whole area it bled into. */}
           <div
             aria-hidden
             data-parallax="0.6"
-            className="pointer-events-none absolute -inset-x-10 -bottom-16 -z-10 h-40 rounded-full bg-accent-ghost blur-[80px]"
+            className="pointer-events-none absolute -inset-x-10 -bottom-16 -z-10 h-40 rounded-full bg-[var(--atmosphere-glow)] opacity-[0.07] blur-[80px]"
           />
         </div>
       </div>

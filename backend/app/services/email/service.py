@@ -39,6 +39,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoes
 
 from app.core.config import Settings, get_settings
 from app.core.logging import get_logger
+from app.services.notifications import audiences
 
 log = get_logger("serpflow.email")
 
@@ -186,21 +187,39 @@ def render_alert(
     message: str,
     details: list[tuple[str, str]] | None = None,
     link: str | None = None,
+    channel_label: str | None = None,
     settings: Settings | None = None,
 ) -> RenderedEmail:
+    """Render one alert for one audience.
+
+    `kind` is the event and decides the category and where the button goes.
+    `channel_label` is who is reading, and decides how it reads: the subject
+    prefix, the opening line, the closing, and whether the identifier table is
+    included at all. The facts are the same in every variant.
+
+    Entirely template-driven. No model sees the event, so the same alert to
+    the same label renders byte-identically every time - which is what makes
+    it testable, and what stops event data becoming instructions.
+    """
     settings = settings or get_settings()
     category, action_label, default_path = _ALERT_LABELS.get(
         kind, ("Alert", "Open SerpFlow", "/app")
     )
+    audience = audiences.resolve(channel_label)
     return render(
         NOTIFICATION,
-        title + " | SerpFlow",
+        audience.subject_prefix + title + " | SerpFlow",
         {
             "recipient_name": recipient_name,
             "title": title,
             "message": message,
-            "details": details or [],
+            # Suppressed rather than emptied for an audience that cannot act on
+            # identifiers: an engine name tells a director nothing and makes the
+            # mail look like an incident.
+            "details": (details or []) if audience.include_details else [],
             "category_label": category,
+            "audience_lede": audience.lede,
+            "audience_closing": audience.closing,
             "action_url": frontend_url(link or default_path, settings=settings),
             "action_label": action_label,
             "preferences_url": frontend_url(PREFERENCES_PATH, settings=settings),

@@ -3,5 +3,12 @@
 {% block eyebrow %}{{ category_label }}{% endblock %}
 {% block heading %}{{ title }}{% endblock %}
 {% block content %}
+{# The lede sets the register before the alert's own words. It comes from the
+   channel's label, so the same event reads as an incident to on-call and as a
+   note to anyone else. #}
+{% if audience_lede %}<p style="margin:0 0 12px 0; font-size:14px; line-height:22px; color:#4B5563;">{{ audience_lede }}</p>{% endif %}
 <p style="margin:0 0 16px 0; font-size:16px; line-height:24px; color:#111827;">{{ message }}</p>
+{% endblock %}
+{% block after_action %}
+{% if audience_closing %}<p style="margin:16px 0 0 0; font-size:13px; line-height:20px; color:#6B7280;">{{ audience_closing }}</p>{% endif %}
 {% endblock %}

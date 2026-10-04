@@ -1,5 +1,7 @@
 {% if recipient_name %}Hi {{ recipient_name }},
 
+{% endif %}{% if audience_lede %}{{ audience_lede }}
+
 {% endif %}{{ title }}
 
 {{ message }}
@@ -7,6 +9,8 @@
 {% for label, value in details %}{{ label }}: {{ value }}
 {% endfor %}{% endif %}{% if action_url %}
 {{ action_label }}: {{ action_url }}
+{% endif %}{% if audience_closing %}
+{{ audience_closing }}
 {% endif %}
 --
 {{ app_name }}
