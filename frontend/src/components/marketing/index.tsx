@@ -434,10 +434,30 @@ export function AppWindow({
       )}
     >
       <div className="flex items-center gap-2 border-b border-line bg-surface-sunken px-4 py-2.5">
-        <div className="flex gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+        {/* Traffic lights, in the order every real window puts them: close,
+            minimise, zoom. They are decoration, not controls, so they carry
+            no label and no title - a screen reader should not announce three
+            buttons that do nothing.
+
+            macOS's own values, hardcoded rather than taken from the semantic
+            tokens. Window chrome is the same colour on every desktop whatever
+            the theme, so theming these made them read as status lights - a
+            red one next to the word "plan" looked like something had failed.
+            The inset ring is what keeps them from disappearing against a
+            light title bar, which is also what macOS does. */}
+        <div className="flex gap-1.5" aria-hidden>
+          <span
+            className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
+            style={{ backgroundColor: "#ff5f57" }}
+          />
+          <span
+            className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
+            style={{ backgroundColor: "#febc2e" }}
+          />
+          <span
+            className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
+            style={{ backgroundColor: "#28c840" }}
+          />
         </div>
         <div className="mono min-w-0 flex-1 truncate text-center text-[11px] text-ink-subtle">
           {title}

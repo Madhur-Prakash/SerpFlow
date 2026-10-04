@@ -55,11 +55,11 @@ export function Hero() {
         tl.from("[data-hero-lede]", { opacity: 0, y: 18, duration: 0.7 }, "-=0.55")
           .from("[data-hero-action]", { opacity: 0, y: 14, duration: 0.6, stagger: 0.08 }, "-=0.45")
           .from("[data-hero-meta]", { opacity: 0, duration: 0.6, stagger: 0.06 }, "-=0.4")
-          .from(
-            "[data-hero-panel]",
-            { opacity: 0, y: 46, rotateX: 7, duration: 1.1, transformPerspective: 1200 },
-            "-=0.75",
-          )
+          // Rises and fades, with no rotateX. The card is a terminal window
+          // full of monospaced text, and tilting it put the type on a plane
+          // the reader was not looking at straight - legibility lost for an
+          // effect that only existed during the reveal.
+          .from("[data-hero-panel]", { opacity: 0, y: 46, duration: 1.1 }, "-=0.75")
           .from("[data-hero-step]", { opacity: 0, x: -18, duration: 0.5, stagger: 0.11 }, "-=0.5")
           // The headline number counts 101 down to 0 as the warm badges land,
           // which is the whole product in one gesture.
@@ -148,7 +148,7 @@ export function Hero() {
         </div>
 
         <div data-hero-panel data-parallax="0.35" className="relative min-w-0">
-          <AppWindow title="serpflow plan --budget 20">
+          <AppWindow title="serpflow plan">
             <div className="flex min-w-0 flex-col gap-5 p-4 sm:p-6">
               <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
                 <div className="flex flex-col gap-1">
