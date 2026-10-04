@@ -96,6 +96,11 @@
     without it reading as a blue cast.
   */
   --atmosphere: 0.22;
+  /* The ground's only moving light. Achromatic on purpose: every coloured
+     version of this - green, then blue - read as a tint over the whole site
+     rather than as depth, because it sits under every section at once. White
+     on a dark ground, black on a light one, and no hue in either. */
+  --atmosphere-glow: oklch(1 0 0);
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
@@ -110,7 +115,8 @@
   a 1px line that reads as structure at 14% lightness disappears at 97%.
 */
 :root:not(.dark) {
-  --atmosphere: 0.7;
+  --atmosphere: 0.5;
+  --atmosphere-glow: oklch(0 0 0);
 
   /* Ground and surfaces: paper, with the raised surface lighter than the page
      so cards come forward rather than sinking. */
@@ -130,9 +136,9 @@
      large text and buttons at AA while reading as a live blue rather than a
      corporate one; `accent-strong` stays darker for small text and hover,
      where 4.5:1 is the bar. */
-  --color-accent: oklch(0.58 0.206 255);
+  --color-accent: oklch(0.62 0.21 255);
   --color-accent-strong: oklch(0.495 0.196 255);
-  --color-accent-muted: oklch(0.82 0.085 255);
+  --color-accent-muted: oklch(0.835 0.088 255);
   --color-accent-ghost: oklch(0.962 0.032 255);
 
   --color-warm: oklch(0.52 0.135 158);
@@ -414,19 +420,6 @@
 
 /* --- Atmosphere ---------------------------------------------------------- */
 
-@keyframes serpflow-drift {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  33%      { transform: translate3d(3%, -4%, 0) scale(1.06); }
-  66%      { transform: translate3d(-3%, 3%, 0) scale(0.97); }
-}
-
-.animate-drift-slow {
-  animation: serpflow-drift 26s var(--ease-in-out-quart) infinite;
-}
-.animate-drift-slower {
-  animation: serpflow-drift 38s var(--ease-in-out-quart) infinite reverse;
-}
-
 /* A denser grid for the hero, fading out toward the content. */
 .grid-field-dense {
   background-image:
@@ -481,9 +474,14 @@
   inset: 0;
   opacity: 0;
   transition: opacity 320ms var(--ease-out-quint);
+  /* Achromatic, like the ground behind it. An accent-tinted spotlight put a
+     blue field across a card whose own content carries the only colour that
+     means anything, and on a grid of them the hovered card read as selected
+     rather than as pointed at. The light still follows the cursor - it just
+     has no hue. */
   background: radial-gradient(
     420px circle at var(--spot-x) var(--spot-y),
-    var(--color-accent-ghost),
+    color-mix(in oklab, var(--atmosphere-glow) 7%, transparent),
     transparent 62%
   );
   pointer-events: none;
@@ -544,10 +542,6 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
   .animate-marquee-reverse,
-  .animate-drift-slow,
-  .animate-drift-slower {
-    animation: none !important;
-  }
   .marquee {
     overflow-x: auto;
     mask-image: none;
@@ -557,7 +551,6 @@
     animation: none !important;
   }
 }
-
 
 /* ==========================================================================
    Console polish
@@ -569,38 +562,6 @@
 @layer components {
   /* A data row that responds without moving, because a table that shifts
      under the pointer is harder to read down a column. */
-  .row-hover {
-    transition:
-      background-color 180ms var(--ease-out-quint),
-      border-color 180ms var(--ease-out-quint);
-  }
-  .row-hover:hover {
-    background-color: var(--color-surface-sunken);
-  }
-
-  /* An inline link inside console prose. */
-  .link-subtle {
-    color: var(--color-accent);
-    text-underline-offset: 3px;
-    transition: color 200ms var(--ease-out-quint);
-  }
-  .link-subtle:hover {
-    color: var(--color-accent-strong);
-    text-decoration: underline;
-  }
-
-  /* Lift a card that is a navigation target. */
-  .card-lift {
-    transition:
-      transform 280ms var(--ease-out-quint),
-      border-color 280ms var(--ease-out-quint),
-      box-shadow 280ms var(--ease-out-quint);
-  }
-  .card-lift:hover {
-    transform: translateY(-2px);
-    border-color: var(--color-line-strong);
-    box-shadow: var(--shadow-raise);
-  }
 }
 
 @layer utilities {
@@ -626,7 +587,6 @@
   .stagger-children > *:nth-child(6) { animation-delay: 175ms; }
   .stagger-children > *:nth-child(n + 7) { animation-delay: 210ms; }
 }
-
 
 /* ==========================================================================
    Page shell
@@ -672,7 +632,6 @@
   }
 }
 
-
 /* A scroll cue that bobs, gently. Paired with an element that fades out as
    soon as the reader has actually scrolled, so it never nags. */
 @keyframes serpflow-nudge {
@@ -689,7 +648,6 @@
     animation: none !important;
   }
 }
-
 
 /* ==========================================================================
    Display type

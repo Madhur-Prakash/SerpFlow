@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { useMagnetic } from "@/animations/scroll";
+import { useGsap, useMagnetic } from "@/animations/scroll";
 import { cn } from "@/lib/utils";
 
 export { SectionRail, type RailSection } from "./SectionRail";
@@ -19,11 +19,21 @@ export { SectionRail, type RailSection } from "./SectionRail";
 // --------------------------------------------------------------------------
 
 /**
- * Drifting colour fields and a fine grid, behind the content.
+ * Drifting light and a fine grid, behind the content.
  *
- * CSS animation rather than a canvas: it costs nothing to run, it pauses with
- * `prefers-reduced-motion` through the global backstop, and it cannot drop the
- * page's frame rate on a laptop that is already rendering a 3000-node graph.
+ * Driven by GSAP rather than CSS keyframes, so the grid can be tied to scroll
+ * position instead of running on a clock of its own - the ground moves because
+ * the reader moves, which is the difference between depth and a screensaver.
+ *
+ * Nothing here has a hue. Earlier versions washed each section in a colour,
+ * and because this component sits under every section at once, that read as a
+ * tint over the whole site rather than as atmosphere. The light is white on a
+ * dark ground and black on a light one, and the only colour on the page comes
+ * from the content.
+ *
+ * Everything runs through `useGsap`, which no-ops under reduced motion and
+ * reverts on unmount, so the static layout is the fallback rather than an
+ * afterthought.
  */
 export function Atmosphere({
   variant = "hero",
@@ -32,46 +42,83 @@ export function Atmosphere({
   variant?: "hero" | "band" | "quiet";
   className?: string;
 }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  useGsap(
+    ref,
+    ({ gsap, ScrollTrigger }, root) => {
+      // The grid travels against the scroll. Slow enough to read as parallax
+      // depth rather than as a second thing moving on the page.
+      const grid = root.querySelector<HTMLElement>("[data-grid]");
+      if (grid) {
+        gsap.fromTo(
+          grid,
+          { yPercent: -6 },
+          {
+            yPercent: 6,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.8,
+            },
+          },
+        );
+      }
+
+      // The lights breathe on their own clock, each slightly out of step with
+      // the other, so the pair never returns to the same arrangement twice
+      // within a reading. Sine easing keeps them from snapping at the turn.
+      gsap.utils.toArray<HTMLElement>("[data-glow]", root).forEach((glow, i) => {
+        const sign = i % 2 === 0 ? 1 : -1;
+        gsap.to(glow, {
+          xPercent: sign * 9,
+          yPercent: sign * -7,
+          scale: 1.14,
+          duration: 16 + i * 6,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: i * 1.4,
+        });
+      });
+
+      // A ScrollTrigger created inside a pinned ancestor can measure before
+      // that ancestor settles, which leaves the grid parked at its start.
+      ScrollTrigger.refresh();
+    },
+    [variant],
+  );
+
   return (
     <div
+      ref={ref}
       aria-hidden
       className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
     >
-      <div className="absolute inset-0 grid-field opacity-[0.45]" />
+      <div data-grid className="absolute -inset-y-[12%] inset-x-0 grid-field opacity-[0.45]" />
+
       {variant !== "quiet" && (
         <>
           <div
-            data-backdrop
-            className="absolute -top-[22%] left-[8%] h-[46rem] w-[46rem] rounded-full blur-[120px] animate-drift-slow"
-            style={{
-              background: "radial-gradient(circle, var(--color-accent-ghost) 0%, transparent 68%)",
-              opacity: "var(--atmosphere)",
-            }}
+            data-glow
+            className="absolute -top-[22%] left-[8%] h-[46rem] w-[46rem] rounded-full blur-[120px] bg-[radial-gradient(circle,var(--atmosphere-glow)_0%,transparent_68%)] opacity-[calc(var(--atmosphere)*0.16)]"
           />
           <div
-            data-backdrop
-            className="absolute -right-[12%] top-[14%] h-[38rem] w-[38rem] rounded-full blur-[130px] animate-drift-slower"
-            style={{
-              // Accent rather than warm: a green field behind a card that is
-              // itself tinted read as one large green wash rather than as
-              // depth. Two blues at different sizes and drift speeds still
-              // separate; one blue and one green competed.
-              background: "radial-gradient(circle, var(--color-accent-ghost) 0%, transparent 70%)",
-              opacity: "var(--atmosphere)",
-            }}
+            data-glow
+            className="absolute -right-[12%] top-[14%] h-[38rem] w-[38rem] rounded-full blur-[130px] bg-[radial-gradient(circle,var(--atmosphere-glow)_0%,transparent_70%)] opacity-[calc(var(--atmosphere)*0.13)]"
           />
         </>
       )}
+
       {variant === "hero" && (
         <div
-          data-backdrop
-          className="absolute bottom-[-30%] left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full blur-[140px] animate-drift-slow"
-          style={{
-            background: "radial-gradient(circle, var(--color-replay-ghost) 0%, transparent 72%)",
-            opacity: "calc(var(--atmosphere) * 0.8)",
-          }}
+          data-glow
+          className="absolute bottom-[-30%] left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full blur-[140px] bg-[radial-gradient(circle,var(--atmosphere-glow)_0%,transparent_72%)] opacity-[calc(var(--atmosphere)*0.1)]"
         />
       )}
+
       {/* A top-down fade so the band below always starts clean. */}
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[var(--color-ground)]" />
     </div>
@@ -446,18 +493,9 @@ export function AppWindow({
             The inset ring is what keeps them from disappearing against a
             light title bar, which is also what macOS does. */}
         <div className="flex gap-1.5" aria-hidden>
-          <span
-            className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
-            style={{ backgroundColor: "#ff5f57" }}
-          />
-          <span
-            className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
-            style={{ backgroundColor: "#febc2e" }}
-          />
-          <span
-            className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
-            style={{ backgroundColor: "#28c840" }}
-          />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57] ring-1 ring-inset ring-black/10" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e] ring-1 ring-inset ring-black/10" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28c840] ring-1 ring-inset ring-black/10" />
         </div>
         <div className="mono min-w-0 flex-1 truncate text-center text-[11px] text-ink-subtle">
           {title}

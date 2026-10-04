@@ -51,7 +51,9 @@ const PLANS: Plan[] = [
  * is `BEATS.length` units long, so unit N and beat N are the same place.
  */
 const BEAT_2 = 1;
-const BEAT_3 = 2;
+// Beat 3 (unit 2) is the cache warming. It has no tween of its own - the WARM
+// badge is driven by scroll progress rather than by the timeline - so there is
+// deliberately no BEAT_3 constant to go unused.
 const BEAT_4 = 3;
 
 const BEATS = [
@@ -95,11 +97,6 @@ export function ThesisStory() {
       // while the flip was still a fifth of the scroll away.
       tl.to(q("[data-plan='local']"), { borderColor: "var(--color-accent)", duration: 0.3 }, BEAT_2)
         .to(q("[data-winner='cold']"), { opacity: 1, y: 0, duration: 0.3 }, BEAT_2 + 0.1)
-        .to(
-          q("[data-warm-sweep]"),
-          { scaleX: 1, duration: 0.6, ease: "power2.inOut" },
-          BEAT_3 + 0.1,
-        )
         // Beat 4 opens with the flip rather than ending on it, so the last
         // stretch of scrolling is spent reading the result.
         .to(q("[data-plan='local']"), { borderColor: "var(--color-line)", duration: 0.25 }, BEAT_4)
@@ -285,19 +282,6 @@ export function ThesisStory() {
                       : "border-line",
                   )}
                 >
-                  {/* The warm-up sweep. scaleX is driven by the timeline on
-                      desktop; the static fallback just shows it filled.
-                      Accent-tinted: `warm` here means cache-warm, not a
-                      temperature, and the green read as a success state. */}
-                  {plan.id === "maps" ? (
-                    <div
-                      data-warm-sweep
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 origin-left bg-gradient-to-r from-accent-ghost via-accent-ghost/60 to-transparent"
-                      style={{ transform: `scaleX(${staticState ? 1 : 0})` }}
-                    />
-                  ) : null}
-
                   <div className="relative flex items-center justify-between gap-3 pb-3">
                     <div className="flex items-center gap-2.5">
                       <span className="mono text-[11px] uppercase tracking-[0.14em] text-ink-subtle">
