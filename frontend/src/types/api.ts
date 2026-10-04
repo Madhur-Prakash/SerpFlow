@@ -89,6 +89,8 @@ export interface Project {
   retention_high_pii_days?: number | null;
   shared_cache_enabled: boolean;
   created_at: string;
+  /** null or absent means the project follows SERPFLOW_MODE. */
+  execution_mode?: string | null;
 }
 
 export interface Me {
@@ -138,6 +140,18 @@ export interface ApiKeyCreated {
 }
 
 /** The secret is structurally absent. See backend section 25. */
+/** One upstream service the organization brings its own key for. */
+export interface CredentialProvider {
+  id: string;
+  label: string;
+  purpose: string;
+  console_url: string;
+  key_hint: string;
+  absent_behaviour: string;
+  required: boolean;
+  configured: boolean;
+}
+
 export interface Credential {
   id: string;
   name: string;

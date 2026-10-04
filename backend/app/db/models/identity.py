@@ -143,6 +143,12 @@ class Project(Base, TimestampMixin):
     retention_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     retention_high_pii_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     shared_cache_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    #: The project's default execution mode. NULL means "inherit
+    #: SERPFLOW_MODE", which is not the same as pinning the project to
+    #: whatever that happens to be today: an operator changing the server
+    #: default should move every project that never made its own choice,
+    #: and should move none that did.
+    execution_mode: Mapped[str | None] = mapped_column(String(10), nullable=True)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     organization: Mapped[Organization] = relationship(back_populates="projects")

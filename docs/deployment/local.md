@@ -115,20 +115,40 @@ A `test` API key routes to the deterministic mock **regardless** of this
 setting. That precedence is absolute and cannot be overridden, which is what
 makes it safe to develop against a repository that has a live key in its `.env`.
 
-To use real SerpApi credits, set `SERPFLOW_MODE=live`, attach a credential
-through `POST /v1/credentials` or `SERPAPI_API_KEY` for the seed script, and
-use a `sf_live_...` key.
+`SERPFLOW_MODE` is the instance default only. A project can set its own mode,
+and a single search can override it - see
+[execution modes](../product/execution-modes.md).
 
-For real LLM planning instead of the deterministic mock:
+## Using real keys
+
+SerpFlow is bring-your-own-key: both upstream keys belong to the organization,
+not to the deployment. There is no `SERPAPI_API_KEY` setting, and nothing falls
+back to a key held by the instance.
+
+To execute real searches, attach your SerpApi key in the console under
+Settings - Credentials, or:
+
+```bash
+curl -X POST http://localhost:8000/v1/credentials   -H "Authorization: Bearer $SERPFLOW_API_KEY"   -H "Content-Type: application/json"   -d '{"name": "My SerpApi account", "api_key": "..."}'
+```
+
+then set the project's mode to `live` and use a `sf_live_...` key.
+
+For model-driven planning, attach a Groq key the same way with
+`"provider": "groq"`. Planning calls Groq, not SerpApi, so it costs Groq tokens
+and zero SerpApi credits.
+
+The two variables below are the **self-hosting fallback**, consulted only when
+an organization has brought no Groq key of its own. Leave them unset if anyone
+else will use this instance - setting them means your key answers for
+organizations that never supplied one.
 
 ```bash
 LLM_PROVIDER=groq
 GROQ_API_KEY=gsk_...
-GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
-Planning calls the model, not SerpApi, so this costs Groq tokens and zero
-SerpApi credits.
+See [bring your own key](../security/byok.md).
 
 ## Proving the thesis
 

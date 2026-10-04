@@ -22,6 +22,7 @@ import type {
   CatalogEngine,
   CatalogGraph,
   Credential,
+  CredentialProvider,
   CustomRole,
   Dashboard,
   GuardRejection,
@@ -277,9 +278,11 @@ export const api = {
 
   // ------------------------------------------------------ credentials
   credentials: () => get<Credential[]>("/v1/credentials"),
+  credentialProviders: () => get<CredentialProvider[]>("/v1/credentials/providers"),
   createCredential: (body: {
     name: string;
     api_key: string;
+    provider?: string;
     project_id?: string | null;
     set_as_org_default?: boolean;
     validate_now?: boolean;

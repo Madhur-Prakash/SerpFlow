@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b --noEmit",
     "smoke": "node scripts/smoke.mjs",
     "verify-ui": "node scripts/verify-ui.mjs"
   },

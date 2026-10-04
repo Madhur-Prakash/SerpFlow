@@ -52,7 +52,11 @@ export function Atmosphere({
             data-backdrop
             className="absolute -right-[12%] top-[14%] h-[38rem] w-[38rem] rounded-full blur-[130px] animate-drift-slower"
             style={{
-              background: "radial-gradient(circle, var(--color-warm-ghost) 0%, transparent 70%)",
+              // Accent rather than warm: a green field behind a card that is
+              // itself tinted read as one large green wash rather than as
+              // depth. Two blues at different sizes and drift speeds still
+              // separate; one blue and one green competed.
+              background: "radial-gradient(circle, var(--color-accent-ghost) 0%, transparent 70%)",
               opacity: "var(--atmosphere)",
             }}
           />

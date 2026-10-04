@@ -61,6 +61,7 @@ async def create_plan(
         intent=payload.intent,
         project_id=payload.project_id,
         budget=payload.budget,
+        mode_override=payload.mode,
     )
     plan = planned["plan"]
     mode = planned["mode"]
@@ -95,6 +96,7 @@ async def search(
         execute=True,
         trigger="interactive",
         ip=client_ip(request),
+        mode_override=payload.mode,
     )
     return await _finalize(request, session, principal, result)
 
@@ -162,11 +164,13 @@ async def _start_streaming_search(
     """
     from app.db.models.planning import Run
 
-    mode = await run_service.resolve_execution_mode(principal)
     maker = get_sessionmaker()
     async with maker() as setup_session:
         await set_tenant(setup_session, principal.org_id)
         project = await run_service._load_project(setup_session, principal, payload.project_id)
+        # Resolved after the project is in hand: the project carries its own
+        # mode, and resolving before this point silently ignored it.
+        mode = await run_service.resolve_execution_mode(principal, project, payload.mode)
         run_row = Run(
             org_id=principal.org_id,
             project_id=project.id,
@@ -194,6 +198,7 @@ async def _start_streaming_search(
             intent=payload.intent,
             budget=payload.budget,
             ip=client_ip(request),
+            mode_override=payload.mode,
         )
     )
 
@@ -216,6 +221,7 @@ async def _execute_detached(
     intent: str,
     budget: int | None,
     ip: str,
+    mode_override: str | None = None,
 ) -> None:
     from app.db.models.planning import Run
 
@@ -237,6 +243,7 @@ async def _execute_detached(
                     trigger="interactive",
                     run=run_row,
                     ip=ip,
+                    mode_override=mode_override,
                 )
                 await session.commit()
             except Exception:

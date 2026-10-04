@@ -14,7 +14,12 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError, SerpFlowError
+from app.core.exceptions import (
+    NotFoundError,
+    PermissionDeniedError,
+    SerpFlowError,
+    ValidationError,
+)
 from app.core.logging import bind, get_logger
 from app.core.permissions import Permission
 from app.db.models.identity import Organization, Project, ServicePrincipalSession
@@ -25,6 +30,7 @@ from app.services.auth.service import Principal
 from app.services.budgets.service import BudgetService
 from app.services.cache.service import CacheService
 from app.services.catalog.loader import load_catalog
+from app.services.credentials.llm import resolve_llm
 from app.services.credentials.service import CredentialService
 from app.services.executor.service import ExecutionResult, ExecutorService
 from app.services.planner.service import PlannerService
@@ -50,8 +56,56 @@ async def _load_project(
     return project
 
 
-async def resolve_execution_mode(principal: Principal) -> ResolvedMode:
-    """Section 21 precedence, in one place so it cannot drift."""
+#: Modes a caller may ask for. `mock` is absent on purpose - it belongs to the
+#: test-key rule alone, so "this cost nothing" can never be a request parameter.
+SELECTABLE_MODES = ("live", "record", "replay")
+
+#: Modes that spend real SerpApi credits.
+BILLABLE_MODES = ("live", "record")
+
+
+async def resolve_execution_mode(
+    principal: Principal,
+    project: Project | None = None,
+    requested: str | None = None,
+) -> ResolvedMode:
+    """Section 21 precedence, in one place so it cannot drift.
+
+        1. A `test` API key -> mock. Absolute; the rest of this is not consulted.
+        2. An explicit per-request mode.
+        3. The project's own default.
+        4. SERPFLOW_MODE.
+
+    Asking for a billable mode needs `run:mode_override`; asking for `replay`
+    needs nothing, because choosing not to spend money is not a privilege. A
+    caller without the permission who asks to go live is refused rather than
+    quietly downgraded - silently executing against cassettes when someone
+    asked for live data would make the result a lie.
+    """
+    if requested is not None:
+        wanted = requested.lower().strip()
+        if wanted not in SELECTABLE_MODES:
+            raise ValidationError(
+                "Execution mode must be one of " + ", ".join(SELECTABLE_MODES) + ".",
+            )
+        if wanted in BILLABLE_MODES and not principal.can(Permission.MODE_OVERRIDE):
+            raise PermissionDeniedError(
+                "This role may not choose a billable execution mode. "
+                "Ask an admin to set the project's default mode instead."
+            )
+        return resolve_mode(
+            key_environment=principal.key_environment or "live",
+            configured_mode=wanted,
+            source="request",
+        )
+
+    if project is not None and project.execution_mode:
+        return resolve_mode(
+            key_environment=principal.key_environment or "live",
+            configured_mode=project.execution_mode,
+            source="project",
+        )
+
     return resolve_mode(key_environment=principal.key_environment or "live")
 
 
@@ -70,11 +124,17 @@ async def create_plan(
     budget: int | None = None,
     run_id: str | None = None,
     persist: bool = True,
+    mode_override: str | None = None,
 ) -> dict[str, Any]:
-    """Plan only. Costs no SerpApi credits, which is why analysts may do it."""
+    """Plan only. Costs no SerpApi credits, which is why analysts may do it.
+
+    The mode still matters here even though nothing is spent: a plan states
+    what execution *would* do, so planning under a mode the caller will not be
+    allowed to execute under would mislead them.
+    """
     project = await _load_project(session, principal, project_id)
     org = await session.get(Organization, principal.org_id)
-    mode = await resolve_execution_mode(principal)
+    mode = await resolve_execution_mode(principal, project, mode_override)
     bind(org_id=principal.org_id, project_id=project.id, principal_id=principal.id)
 
     budgets = BudgetService(session, org_id=principal.org_id, project_id=project.id)
@@ -94,6 +154,9 @@ async def create_plan(
         org_id=principal.org_id,
         project_id=project.id,
         principal_id=principal.id,
+        # Bring-your-own-key: the adapter follows the organization's own Groq
+        # credential, not a key held by this deployment.
+        llm=await resolve_llm(session, org_id=principal.org_id, project=project),
         cache=cache,
         mode=mode.mode,
         engine_allowlist=project.engine_allowlist,
@@ -130,11 +193,12 @@ async def plan_and_execute(
     run: Run | None = None,
     ip: str = "",
     service_session: ServicePrincipalSession | None = None,
+    mode_override: str | None = None,
 ) -> dict[str, Any]:
     """The whole flow: plan with cache-aware replanning, then execute."""
     project = await _load_project(session, principal, project_id)
     org = await session.get(Organization, principal.org_id)
-    mode = await resolve_execution_mode(principal)
+    mode = await resolve_execution_mode(principal, project, mode_override)
 
     if run is None:
         run = Run(
@@ -169,6 +233,9 @@ async def plan_and_execute(
             budget=budget,
             run_id=run.id,
             persist=True,
+            # The plan must be built under the mode it will execute under, or
+            # its cost figures describe a different run than the one that ran.
+            mode_override=mode_override,
         )
     except SerpFlowError as exc:
         run.status = "failed"
@@ -349,11 +416,10 @@ async def replay_run(
     if original is None or original.org_id != principal.org_id:
         raise NotFoundError("Run not found.")
     if not principal.can(Permission.RUN_REPLAY):
-        from app.core.exceptions import PermissionDeniedError
-
         raise PermissionDeniedError("This role may not replay runs.")
 
-    mode = await resolve_execution_mode(principal)
+    replay_project = await session.get(Project, original.project_id)
+    mode = await resolve_execution_mode(principal, replay_project)
     run = Run(
         org_id=principal.org_id,
         project_id=original.project_id,

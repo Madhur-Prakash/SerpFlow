@@ -204,6 +204,15 @@ export function useCredentials() {
   });
 }
 
+/** Which keys this organization must bring, and whether it has brought them. */
+export function useCredentialProviders() {
+  return useQuery({
+    queryKey: ["credential-providers"],
+    queryFn: () => api.credentialProviders(),
+    staleTime: 30_000,
+  });
+}
+
 export function useSessions() {
   return useQuery({
     queryKey: ["auth-sessions"],

@@ -20,16 +20,34 @@ CacheLayer = Literal["exact", "semantic", "archive", "live", "mock", "replay", "
 # --------------------------------------------------------------------------
 # requests
 # --------------------------------------------------------------------------
+#: What a caller may ask for. `mock` is deliberately not selectable: it is the
+#: answer to a `test` API key and nothing else, so a run that reports "this
+#: cost nothing" cannot have got there by asking nicely.
+ExecutionModeRequest = Literal["live", "record", "replay"]
+
+MODE_FIELD = Field(
+    default=None,
+    description=(
+        "Override the execution mode for this request. Omit to use the "
+        "project's mode, which itself falls back to the server default. "
+        "Choosing 'live' or 'record' spends credits and requires the "
+        "run:mode_override permission."
+    ),
+)
+
+
 class PlanRequest(APIModel):
     intent: str = Field(min_length=3, max_length=2000)
     project_id: str | None = None
     budget: int | None = Field(default=None, ge=1, le=100000)
+    mode: ExecutionModeRequest | None = MODE_FIELD
 
 
 class SearchRequest(APIModel):
     intent: str = Field(min_length=3, max_length=2000)
     project_id: str | None = None
     budget: int | None = Field(default=None, ge=1, le=100000)
+    mode: ExecutionModeRequest | None = MODE_FIELD
     # When true the server allocates the run, returns 202 with its id, and
     # executes it in-process while the client tails GET /v1/runs/{id}/stream.
     # This is still interactive execution - it is deliberately NOT routed

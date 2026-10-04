@@ -14,7 +14,9 @@ import {
   Building2,
   CheckCircle,
   Copy,
+  ExternalLink,
   Key,
+  KeyRound,
   Lock,
   Plus,
   RefreshCw,
@@ -54,6 +56,7 @@ import {
 } from "@/components/ui";
 import {
   useApiKeys,
+  useCredentialProviders,
   useCredentials,
   useMembers,
   useProjects,
@@ -64,6 +67,7 @@ import * as fmt from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { PERMISSIONS, useSession } from "@/stores/session";
 import { RolesSettings } from "@/pages/settings/RolesSettings";
+import type { Credential, CredentialProvider, Project } from "@/types/api";
 
 /**
  * Absolute, deliberately.
@@ -439,6 +443,11 @@ function ProjectsSettings() {
                     {project.description}
                   </p>
                 ) : null}
+                <ExecutionModeField
+                  project={project}
+                  canWrite={canWrite}
+                  onSaved={() => projects.refetch()}
+                />
               </li>
             ))}
           </ul>
@@ -449,6 +458,89 @@ function ProjectsSettings() {
         )}
       </Card>
     </motion.div>
+  );
+}
+
+/**
+ * The project's execution mode.
+ *
+ * Worth stating plainly in the interface rather than in a tooltip: two of
+ * these three spend real money on the organization's own SerpApi account, and
+ * the person setting it is often not the person who will run the searches.
+ */
+function ExecutionModeField({
+  project,
+  canWrite,
+  onSaved,
+}: {
+  project: Project;
+  canWrite: boolean;
+  onSaved: () => void;
+}) {
+  const [saving, setSaving] = React.useState(false);
+  // Radix reserves "" for "nothing selected", so the inherit case needs a
+  // sentinel of its own or the trigger renders blank. The API's own way of
+  // saying "clear this" is "", since null means "leave this field alone" in a
+  // PATCH, so the two are translated at the boundary.
+  const INHERIT = "inherit";
+  const current = project.execution_mode || INHERIT;
+
+  async function save(choice: string) {
+    const value = choice === INHERIT ? "" : choice;
+    setSaving(true);
+    try {
+      await api.updateProject(project.id, { execution_mode: value } as Partial<Project>);
+      toast.success(
+        value
+          ? "This project now runs in " + value + " mode."
+          : "This project follows the instance default again.",
+      );
+      onSaved();
+    } catch (error) {
+      toast.error("Could not change the execution mode", {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <span className="text-[11px] uppercase tracking-[0.08em] text-ink-subtle">
+        Execution mode
+      </span>
+      {canWrite ? (
+        <Select value={current} onValueChange={save} disabled={saving}>
+          <SelectTrigger className="h-7 w-[11rem] text-[12px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={INHERIT}>Instance default</SelectItem>
+            <SelectItem value="replay">replay</SelectItem>
+            <SelectItem value="live">live</SelectItem>
+            <SelectItem value="record">record</SelectItem>
+          </SelectContent>
+        </Select>
+      ) : (
+        <Badge tone="outline" className="mono">
+          {current === INHERIT ? "instance default" : current}
+        </Badge>
+      )}
+      {current === "live" || current === "record" ? (
+        <span className="text-[11.5px] text-caution">
+          {current === "record"
+            ? "Spends credits on your SerpApi account, and saves cassettes."
+            : "Spends credits on your SerpApi account."}
+        </span>
+      ) : (
+        <span className="text-[11.5px] text-ink-subtle">
+          {current === "replay"
+            ? "Served from recorded cassettes. Never reaches the network."
+            : "Follows SERPFLOW_MODE. A test API key always overrides this."}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -745,179 +837,247 @@ function CreateKeyDialog({
 // -------------------------------------------------------- credentials
 function CredentialsSettings() {
   const credentials = useCredentials();
+  const providers = useCredentialProviders();
   const { can } = useSession();
-  const [open, setOpen] = React.useState(false);
+  const [adding, setAdding] = React.useState<CredentialProvider | null>(null);
   const canWrite = can(PERMISSIONS.credentialWrite);
   const canRotate = can(PERMISSIONS.credentialRotate);
 
+  // Grouped by provider so each key sits under the service it belongs to. The
+  // provider list comes from the API rather than being hardcoded here, so a
+  // provider added to the backend registry appears without a frontend change.
+  const byProvider = React.useMemo(() => {
+    const map = new Map<string, Credential[]>();
+    for (const credential of credentials.data ?? []) {
+      const list = map.get(credential.provider) ?? [];
+      list.push(credential);
+      map.set(credential.provider, list);
+    }
+    return map;
+  }, [credentials.data]);
+
   return (
     <motion.div variants={listVariants} initial="initial" animate="animate" className="space-y-4">
-      <Card>
+      <Card data-card>
         <CardHeader
-          title="Upstream SerpApi credentials"
-          icon={Shield}
-          description="Resolution order: the project's own credential, then the organization default, then refuse."
-          action={
-            canWrite ? (
-              <Button variant="primary" size="sm" onClick={() => setOpen(true)}>
-                <Plus />
-                Add credential
-              </Button>
-            ) : null
-          }
+          title="Your keys"
+          icon={KeyRound}
+          description="SerpFlow runs on keys you bring. Searches are billed to your SerpApi account and planning to your Groq account - this platform holds no keys of its own that your work could fall back to."
         />
-        <CardBody className="space-y-3">
-          <Alert tone="accent" icon={Lock} title="The key is encrypted and never returned">
-            Each credential gets a random data key, itself encrypted under a key-encryption
-            key. Only the fingerprint - sha256 of the key, first eight characters - is ever
-            shown, and no API response schema has a field that could carry the secret.
+        <CardBody>
+          <Alert tone="accent" icon={Lock} title="Encrypted on arrival, never returned">
+            Each key gets its own random data key, itself encrypted under a key-encryption key.
+            Only the fingerprint - sha256 of the key, first eight characters - is ever shown, and
+            no API response schema has a field that could carry the secret.
           </Alert>
-
-          {credentials.isLoading ? (
-            <Skeleton className="h-24" />
-          ) : credentials.data?.length ? (
-            <ul className="divide-y divide-line">
-              {credentials.data.map((credential) => (
-                <li key={credential.id} className="flex flex-wrap items-center gap-3 py-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[13px] text-ink">{credential.name}</span>
-                      <Badge tone="outline" className="mono">
-                        {credential.display}
-                      </Badge>
-                      {credential.validation_status === "valid" ? (
-                        <Badge tone="warm">
-                          <CheckCircle />
-                          validated
-                        </Badge>
-                      ) : credential.validation_status === "failed" ? (
-                        <Tooltip content={credential.validation_error ?? ""}>
-                          <Badge tone="danger">
-                            <XCircle />
-                            failed
-                          </Badge>
-                        </Tooltip>
-                      ) : (
-                        <Badge tone="outline">pending</Badge>
-                      )}
-                      {credential.revoked_at ? <Badge tone="danger">revoked</Badge> : null}
-                    </div>
-                    <p className="mt-1 text-[11px] text-ink-subtle">
-                      added {fmt.datetime(credential.created_at)}
-                      {credential.last_validated_at
-                        ? " - validated " + fmt.ago(credential.last_validated_at)
-                        : ""}
-                      {credential.upstream_searches_left !== null &&
-                      credential.upstream_searches_left !== undefined
-                        ? " - " + credential.upstream_searches_left + " searches left upstream"
-                        : ""}
-                    </p>
-                  </div>
-                  {canWrite && !credential.revoked_at ? (
-                    <div className="flex gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          try {
-                            await api.validateCredential(credential.id);
-                            toast.success("Credential validated");
-                            credentials.refetch();
-                          } catch (error) {
-                            toast.error("Validation failed", {
-                              description:
-                                error instanceof Error ? error.message : String(error),
-                            });
-                          }
-                        }}
-                      >
-                        <RefreshCw />
-                        Validate
-                      </Button>
-                      {canRotate ? (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={async () => {
-                            try {
-                              const result = await api.revokeCredential(credential.id);
-                              toast.success(result.message);
-                              credentials.refetch();
-                            } catch (error) {
-                              toast.error("Revocation failed", {
-                                description:
-                                  error instanceof Error ? error.message : String(error),
-                              });
-                            }
-                          }}
-                        >
-                          <Trash2 />
-                          Revoke
-                        </Button>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState
-              icon={Shield}
-              title="No credential attached"
-              description="Without one, live API keys cannot execute and SerpFlow returns NO_UPSTREAM_CREDENTIAL rather than failing mid-run. Test keys do not need one: they route to the deterministic mock."
-              action={
-                canWrite ? (
-                  <Button variant="primary" size="sm" onClick={() => setOpen(true)}>
-                    <Plus />
-                    Add credential
-                  </Button>
-                ) : null
-              }
-            />
-          )}
         </CardBody>
       </Card>
 
+      {providers.isLoading ? (
+        <Skeleton className="h-40" />
+      ) : (
+        (providers.data ?? []).map((provider) => {
+          const rows = byProvider.get(provider.id) ?? [];
+          const active = rows.filter((row) => !row.revoked_at);
+          return (
+            <Card key={provider.id} data-card>
+              <CardHeader
+                title={provider.label}
+                icon={Shield}
+                description={provider.purpose}
+                action={
+                  canWrite ? (
+                    <Button variant="primary" size="sm" onClick={() => setAdding(provider)}>
+                      <Plus />
+                      Add key
+                    </Button>
+                  ) : null
+                }
+              />
+              <CardBody className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {active.length ? (
+                    <Badge tone="warm">
+                      <CheckCircle />
+                      configured
+                    </Badge>
+                  ) : (
+                    <Badge tone={provider.required ? "danger" : "outline"}>
+                      {provider.required ? "required" : "optional"}
+                    </Badge>
+                  )}
+                  <a
+                    href={provider.console_url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-1 text-[12px] text-accent underline-offset-2 hover:underline"
+                  >
+                    <ExternalLink className="size-3.5" />
+                    Get a {provider.label} key
+                  </a>
+                </div>
+
+                {active.length ? null : (
+                  <p className="text-[12.5px] leading-relaxed text-ink-muted text-pretty">
+                    <span className="text-ink-subtle">Without one: </span>
+                    {provider.absent_behaviour}
+                  </p>
+                )}
+
+                {credentials.isLoading ? (
+                  <Skeleton className="h-16" />
+                ) : rows.length ? (
+                  <ul className="divide-y divide-line">
+                    {rows.map((credential) => (
+                      <li key={credential.id} className="flex flex-wrap items-center gap-3 py-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[13px] text-ink">{credential.name}</span>
+                            <Badge tone="outline" className="mono">
+                              {credential.display}
+                            </Badge>
+                            {credential.validation_status === "valid" ? (
+                              <Badge tone="warm">
+                                <CheckCircle />
+                                validated
+                              </Badge>
+                            ) : credential.validation_status === "failed" ? (
+                              <Tooltip content={credential.validation_error ?? ""}>
+                                <Badge tone="danger">
+                                  <XCircle />
+                                  failed
+                                </Badge>
+                              </Tooltip>
+                            ) : (
+                              <Badge tone="outline">pending</Badge>
+                            )}
+                            {credential.revoked_at ? <Badge tone="danger">revoked</Badge> : null}
+                          </div>
+                          <p className="mt-1 text-[11px] text-ink-subtle">
+                            added {fmt.datetime(credential.created_at)}
+                            {credential.last_validated_at
+                              ? " - validated " + fmt.ago(credential.last_validated_at)
+                              : ""}
+                            {credential.upstream_searches_left !== null &&
+                            credential.upstream_searches_left !== undefined
+                              ? " - " +
+                                credential.upstream_searches_left +
+                                " searches left on your account"
+                              : ""}
+                          </p>
+                        </div>
+                        {canWrite && !credential.revoked_at ? (
+                          <div className="flex gap-1.5">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await api.validateCredential(credential.id);
+                                  toast.success("Key validated");
+                                  credentials.refetch();
+                                  providers.refetch();
+                                } catch (error) {
+                                  toast.error("Validation failed", {
+                                    description:
+                                      error instanceof Error ? error.message : String(error),
+                                  });
+                                }
+                              }}
+                            >
+                              <RefreshCw />
+                              Validate
+                            </Button>
+                            {canRotate ? (
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const result = await api.revokeCredential(credential.id);
+                                    toast.success(result.message);
+                                    credentials.refetch();
+                                    providers.refetch();
+                                  } catch (error) {
+                                    toast.error("Revocation failed", {
+                                      description:
+                                        error instanceof Error ? error.message : String(error),
+                                    });
+                                  }
+                                }}
+                              >
+                                <Trash2 />
+                                Revoke
+                              </Button>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </CardBody>
+            </Card>
+          );
+        })
+      )}
+
       <AddCredentialDialog
-        open={open}
-        onOpenChange={setOpen}
-        onCreated={() => credentials.refetch()}
+        provider={adding}
+        onOpenChange={(open) => !open && setAdding(null)}
+        onCreated={() => {
+          credentials.refetch();
+          providers.refetch();
+        }}
       />
     </motion.div>
   );
 }
 
 function AddCredentialDialog({
-  open,
+  provider,
   onOpenChange,
   onCreated,
 }: {
-  open: boolean;
+  provider: CredentialProvider | null;
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
 }) {
-  const [name, setName] = React.useState("Primary SerpApi account");
+  const [name, setName] = React.useState("");
   const [apiKey, setApiKey] = React.useState("");
   const [validateNow, setValidateNow] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
 
+  // Cleared whenever the dialog opens for a different provider, so a key typed
+  // for one service cannot be submitted against another.
+  React.useEffect(() => {
+    if (provider) {
+      setName("My " + provider.label + " account");
+      setApiKey("");
+    }
+  }, [provider]);
+
   async function submit() {
+    if (!provider) return;
     setSaving(true);
     try {
       await api.createCredential({
         name,
         api_key: apiKey,
+        provider: provider.id,
         validate_now: validateNow,
-        set_as_org_default: true,
+        // The organization-default pointer belongs to SerpApi; every other
+        // provider already resolves organization-wide.
+        set_as_org_default: provider.id === "serpapi",
       });
-      toast.success("Credential stored", {
+      toast.success(provider.label + " key stored", {
         description: "Only its fingerprint is retrievable from now on.",
       });
       setApiKey("");
       onOpenChange(false);
       onCreated();
     } catch (error) {
-      toast.error("Could not store the credential", {
+      toast.error("Could not store the key", {
         description: error instanceof Error ? error.message : String(error),
       });
     } finally {
@@ -926,34 +1086,51 @@ function AddCredentialDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={provider !== null} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader
-          title="Add a SerpApi credential"
-          description="This is the key SerpFlow spends on your behalf. It is separate from the API keys your code uses to call SerpFlow."
+          title={"Add your " + (provider?.label ?? "") + " key"}
+          description={
+            provider
+              ? provider.purpose +
+                " This is your own account's key, separate from the API keys your code uses to call SerpFlow."
+              : ""
+          }
         />
         <div className="space-y-4 px-5 py-4">
-          <Field label="Name">
+          <Field label="Name" hint="For your own reference.">
             <Input value={name} onChange={(event) => setName(event.target.value)} />
           </Field>
           <Field
-            label="SerpApi key"
+            label={(provider?.label ?? "") + " key"}
             hint="Encrypted immediately. After this dialog closes there is no way to read it back."
           >
             <Input
               type="password"
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
-              placeholder="64 hex characters"
+              placeholder={provider?.key_hint ?? ""}
               className="mono"
               autoComplete="off"
             />
           </Field>
+          {provider ? (
+            <a
+              href={provider.console_url}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 text-[12px] text-accent underline-offset-2 hover:underline"
+            >
+              <ExternalLink className="size-3.5" />
+              Where to find it in the {provider.label} console
+            </a>
+          ) : null}
           <div className="flex items-center justify-between gap-4 rounded-[var(--radius-sm)] border border-line bg-surface-sunken px-3 py-2.5">
             <div>
               <p className="text-[13px] font-medium text-ink">Validate now</p>
               <p className="mt-0.5 text-[12px] text-ink-subtle text-pretty">
-                One cheap account call to prove the key works, before you depend on it.
+                One cheap call to prove the key works, before you depend on it. It spends
+                nothing.
               </p>
             </div>
             <Switch checked={validateNow} onCheckedChange={setValidateNow} />

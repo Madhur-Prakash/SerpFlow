@@ -165,10 +165,27 @@ async def update_project(
 
     if data.get("credential_id"):
         from app.db.models.keys import UpstreamCredential
+        from app.services.credentials.providers import SERPAPI, get_provider
 
         credential = await session.get(UpstreamCredential, data["credential_id"])
         if credential is None or credential.org_id != principal.org_id:
             raise NotFoundError("Credential not found.")
+        # `project.credential_id` is the SerpApi pointer specifically. Pointing
+        # it at a Groq key would leave the project with no SerpApi credential
+        # while appearing configured.
+        if credential.provider != SERPAPI:
+            raise ValidationError(
+                "A project's upstream credential must be a SerpApi key. "
+                + credential.name
+                + " is a "
+                + get_provider(credential.provider).label
+                + " credential, which applies to the whole organization."
+            )
+
+    # An empty string is how a PATCH says "clear this", since null already
+    # means "leave it alone" for every other field in this payload.
+    if data.get("execution_mode") == "":
+        data["execution_mode"] = None
 
     for field, value in data.items():
         setattr(project, field, value)

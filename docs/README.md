@@ -75,6 +75,7 @@
 
 | Page | Covers |
 | --- | --- |
+| [Bring your own key](security/byok.md) | which keys you supply, what each does, what happens without them |
 | [Threat model](security/threat-model.md) | assets, boundaries, threats, what is out of scope |
 | [Credentials](security/credentials.md) | envelope encryption, decryption boundary, rotation |
 | [API keys](security/api-keys.md) | format, hashing, roles, service sessions |
@@ -105,6 +106,7 @@
 | --- | --- |
 | [Product overview](product/product-overview.md) | the problem, the thesis, the boundaries |
 | [Benchmark](product/benchmark.md) | 120 labelled tasks, measured results, error analysis |
+| [Execution modes](product/execution-modes.md) | live, record, replay; who chooses and in what order |
 | [Demo](product/demo.md) | the reference scenario, step by step |
 
 ## Decisions

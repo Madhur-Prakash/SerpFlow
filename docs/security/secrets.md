@@ -52,9 +52,14 @@ environment is grep-able, alarming, and easy to catch in review.
 
 With no keys at all you get:
 
-- `LLM_PROVIDER=mock` — deterministic planning, no network
+- deterministic planning, no network — until an organization brings a Groq key
 - `SERPFLOW_MODE=replay` — cassettes only, never the network
 - `sf_test_...` keys — deterministic mock results, zero SerpApi credits
+
+Note what is *not* in this file: the upstream keys. SerpApi and Groq access is
+[bring-your-own-key](byok.md) — each organization's keys live encrypted in the
+credential vault, not in the environment. The secrets below belong to the
+deployment itself.
 
 ## Generating real ones
 

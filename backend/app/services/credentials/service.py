@@ -1,4 +1,9 @@
-"""Upstream SerpApi credential vault (sections 23-27).
+"""Upstream credential vault (sections 23-27).
+
+SerpFlow is bring-your-own-key: an organization supplies the keys for the
+upstream services it uses, and nothing here ever falls back to a key held
+by the deployment. ``app/services/credentials/providers.py`` lists the
+services and how each key is proved to work.
 
 Resolution order, exactly as specified::
 
@@ -7,6 +12,10 @@ Resolution order, exactly as specified::
     org.default_credential_id
             v if absent
     NO_UPSTREAM_CREDENTIAL
+
+...and that order is per provider: a SerpApi key and a Groq key resolve
+independently, so an organization can scope one per project while leaving
+the other organization-wide.
 
 Small organizations configure one org-level credential; organizations with
 several SerpApi accounts override per project or cost centre.
@@ -30,12 +39,14 @@ from app.core.exceptions import (
     CredentialValidationError,
     NotFoundError,
     NoUpstreamCredentialError,
+    ValidationError,
 )
 from app.core.logging import get_logger
 from app.core.security import credential_fingerprint, encrypt_credential
 from app.db.models.identity import Organization, Project
 from app.db.models.keys import UpstreamCredential, UpstreamQuotaSnapshot
 from app.integrations.serpapi import SerpApiClient
+from app.services.credentials.providers import SERPAPI, get_provider
 
 log = get_logger("serpflow.credentials")
 
@@ -50,38 +61,79 @@ class CredentialService:
         self.org_id = org_id
 
     # ---------------------------------------------------------- resolution
-    async def resolve(self, project: Project | None) -> UpstreamCredential:
-        """Project credential, then organization default, then refuse."""
-        if project is not None and project.credential_id:
-            credential = await self.session.get(UpstreamCredential, project.credential_id)
-            if (
-                credential is not None
-                and credential.org_id == self.org_id
-                and self._usable(credential)
-            ):
-                return credential
+    async def resolve(self, project: Project | None, provider: str = SERPAPI) -> UpstreamCredential:
+        """Project credential, then organization default, then refuse.
 
-        org = await self.session.get(Organization, self.org_id)
-        if org is not None and org.default_credential_id:
-            credential = await self.session.get(UpstreamCredential, org.default_credential_id)
-            if credential is not None and self._usable(credential):
-                return credential
+        ``project.credential_id`` and ``org.default_credential_id`` are the
+        SerpApi pointers - they predate there being more than one provider, and
+        repurposing them would mean an organization could nominate only one
+        default across every service. Any other provider resolves by searching
+        this organization's credentials for that provider, project-scoped
+        first.
+        """
+        spec = get_provider(provider)
+
+        if provider == SERPAPI:
+            if project is not None and project.credential_id:
+                credential = await self.session.get(UpstreamCredential, project.credential_id)
+                if (
+                    credential is not None
+                    and credential.org_id == self.org_id
+                    and self._usable(credential)
+                ):
+                    return credential
+
+            org = await self.session.get(Organization, self.org_id)
+            if org is not None and org.default_credential_id:
+                credential = await self.session.get(UpstreamCredential, org.default_credential_id)
+                if credential is not None and self._usable(credential):
+                    return credential
+            order = ["project.credential_id", "org.default_credential_id"]
+        else:
+            rows = list(
+                await self.session.scalars(
+                    select(UpstreamCredential)
+                    .where(
+                        UpstreamCredential.org_id == self.org_id,
+                        UpstreamCredential.provider == provider,
+                    )
+                    # Project-scoped rows first, then newest, so a project
+                    # override beats the organization-wide key.
+                    .order_by(
+                        UpstreamCredential.project_id.is_(None),
+                        UpstreamCredential.created_at.desc(),
+                    )
+                )
+            )
+            scoped = project.id if project is not None else None
+            for credential in rows:
+                if credential.project_id and credential.project_id != scoped:
+                    continue
+                if self._usable(credential):
+                    return credential
+            order = ["project-scoped " + provider + " credential", "org-wide " + provider]
 
         raise NoUpstreamCredentialError(
-            "No upstream SerpApi credential is configured for project "
+            "No "
+            + spec.label
+            + " credential is configured for project "
             + (project.name if project else "(unknown)")
-            + " or for its organization. Attach a credential in Settings, or use a "
-            + "test API key to run against the deterministic mock at zero cost.",
+            + " or for its organization. "
+            + spec.absent_behaviour,
             details={
                 "project_id": project.id if project else None,
                 "org_id": self.org_id,
-                "resolution_order": ["project.credential_id", "org.default_credential_id"],
+                "provider": provider,
+                "required": spec.required,
+                "resolution_order": order,
             },
         )
 
-    async def resolve_optional(self, project: Project | None) -> UpstreamCredential | None:
+    async def resolve_optional(
+        self, project: Project | None, provider: str = SERPAPI
+    ) -> UpstreamCredential | None:
         try:
-            return await self.resolve(project)
+            return await self.resolve(project, provider)
         except NoUpstreamCredentialError:
             return None
 
@@ -99,11 +151,13 @@ class CredentialService:
         *,
         name: str,
         secret: str,
+        provider: str = SERPAPI,
         project_id: str | None = None,
         validate: bool = True,
         set_as_org_default: bool = False,
     ) -> UpstreamCredential:
         """Encrypt, validate with one cheap upstream call, record, never return."""
+        get_provider(provider)  # rejects an unknown provider before anything is stored
         fingerprint = credential_fingerprint(secret)
         existing = await self.session.scalar(
             select(UpstreamCredential).where(
@@ -122,6 +176,7 @@ class CredentialService:
             org_id=self.org_id,
             project_id=project_id,
             name=name,
+            provider=provider,
             ciphertext=envelope.ciphertext,
             encrypted_dek=envelope.encrypted_dek,
             kek_id=envelope.kek_id,
@@ -134,15 +189,16 @@ class CredentialService:
         if validate:
             await self.validate(credential, secret=secret)
 
-        if project_id:
-            project = await self.session.get(Project, project_id)
-            if project is not None and project.org_id == self.org_id:
-                project.credential_id = credential.id
+        if provider == SERPAPI:
+            if project_id:
+                project = await self.session.get(Project, project_id)
+                if project is not None and project.org_id == self.org_id:
+                    project.credential_id = credential.id
 
-        if set_as_org_default or not await self._has_default():
-            org = await self.session.get(Organization, self.org_id)
-            if org is not None:
-                org.default_credential_id = credential.id
+            if set_as_org_default or not await self._has_default():
+                org = await self.session.get(Organization, self.org_id)
+                if org is not None:
+                    org.default_credential_id = credential.id
 
         return credential
 
@@ -156,9 +212,10 @@ class CredentialService:
         """One cheap upstream call proving the credential works (section 26)."""
         from app.core.security import decrypt_credential
 
+        spec = get_provider(credential.provider)
         plaintext = secret or decrypt_credential(credential.ciphertext, credential.encrypted_dek)
         try:
-            result = await SerpApiClient(plaintext).validate()
+            result = await spec.validate(plaintext)
         except Exception as exc:
             credential.validation_status = VALIDATION_FAILED
             # Only the exception class name is recorded. The message could
@@ -175,7 +232,8 @@ class CredentialService:
                 },
             )
             raise CredentialValidationError(
-                "SerpApi rejected this credential or could not be reached ("
+                spec.label
+                + " rejected this credential or could not be reached ("
                 + type(exc).__name__
                 + ")."
             ) from exc
@@ -185,9 +243,13 @@ class CredentialService:
         credential.validation_status = VALIDATION_VALID
         credential.validation_error = None
         credential.last_validated_at = datetime.now(UTC)
-        credential.upstream_plan = result.get("plan_name")
-        credential.upstream_searches_left = result.get("searches_left")
-        credential.upstream_checked_at = datetime.now(UTC)
+        if credential.provider == SERPAPI:
+            # Plan name and remaining searches are SerpApi's vocabulary. A Groq
+            # key has no such notion, and writing None over these columns for
+            # every provider would blank a SerpApi credential's quota readout.
+            credential.upstream_plan = result.get("plan_name")
+            credential.upstream_searches_left = result.get("searches_left")
+            credential.upstream_checked_at = datetime.now(UTC)
         return result
 
     async def rotate(
@@ -200,6 +262,7 @@ class CredentialService:
             org_id=self.org_id,
             project_id=old.project_id,
             name=old.name,
+            provider=old.provider,
             ciphertext=envelope.ciphertext,
             encrypted_dek=envelope.encrypted_dek,
             kek_id=envelope.kek_id,
@@ -214,14 +277,15 @@ class CredentialService:
 
         # Atomic swap: every pointer moves to the replacement in one
         # transaction, then the old credential enters its grace window.
-        projects = (
-            await self.session.scalars(select(Project).where(Project.credential_id == old.id))
-        ).all()
-        for project in projects:
-            project.credential_id = replacement.id
-        org = await self.session.get(Organization, self.org_id)
-        if org is not None and org.default_credential_id == old.id:
-            org.default_credential_id = replacement.id
+        if old.provider == SERPAPI:
+            projects = (
+                await self.session.scalars(select(Project).where(Project.credential_id == old.id))
+            ).all()
+            for project in projects:
+                project.credential_id = replacement.id
+            org = await self.session.get(Organization, self.org_id)
+            if org is not None and org.default_credential_id == old.id:
+                org.default_credential_id = replacement.id
 
         old.revoked_at = datetime.now(UTC)
         old.rotated_at = datetime.now(UTC)
@@ -281,8 +345,20 @@ class CredentialService:
         The two diverge the moment the credential is used outside SerpFlow. The
         dashboard shows the divergence rather than implying the internal ledger
         is the upstream truth.
+
+        SerpApi only: credits are what SerpApi meters, and no other provider
+        has an equivalent to reconcile against.
         """
         from app.core.security import decrypt_credential
+
+        if credential.provider != SERPAPI:
+            raise ValidationError(
+                "Quota reconciliation applies to SerpApi credentials. "
+                + credential.name
+                + " is a "
+                + get_provider(credential.provider).label
+                + " credential."
+            )
 
         plaintext = decrypt_credential(credential.ciphertext, credential.encrypted_dek)
         try:

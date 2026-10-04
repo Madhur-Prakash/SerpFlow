@@ -137,6 +137,8 @@ class ProjectResponse(APIModel):
     retention_days: int | None = None
     retention_high_pii_days: int | None = None
     shared_cache_enabled: bool = False
+    #: None means the project follows the server default.
+    execution_mode: str | None = None
     created_at: datetime
 
 
@@ -159,6 +161,10 @@ class ProjectUpdate(APIModel):
     # Enabling this crosses a billing and data boundary; the UI states that at
     # the point of toggling it (section 51).
     shared_cache_enabled: bool | None = None
+    #: "" clears the override and returns the project to the server default,
+    #: which a plain null cannot express in a PATCH where null means "leave
+    #: this field alone".
+    execution_mode: Literal["live", "record", "replay", ""] | None = None
 
 
 class MemberResponse(APIModel):
@@ -243,9 +249,27 @@ class CredentialCreate(APIModel):
 
     name: str = Field(min_length=1, max_length=160)
     api_key: str = Field(min_length=8, max_length=256)
+    #: Which upstream service this key is for. SerpFlow is bring-your-own-key
+    #: for all of them; see GET /v1/credentials/providers.
+    provider: Literal["serpapi", "groq"] = "serpapi"
     project_id: str | None = None
+    #: SerpApi only - the organization default pointer is SerpApi's.
     set_as_org_default: bool = False
     validate_now: bool = True
+
+
+class ProviderView(APIModel):
+    """One upstream service an organization brings a key for."""
+
+    id: str
+    label: str
+    purpose: str
+    console_url: str
+    key_hint: str
+    absent_behaviour: str
+    required: bool
+    #: Whether this organization already has a usable key for it.
+    configured: bool = False
 
 
 class CredentialRotate(APIModel):

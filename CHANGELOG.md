@@ -23,6 +23,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`TRUSTED_PROXY_HOPS`.** How many proxies in front of the API append to
   `X-Forwarded-For`. The address is now read that many entries from the right,
   so a client-supplied header can no longer forge a caller identity.
+- **Bring your own key, for the planner too.** An organization's Groq key now
+  lives in the same encrypted vault as its SerpApi key, and planning runs
+  through whichever key that organization supplied. The vault was already
+  provider-agnostic - `upstream_credentials.provider` has existed since the
+  first migration - so this added a provider registry and no schema change.
+  `GET /v1/credentials/providers` reports what an organization still needs to
+  bring, what each key does, and what happens while it is absent; the console
+  builds its credential screen from that, so a provider added to the registry
+  appears in the interface without a frontend change. `LLM_PROVIDER` and
+  `GROQ_API_KEY` survive as a self-hosting fallback, consulted only when the
+  organization has brought no key of its own. See `docs/security/byok.md`.
+- **Execution mode is chosen where the decision belongs.** A project sets its
+  own mode and a single search can override it, instead of every project on an
+  instance executing however `SERPFLOW_MODE` says. Precedence, resolved in one
+  function so it cannot drift: a `test` API key (always mock, absolute) >
+  per-request > project > `SERPFLOW_MODE`. NULL on a project means "inherit",
+  not "pin to today's default", so an operator changing the instance default
+  moves every project that never expressed a preference and none that did.
+  See `docs/product/execution-modes.md`.
+- **`run:mode_override`.** Choosing a billable mode for a single search.
+  Developer and above; not analyst, and not service keys, which run whatever
+  their project is set to. Choosing `replay` needs nothing - deciding not to
+  spend money is not a privilege. A caller without the permission who asks to
+  go live is refused rather than quietly downgraded, because executing against
+  cassettes when someone asked for live data would make the result a lie about
+  its own provenance.
+- `docs/security/byok.md` and `docs/product/execution-modes.md`.
 - **Notification channels are configurable from the console.** Settings,
   Notifications now adds and removes channels: an email address, a webhook URL
   or a Slack URL, with an optional label. Previously the page listed what

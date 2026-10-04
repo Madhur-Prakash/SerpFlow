@@ -108,14 +108,23 @@ class Settings(BaseSettings):
     password_reset_ttl_seconds: int = 60 * 60
 
     # ---- upstream SerpApi -------------------------------------------------
+    # There is no SERPAPI_API_KEY here. SerpApi access is bring-your-own-key:
+    # each organization stores its own in the encrypted credential vault, and
+    # no code path falls back to a key held by the deployment. A field for one
+    # existed and was read by nothing, which read as if the platform might
+    # quietly use its own key.
     serpapi_base_url: str = "https://serpapi.com"
     serpapi_timeout_seconds: float = 30.0
-    serpapi_account_poll_seconds: int = 900
-    # Optional global fallback credential, only used by scripts/seed and the CLI
-    # when no project-level credential exists. Never required.
-    serpapi_api_key: str | None = None
 
     # ---- LLM (Groq) -------------------------------------------------------
+    # Also bring-your-own-key: an organization that stores a Groq credential
+    # plans through Groq, and one that does not plans deterministically.
+    #
+    # These two remain for self-hosting, where one operator runs the instance
+    # for themselves and would otherwise have to attach a credential to every
+    # organization they create. They are the last resort, consulted only when
+    # the organization has brought no key - so on a multi-tenant deployment
+    # they are left unset and never apply.
     llm_provider: Literal["groq", "mock"] = "mock"
     groq_api_key: str | None = None
     groq_base_url: str = "https://api.groq.com/openai/v1"

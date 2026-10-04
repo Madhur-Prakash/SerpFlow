@@ -293,9 +293,14 @@ make demo           # prove the thesis
 make dev            # API on :8000, frontend on :5173
 ```
 
-**No API keys are required for any of that.** `LLM_PROVIDER=mock` uses a
+**No API keys are required for any of that.** Planning falls back to a
 deterministic adapter, and `test` API keys route to a deterministic SerpApi
 mock that consumes zero credits.
+
+When you do want real searches, SerpFlow is
+[bring-your-own-key](docs/security/byok.md): your SerpApi and Groq keys are
+stored encrypted per organization, and the platform holds none of its own that
+your work could fall back to.
 
 `make seed` prints sign-in details and a test API key. Then:
 
@@ -366,8 +371,8 @@ Logifyx, OpenTelemetry, Prometheus, Docker.
 **Frontend** React 19, TypeScript, Vite, Tailwind CSS v4, Radix primitives,
 Lucide, Framer Motion, GSAP, Lenis, Recharts, TanStack Query, Zustand.
 
-**LLM** Groq (`LLM_PROVIDER=groq`), with a deterministic adapter as the default
-so nothing requires a key. Embeddings are a local deterministic feature-hashing
+**LLM** Groq, through a key the organization brings, with a deterministic
+adapter whenever it has not - so nothing requires a key. Embeddings are a local deterministic feature-hashing
 model: no network, no key, identical across processes and CI.
 
 ---

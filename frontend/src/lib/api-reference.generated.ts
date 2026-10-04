@@ -3,7 +3,7 @@
  *
  * Do not edit by hand: run `make api-reference` (or
  * `python scripts/generate_api_reference.py`) after changing a router. A
- * hand-maintained list of 83 operations is a list that goes stale.
+ * hand-maintained list of 84 operations is a list that goes stale.
  */
 
 export type ApiParameter = {
@@ -33,8 +33,8 @@ export type ApiGroup = { tag: string; title: string; blurb: string };
 
 export const API_TITLE = "SerpFlow";
 export const API_VERSION = "0.1.0";
-export const API_OPERATION_COUNT = 83;
-export const API_PATH_COUNT = 72;
+export const API_OPERATION_COUNT = 84;
+export const API_PATH_COUNT = 73;
 
 export const API_GROUPS: ApiGroup[] = [
   {
@@ -1488,6 +1488,51 @@ export const API_OPERATIONS: ApiOperation[] = [
         "status": "201",
         "description": "Successful Response",
         "type": "CredentialResponse"
+      },
+      {
+        "status": "422",
+        "description": "Validation Error",
+        "type": "HTTPValidationError"
+      }
+    ]
+  },
+  {
+    "id": "list_providers_v1_credentials_providers_get",
+    "method": "GET",
+    "path": "/v1/credentials/providers",
+    "tag": "credentials",
+    "summary": "List Providers",
+    "description": "Which keys this organization needs to bring, and whether it has.",
+    "deprecated": false,
+    "parameters": [
+      {
+        "name": "access_token",
+        "location": "query",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "authorization",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "X-API-Key",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "body": null,
+    "responses": [
+      {
+        "status": "200",
+        "description": "Successful Response",
+        "type": "ProviderView[]"
       },
       {
         "status": "422",

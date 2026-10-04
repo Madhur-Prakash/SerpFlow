@@ -104,7 +104,7 @@ export function ThesisStory() {
         // stretch of scrolling is spent reading the result.
         .to(q("[data-plan='local']"), { borderColor: "var(--color-line)", duration: 0.25 }, BEAT_4)
         .to(q("[data-winner='cold']"), { opacity: 0, y: -8, duration: 0.2 }, BEAT_4)
-        .to(q("[data-plan='maps']"), { borderColor: "var(--color-warm)", duration: 0.3 }, BEAT_4 + 0.1)
+        .to(q("[data-plan='maps']"), { borderColor: "var(--color-accent)", duration: 0.3 }, BEAT_4 + 0.1)
         .to(q("[data-cold-col]"), { opacity: 0.35, duration: 0.3 }, BEAT_4 + 0.1)
         .to(q("[data-marginal-col]"), { opacity: 1, duration: 0.3 }, BEAT_4 + 0.1)
         .to(q("[data-winner='marginal']"), { opacity: 1, y: 0, duration: 0.3 }, BEAT_4 + 0.2)
@@ -281,17 +281,19 @@ export function ThesisStory() {
                   className={cn(
                     "relative overflow-hidden rounded-xl border bg-surface p-4 transition-[border-color,box-shadow] duration-500 ease-out-quint sm:p-5",
                     staticState && isWinner
-                      ? "border-warm shadow-raise"
+                      ? "border-accent shadow-raise"
                       : "border-line",
                   )}
                 >
                   {/* The warm-up sweep. scaleX is driven by the timeline on
-                      desktop; the static fallback just shows it filled. */}
+                      desktop; the static fallback just shows it filled.
+                      Accent-tinted: `warm` here means cache-warm, not a
+                      temperature, and the green read as a success state. */}
                   {plan.id === "maps" ? (
                     <div
                       data-warm-sweep
                       aria-hidden
-                      className="pointer-events-none absolute inset-0 origin-left bg-gradient-to-r from-warm-ghost via-warm-ghost/60 to-transparent"
+                      className="pointer-events-none absolute inset-0 origin-left bg-gradient-to-r from-accent-ghost via-accent-ghost/60 to-transparent"
                       style={{ transform: `scaleX(${staticState ? 1 : 0})` }}
                     />
                   ) : null}
@@ -302,7 +304,7 @@ export function ThesisStory() {
                         {plan.label}
                       </span>
                       {planWarm ? (
-                        <span className="mono inline-flex items-center gap-1 rounded-full border border-warm/30 bg-warm-ghost px-2 py-0.5 text-[10px] uppercase tracking-wider text-warm">
+                        <span className="mono inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent-ghost px-2 py-0.5 text-[10px] uppercase tracking-wider text-accent">
                           <Flame className="h-2.5 w-2.5" />
                           warm
                         </span>
@@ -332,7 +334,7 @@ export function ThesisStory() {
                       <span
                         data-winner="marginal"
                         className={cn(
-                          "mono absolute right-0 whitespace-nowrap rounded-full border border-warm/40 bg-warm-ghost px-2 py-0.5 text-[10px] uppercase tracking-wider text-warm",
+                          "mono absolute right-0 whitespace-nowrap rounded-full border border-accent/40 bg-accent-ghost px-2 py-0.5 text-[10px] uppercase tracking-wider text-accent",
                           plan.id === "maps" ? "" : "hidden",
                         )}
                         style={
@@ -382,7 +384,7 @@ export function ThesisStory() {
                       <span
                         className={cn(
                           "mono text-[19px] font-semibold leading-none",
-                          plan.marginal === 0 ? "text-warm" : "text-ink",
+                          plan.marginal === 0 ? "text-accent" : "text-ink",
                         )}
                       >
                         {showWarm ? plan.marginal : plan.cold}

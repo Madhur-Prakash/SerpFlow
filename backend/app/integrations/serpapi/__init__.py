@@ -3,10 +3,15 @@
     1. A `test` API key ALWAYS routes to the deterministic mock, regardless of
        SERPFLOW_MODE. This is absolute and cannot be overridden.
 
-    2. For `live` API keys, SERPFLOW_MODE decides:
+    2. For `live` API keys, the most specific configured mode decides:
+         a per-request override, else the project's mode, else SERPFLOW_MODE.
          live    -> normal execution against SerpApi
          record  -> execute live AND persist cassettes
          replay  -> serve from cassettes only; fail loudly on miss
+
+       Whoever supplies that value, `mock` is not among the answers: the
+       deterministic generator is reachable only through rule 1, so that
+       "this did not cost anything" always means a test key was used.
 
 The resolved mode travels with every response and is stamped on the run, the
 step and the ``X-SerpFlow-Mode`` header. Replayed or mocked data is never
@@ -62,7 +67,12 @@ class ResolvedMode:
         }
 
 
-def resolve_mode(*, key_environment: str, configured_mode: str | None = None) -> ResolvedMode:
+def resolve_mode(
+    *,
+    key_environment: str,
+    configured_mode: str | None = None,
+    source: str | None = None,
+) -> ResolvedMode:
     """Mode precedence. Rule 1 is absolute and checked first."""
     if key_environment == "test":
         return ResolvedMode(
@@ -74,21 +84,39 @@ def resolve_mode(*, key_environment: str, configured_mode: str | None = None) ->
             credited=False,
         )
     configured = (configured_mode or settings.serpflow_mode).lower()
+    source = source or "SERPFLOW_MODE"
+
+    # An unrecognised value must not fall through to live. Before the mode was
+    # selectable per project and per request it could only come from a
+    # validated setting, so the final `return` was a safe default; now it is
+    # reachable with whatever a caller sent, and defaulting an unknown string
+    # to billable execution is the wrong way to be wrong. `mock` lands here
+    # too, deliberately: it is rule 1's answer alone.
+    if configured not in (MODE_LIVE, MODE_RECORD, MODE_REPLAY):
+        return ResolvedMode(
+            mode=MODE_REPLAY,
+            reason=(
+                "Unrecognised execution mode " + repr(configured_mode or configured) + "; "
+                "fell back to replay, which cannot spend credits."
+            ),
+            credited=False,
+        )
+
     if configured == MODE_REPLAY:
         return ResolvedMode(
             mode=MODE_REPLAY,
-            reason="SERPFLOW_MODE=replay: served from recorded cassettes, never the network.",
+            reason=source + "=replay: served from recorded cassettes, never the network.",
             credited=False,
         )
     if configured == MODE_RECORD:
         return ResolvedMode(
             mode=MODE_RECORD,
-            reason="SERPFLOW_MODE=record: executes live against SerpApi and persists cassettes.",
+            reason=source + "=record: executes live against SerpApi and persists cassettes.",
             credited=True,
         )
     return ResolvedMode(
         mode=MODE_LIVE,
-        reason="SERPFLOW_MODE=live: normal billable execution against SerpApi.",
+        reason=source + "=live: normal billable execution against SerpApi.",
         credited=True,
     )
 

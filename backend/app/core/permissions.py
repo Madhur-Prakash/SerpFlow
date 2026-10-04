@@ -59,6 +59,10 @@ class Permission(StrEnum):
     EXECUTE = "run:execute"
     RUN_READ = "run:read"
     RUN_REPLAY = "run:replay"
+    #: Choose a *billable* execution mode per request. Downgrading to
+    #: replay needs nothing - it cannot spend anything - so this covers
+    #: only the direction that costs money.
+    MODE_OVERRIDE = "run:mode_override"
     PAYLOAD_READ = "payload:read"
 
     # cache
@@ -101,6 +105,7 @@ _DEVELOPER: frozenset[Permission] = _ANALYST | frozenset(
     {
         Permission.EXECUTE,
         Permission.RUN_REPLAY,
+        Permission.MODE_OVERRIDE,
         Permission.PAYLOAD_READ,
         Permission.KEY_PROJECT_WRITE,
         Permission.CACHE_INVALIDATE,
@@ -224,6 +229,7 @@ PERMISSION_GROUPS: list[tuple[str, tuple[Permission, ...]]] = [
             Permission.EXECUTE,
             Permission.RUN_READ,
             Permission.RUN_REPLAY,
+            Permission.MODE_OVERRIDE,
             Permission.PAYLOAD_READ,
         ),
     ),
@@ -267,6 +273,7 @@ PERMISSION_HELP: dict[Permission, str] = {
     Permission.EXECUTE: "Execute searches (spends credits)",
     Permission.RUN_READ: "See run history and how each plan was chosen",
     Permission.RUN_REPLAY: "Replay a previous run",
+    Permission.MODE_OVERRIDE: "Choose a billable execution mode for a single search",
     Permission.PAYLOAD_READ: "Read raw result payloads, which can contain personal data",
     Permission.CACHE_READ: "See cache contents and hit rates",
     Permission.CACHE_INVALIDATE: "Invalidate cached entries",

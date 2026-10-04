@@ -173,8 +173,8 @@ export function Hero() {
                     <span className="mono shrink-0 text-[11px] text-ink-subtle">
                       &times;{step.fan}
                     </span>
-                    <span className="mono inline-flex shrink-0 items-center gap-1 rounded-full border border-warm/30 bg-warm-ghost px-2 py-0.5 text-[10px] uppercase tracking-wider text-warm">
-                      <span className="h-1 w-1 rounded-full bg-warm" />
+                    <span className="mono inline-flex shrink-0 items-center gap-1 rounded-full border border-accent/30 bg-accent-ghost px-2 py-0.5 text-[10px] uppercase tracking-wider text-accent">
+                      <span className="h-1 w-1 rounded-full bg-accent" />
                       warm
                     </span>
                   </div>
@@ -229,7 +229,7 @@ function Figure({
       <span
         className={[
           "mono text-[22px] font-semibold leading-none tracking-[-0.02em]",
-          tone === "warm" ? "text-warm" : "text-ink-subtle",
+          tone === "warm" ? "text-accent" : "text-ink-subtle",
           strike ? "line-through decoration-ink-subtle/50" : "",
         ].join(" ")}
       >

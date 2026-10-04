@@ -15,7 +15,7 @@ make seed           # catalog, benchmark fixtures, demo organization
 make test           # 115 tests
 ```
 
-No API keys are required. `LLM_PROVIDER=mock` uses a deterministic adapter and
+No API keys are required. Planning uses a deterministic adapter and
 `test` API keys route to a deterministic SerpApi mock, so the whole project
 works offline.
 

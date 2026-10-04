@@ -1,4 +1,8 @@
-"""Upstream SerpApi credentials (sections 23-27).
+"""Upstream credentials (sections 23-27).
+
+SerpFlow is bring-your-own-key. Every key an organization needs is stored
+here, encrypted per credential, and nothing in the platform falls back to
+a key belonging to the deployment.
 
 Every response here is built by ``credentials.public_view``, which has no code
 path that could emit the secret. The request model accepts it; no response
@@ -14,9 +18,15 @@ from fastapi import APIRouter, Depends, Request, status
 from app.api.deps import SessionDep, client_ip, require
 from app.core.permissions import Permission
 from app.schemas.common import OkResponse
-from app.schemas.identity import CredentialCreate, CredentialResponse, CredentialRotate
+from app.schemas.identity import (
+    CredentialCreate,
+    CredentialResponse,
+    CredentialRotate,
+    ProviderView,
+)
 from app.services.audit.service import AuditService
 from app.services.auth.service import Principal
+from app.services.credentials.providers import PROVIDERS
 from app.services.credentials.service import CredentialService, public_view
 from app.workers import kafka
 
@@ -30,6 +40,34 @@ async def list_credentials(
 ) -> list[CredentialResponse]:
     rows = await CredentialService(session, org_id=principal.org_id).list()
     return [CredentialResponse(**public_view(r)) for r in rows]
+
+
+@router.get("/providers", response_model=list[ProviderView])
+async def list_providers(
+    session: SessionDep,
+    principal: Annotated[Principal, Depends(require(Permission.CREDENTIAL_READ))],
+) -> list[ProviderView]:
+    """Which keys this organization needs to bring, and whether it has.
+
+    The console builds its credential screen from this, so adding a provider
+    to the registry adds it to the interface without a frontend change.
+    """
+    service = CredentialService(session, org_id=principal.org_id)
+    rows = await service.list()
+    have = {r.provider for r in rows if r.revoked_at is None}
+    return [
+        ProviderView(
+            id=spec.id,
+            label=spec.label,
+            purpose=spec.purpose,
+            console_url=spec.console_url,
+            key_hint=spec.key_hint,
+            absent_behaviour=spec.absent_behaviour,
+            required=spec.required,
+            configured=spec.id in have,
+        )
+        for spec in PROVIDERS.values()
+    ]
 
 
 @router.post("", response_model=CredentialResponse, status_code=status.HTTP_201_CREATED)
@@ -49,6 +87,7 @@ async def create_credential(
     credential = await service.create(
         name=payload.name,
         secret=payload.api_key,
+        provider=payload.provider,
         project_id=payload.project_id,
         validate=payload.validate_now,
         set_as_org_default=payload.set_as_org_default,
@@ -62,7 +101,11 @@ async def create_credential(
         resource_id=credential.id,
         project_id=payload.project_id,
         # Fingerprint only. It is sha256(key)[:8] and non-reversible.
-        after={"name": credential.name, "fingerprint": credential.fingerprint},
+        after={
+            "name": credential.name,
+            "provider": credential.provider,
+            "fingerprint": credential.fingerprint,
+        },
         ip=client_ip(request),
     )
     return CredentialResponse(**public_view(credential))
