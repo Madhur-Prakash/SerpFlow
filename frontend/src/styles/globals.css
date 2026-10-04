@@ -456,39 +456,15 @@
 
 /* --- Spotlight cards ----------------------------------------------------- */
 
+/* No pointer tracking. A light that followed the cursor and a card that tilted
+   toward it were two things moving per hover, and on a grid of these the one
+   under the pointer read as selected rather than as pointed at. What is left
+   says "this is interactive" without painting anything: the border firms up
+   and the card lifts. */
 .spotlight-card {
-  --spot-x: 50%;
-  --spot-y: 0%;
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transition:
-    transform 400ms var(--ease-out-quint),
     border-color 300ms var(--ease-out-quint),
     box-shadow 400ms var(--ease-out-quint);
-}
-
-.spotlight-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 320ms var(--ease-out-quint);
-  /* Achromatic, like the ground behind it. An accent-tinted spotlight put a
-     blue field across a card whose own content carries the only colour that
-     means anything, and on a grid of them the hovered card read as selected
-     rather than as pointed at. The light still follows the cursor - it just
-     has no hue. */
-  background: radial-gradient(
-    420px circle at var(--spot-x) var(--spot-y),
-    color-mix(in oklab, var(--atmosphere-glow) 7%, transparent),
-    transparent 62%
-  );
-  pointer-events: none;
-}
-
-.spotlight-card:hover::before {
-  opacity: 1;
 }
 
 .spotlight-card:hover {

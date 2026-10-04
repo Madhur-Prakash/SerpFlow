@@ -337,53 +337,22 @@ export function CtaLink({
 }
 
 /**
- * A card that tilts a little toward the pointer and lifts a highlight with it.
+ * A card that firms its border and lifts on hover.
  *
- * The highlight is a CSS custom property updated on pointermove, so the whole
- * effect is one repaint and no React state.
+ * It used to tilt toward the pointer and carry a highlight that followed it.
+ * Both are gone: two things moving per hover is one too many, and the lit
+ * card read as selected rather than as hovered. The name is kept so the
+ * `.spotlight-card` class and its call sites stay put.
  */
 export function SpotlightCard({
   children,
   className,
-  tilt = true,
 }: {
   children: React.ReactNode;
   className?: string;
-  tilt?: boolean;
 }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  const onMove = React.useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      const el = ref.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const px = (event.clientX - rect.left) / rect.width;
-      const py = (event.clientY - rect.top) / rect.height;
-      el.style.setProperty("--spot-x", `${px * 100}%`);
-      el.style.setProperty("--spot-y", `${py * 100}%`);
-      if (tilt) {
-        el.style.setProperty("--tilt-x", `${(0.5 - py) * 5}deg`);
-        el.style.setProperty("--tilt-y", `${(px - 0.5) * 5}deg`);
-      }
-    },
-    [tilt],
-  );
-
-  const onLeave = React.useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.setProperty("--tilt-x", "0deg");
-    el.style.setProperty("--tilt-y", "0deg");
-  }, []);
-
   return (
-    <div
-      ref={ref}
-      onPointerMove={onMove}
-      onPointerLeave={onLeave}
-      className={cn("spotlight-card group relative overflow-hidden", className)}
-    >
+    <div className={cn("spotlight-card group relative overflow-hidden", className)}>
       {children}
     </div>
   );

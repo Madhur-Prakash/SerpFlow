@@ -390,7 +390,6 @@ export function CacheLayers() {
 
       <div className="mt-3.5 grid gap-3.5 lg:grid-cols-2">
         <SpotlightCard
-          tilt={false}
           className="rounded-xl border border-line bg-surface p-6"
         >
           <div data-reveal className="relative flex flex-col gap-4">
@@ -420,7 +419,7 @@ export function CacheLayers() {
           </div>
         </SpotlightCard>
 
-        <SpotlightCard tilt={false} className="rounded-xl border border-line bg-surface p-6">
+        <SpotlightCard className="rounded-xl border border-line bg-surface p-6">
           <div data-reveal className="relative flex flex-col gap-4">
             <MonoLabel tone="muted">freshness</MonoLabel>
             <div className="flex flex-col gap-2">
