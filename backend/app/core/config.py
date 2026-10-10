@@ -128,7 +128,7 @@ class Settings(BaseSettings):
     llm_provider: Literal["groq", "mock"] = "mock"
     groq_api_key: str | None = None
     groq_base_url: str = "https://api.groq.com/openai/v1"
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
     groq_timeout_seconds: float = 45.0
     embedding_dim: int = 384
 
