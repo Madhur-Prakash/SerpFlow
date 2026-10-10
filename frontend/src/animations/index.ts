@@ -1,60 +1,18 @@
 /**
  * Animation setup (section 5).
  *
- * Lenis for smooth scrolling, Framer Motion for interface transitions, GSAP
- * for the plan and catalog graphs. All three respect prefers-reduced-motion:
- * Lenis is never started, the Framer variants collapse to instant, and the
- * GSAP helpers below set the end state directly instead of tweening to it.
+ * Framer Motion for interface transitions, GSAP for the plan and catalog
+ * graphs. Both respect prefers-reduced-motion: the Framer variants collapse to
+ * instant, and the GSAP helpers below set the end state directly instead of
+ * tweening to it. Smooth scrolling is public-pages only; see useSmoothScroll.
  */
 
 import { gsap } from "gsap";
-import Lenis from "lenis";
 import type { Transition, Variants } from "framer-motion";
 
 export const prefersReducedMotion = (): boolean =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-// ------------------------------------------------------------------ Lenis
-let lenis: Lenis | null = null;
-let rafHandle = 0;
-
-export function startSmoothScroll(wrapper?: HTMLElement | null): Lenis | null {
-  if (prefersReducedMotion()) return null;
-  stopSmoothScroll();
-
-  lenis = new Lenis({
-    duration: 0.9,
-    easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    wheelMultiplier: 1,
-    touchMultiplier: 1.6,
-    autoRaf: false,
-    ...(wrapper ? { wrapper, content: (wrapper.firstElementChild as HTMLElement) ?? wrapper } : {}),
-  });
-
-  const frame = (time: number) => {
-    lenis?.raf(time);
-    rafHandle = requestAnimationFrame(frame);
-  };
-  rafHandle = requestAnimationFrame(frame);
-  return lenis;
-}
-
-export function stopSmoothScroll(): void {
-  if (rafHandle) cancelAnimationFrame(rafHandle);
-  rafHandle = 0;
-  lenis?.destroy();
-  lenis = null;
-}
-
-export function scrollTo(target: string | HTMLElement, offset = -24): void {
-  if (lenis) {
-    lenis.scrollTo(target, { offset });
-    return;
-  }
-  const element = typeof target === "string" ? document.querySelector(target) : target;
-  element?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" });
-}
 
 // --------------------------------------------------------- Framer Motion
 export const easeOutQuint = [0.22, 1, 0.36, 1] as const;

@@ -16,6 +16,19 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **A SerpApi "no results" answer is no longer treated as a failure.** SerpApi bills a search that finds nothing ("Google Finance hasn't returned any results for this query"), but SerpFlow recorded 0 credits and discarded the response, so its ledger drifted from SerpApi's dashboard. It is now a successful, empty, billed search: spend is recorded, the result is cached, and the result panel shows SerpApi's own message
+- **Failed runs show why.** The search page now loads a failed run and shows its error, the credits recorded and a link to the Run Inspector, instead of waiting for a result that never comes
+- **Google Finance gets a ticker, not a sentence.** "what is nvidia trading at right now" now sends `q=NVDA:NASDAQ`. Well-known companies, indices and crypto map to Google Finance identifiers; an explicit symbol in the intent wins; anything else is sent with the conversational filler removed
+- **Temporal phrases are no longer locations.** "at right now", "at least" and "Shibuya at the moment" used to produce `location=right`, `location=least` and `location=Shibuya moment`
+- **Regional engines stay in their markets.** Naver (Korea), Baidu (China) and Yandex (Russia) are penalised outside their market unless the intent names them or is written in their script. "cafes in Koramangala" used to route to Naver because its description mentions cafes
+- **The console scrolls natively again.** It had been running Lenis smooth scrolling on its scroll container, which cached the first page's height and never re-measured after a navigation, so a taller page such as a run stopped short of its bottom. The console now uses native scrolling, as `useSmoothScroll` already intended, and a navigation starts the new page at the top
+
+### Changed
+
+- **The search pipeline reveals stages one at a time.** Each stage is held as running for at least 320 ms before its real result is shown, so a fast run reads in order instead of appearing all at once. Nothing is ever shown complete before its real frame arrives
+
 ## [1.0.0] - 2026-10-10
 
 First stable release. The thesis from 0.1.0 is unchanged, and `make demo`
@@ -36,18 +49,6 @@ up from 115.
 - **Corrected facts:** 216 tests (was 115/180), 22 Prometheus metrics (was 20), four MCP tools (was "three"), 85 operations across 74 paths (was 78/69), 24 RLS tables (was 23), four migrations (was two), 8 demo candidates (was 9), Vite 6 (was 7), demo accounts `@serpflow.dev`, the project `PATCH` path `/v1/projects/{id}`, and the Docker bootstrap (the image no longer runs `alembic upgrade` in its `CMD`)
 - **README footer** credits the [SerpApi India Hackathon 2026](https://serpapi.github.io/serpapi-india-hackathon-2026/), where SerpFlow started
 - **Troubleshooting** gained entries for checkouts copied from Windows, the ignored `SERPAPI_API_KEY`, production `VITE_API_BASE_URL`, `TRUSTED_PROXY_HOPS`, exposed datastore ports, silently skipped tests and out-of-memory crashes
-
-### Fixed
-
-- **A SerpApi "no results" answer is no longer treated as a failure.** SerpApi bills a search that finds nothing ("Google Finance hasn't returned any results for this query"), but SerpFlow recorded 0 credits and discarded the response, so its ledger drifted from SerpApi's dashboard. It is now a successful, empty, billed search: spend is recorded, the result is cached, and the result panel shows SerpApi's own message
-- **Failed runs show why.** The search page now loads a failed run and shows its error, the credits recorded and a link to the Run Inspector, instead of waiting for a result that never comes
-- **Google Finance gets a ticker, not a sentence.** "what is nvidia trading at right now" now sends `q=NVDA:NASDAQ`. Well-known companies, indices and crypto map to Google Finance identifiers; an explicit symbol in the intent wins; anything else is sent with the conversational filler removed
-- **Temporal phrases are no longer locations.** "at right now", "at least" and "Shibuya at the moment" used to produce `location=right`, `location=least` and `location=Shibuya moment`
-- **Regional engines stay in their markets.** Naver (Korea), Baidu (China) and Yandex (Russia) are penalised outside their market unless the intent names them or is written in their script. "cafes in Koramangala" used to route to Naver because its description mentions cafes
-
-### Changed
-
-- **The search pipeline reveals stages one at a time.** Each stage is held as running for at least 320 ms before its real result is shown, so a fast run reads in order instead of appearing all at once. Nothing is ever shown complete before its real frame arrives
 
 ### Known issues
 

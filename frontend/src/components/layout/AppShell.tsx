@@ -22,7 +22,7 @@ import {
 import * as React from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import { pageVariants, startSmoothScroll, stopSmoothScroll } from "@/animations";
+import { pageVariants } from "@/animations";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { ModeBadge } from "@/components/shared";
@@ -156,11 +156,6 @@ export function AppShell() {
   const motionRef = React.useRef<HTMLElement>(null);
   useCardReveal(motionRef, { stagger: 0.04 });
   useFigureCounters(motionRef);
-
-  React.useEffect(() => {
-    startSmoothScroll(scrollRef.current);
-    return () => stopSmoothScroll();
-  }, []);
 
   React.useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -387,8 +382,13 @@ export function AppShell() {
           </div>
         </header>
 
+        {/* Native scrolling, deliberately: see useSmoothScroll. Lenis here
+            cached the first page's height, so a taller page stopped short. */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
-          <AnimatePresence mode="wait">
+          <AnimatePresence
+            mode="wait"
+            onExitComplete={() => scrollRef.current?.scrollTo({ top: 0 })}
+          >
             <motion.main
               key={location.pathname}
               ref={motionRef}

@@ -39,7 +39,7 @@ src/
 ├── hooks/           useQueries (TanStack), useRunStream (SSE)
 ├── lib/             api client, formatters, docs loader
 ├── stores/          session
-├── animations/      Lenis, Framer variants, GSAP helpers
+├── animations/      Framer variants, GSAP helpers
 └── routes/
 ```
 
@@ -80,7 +80,7 @@ executing required steps
 
 | Library | Used for | Reduced motion |
 | --- | --- | --- |
-| Lenis | Smooth scrolling in the app shell | Never started |
+| Lenis | Smooth scrolling on the public pages only; the console scrolls natively ([web: smooth scrolling](web.md#smooth-scrolling)) | Never started |
 | Framer Motion | Page transitions, dialogs, lists, cards | Variants collapse to instant |
 | GSAP | Plan graph edges, catalog graph reveal, counting credit figures, landing-page scroll scenes | Helpers set the end state directly |
 
