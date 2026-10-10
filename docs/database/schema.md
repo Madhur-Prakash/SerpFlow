@@ -1,9 +1,20 @@
 # Database schema
 
-PostgreSQL 17 with `vector`, `pg_trgm` and `btree_gin`. 33 tables. All schema
-changes go through Alembic; nothing is created by hand.
+<p>
+  <a href="../README.md#database"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
+  <img alt="tables: 33" src="https://img.shields.io/badge/tables-33-4169E1">
+  <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
+  <img alt="SQLAlchemy: 2" src="https://img.shields.io/badge/SQLAlchemy-2-D71F00?logo=sqlalchemy&logoColor=white">
+  <a href="../../backend/app/db/models"><img alt="source: db/models" src="https://img.shields.io/badge/source-db%2Fmodels-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 3 min" src="https://img.shields.io/badge/read-3%20min-555555">
+</p>
 
-Models: [`backend/app/db/models/`](../../backend/app/db/models).
+[Docs](../README.md) › [Database](../README.md#database) › **Database schema** · page 22 of 50
+
+- **PostgreSQL 17** with the `vector`, `pg_trgm` and `btree_gin` extensions
+- **33 tables**
+- **All schema changes go through Alembic.** Nothing is created by hand
+- Models: [`backend/app/db/models/`](../../backend/app/db/models)
 
 ## Identity
 
@@ -13,16 +24,19 @@ users                email, Argon2id password_hash, verification + reset tokens
 memberships          org_id + user_id -> role
 projects             org_id, slug, key_prefix (unique), credential_id,
                      engine allow/denylist, semantic_threshold, ttl_overrides,
-                     retention, shared_cache_enabled
+                     retention, shared_cache_enabled, execution_mode
 project_members      optional per-project role override
+custom_roles         org_id, name, slug (unique per org), description,
+                     permissions[], created_by
 auth_sessions        refresh token hash, rotation lineage, device, revocation
 service_sessions     machine identity: api_key_id, session_cap, credits_used
 ```
 
-`organizations.default_credential_id` and `upstream_credentials.org_id` form a
-genuine cycle: an organization names a default credential, and every credential
-belongs to an organization. The initial migration creates the table without the
-forward reference and adds the constraint once both sides exist.
+- **A genuine foreign-key cycle:** `organizations.default_credential_id` → `upstream_credentials`, and `upstream_credentials.org_id` → `organizations`
+  - an organization names a default credential; every credential belongs to an organization
+  - the initial migration creates the table without the forward reference, then adds the constraint once both sides exist
+- **`custom_roles`** (migration `0003`): organization-defined roles, each a named list of permissions from `GET /v1/roles/permissions`
+- **`projects.execution_mode`** (migration `0004`): the project's own mode. `NULL` inherits `SERPFLOW_MODE`; a check constraint admits only `live`, `record` and `replay`. See [execution modes](../product/execution-modes.md)
 
 ## Keys and credentials
 
@@ -35,12 +49,9 @@ upstream_credentials      ciphertext, encrypted_dek, kek_id, algo, fingerprint,
 upstream_quota_snapshots  periodic reconciliation, with divergence
 ```
 
-The project prefix is stored in plaintext and uniquely indexed so a key is
-identified with an index lookup rather than a scan over every key in the
-system.
-
-`upstream_credentials` has no column holding a recoverable plaintext key, and
-no response schema in `app/schemas` has a field that could carry one.
+- **The project prefix is plaintext and uniquely indexed**, so a key is found with an index lookup, not a scan over every key
+- **`upstream_credentials` has no column holding a recoverable plaintext key**
+- **No response schema** in `app/schemas` has a field that could carry one
 
 ## Planning and execution
 
@@ -71,10 +82,8 @@ steps             engine, parameters, depends_on, fan_out, cache_layer,
                   payload_ref, serpapi_search_id, http_status, pii_risk
 ```
 
-`plan_candidates` exists because the Plan Inspector has to show why the
-selected plan beat the alternatives, and `plans.marginal_replan_changed_selection`
-is indexed so "show me the runs where replanning changed the answer" is a cheap
-query.
+- **`plan_candidates` exists** because the Plan Inspector must show why the selected plan beat the alternatives. See [ADR 0014](../adr/0014-persist-every-candidate.md)
+- **`plans.marginal_replan_changed_selection` is indexed**, so "show me the runs where replanning changed the answer" is a cheap query
 
 ## Cache
 
@@ -104,13 +113,9 @@ ix_cache_entries_embedding_hnsw
 ix_cache_entries_query_trgm USING gin (query_text gin_trgm_ops)
 ```
 
-The partition index comes first deliberately: semantic lookups filter on those
-columns **before** any vector distance is computed. A full vector scan followed
-by filtering would be slower and would cross the project isolation boundary
-while doing it.
-
-Guard material (`numerals`, `entities`, `versions`) is extracted once at write
-time so a lookup does not re-derive it for every candidate row.
+- **The partition index comes first, deliberately:** semantic lookups filter on those columns **before** any vector distance is computed
+  - a full vector scan then filtering would be slower, **and** cross the project isolation boundary
+- **Guard material** (`numerals`, `entities`, `versions`) is extracted **once, at write time**, so a lookup does not re-derive it per candidate row
 
 ## Catalog projection
 
@@ -123,8 +128,8 @@ catalog_substitutes  engine, substitute_engine, coverage, note, shared_tags
                                                       <- how engines COMPETE
 ```
 
-A queryable projection of the committed YAML, loaded by `make seed`. The YAML
-remains the source of truth.
+- **A queryable projection of the committed YAML**, loaded by `make seed`
+- **The YAML remains the source of truth.** See [catalog](../architecture/catalog.md)
 
 ## Governance
 
@@ -141,17 +146,16 @@ notification_channels  email | webhook | slack, events, secret_hash
 webhook_deliveries     attempts, response_status, delivered_at
 ```
 
-`budget_ledger` carries both `project_id` and `beneficiary_project_id`. With a
-shared organization cache the two differ, and keeping them apart is what makes
-cross-project benefit a computed figure rather than an estimate:
+- **`budget_ledger` carries both `project_id` and `beneficiary_project_id`**
+  - with a shared organization cache the two differ
+  - keeping them apart makes cross-project benefit a **computed figure**, not an estimate:
 
 ```
 SPEND     attributed to the project that fetched
 SAVINGS   attributed to the project that benefited
 ```
 
-`audit_log` is append-only at the database level, enforced by a trigger. See
-[migrations](migrations.md).
+- **`audit_log` is append-only at the database level**, enforced by a trigger. See [migrations](migrations.md) and [ADR 0012](../adr/0012-append-only-audit-log.md)
 
 ## Benchmark
 
@@ -163,23 +167,26 @@ routing_evals     per task per run: predicted engines and params, correctness
                   flags, failure mode
 ```
 
-Tracked per `catalog_version` so a routing regression is attributable to a
-specific catalog change.
+- **Tracked per `catalog_version`**, so a routing regression is attributable to a specific catalog change. See [benchmark](../product/benchmark.md)
 
 ## Conventions
 
-- **Identifiers** are prefixed ULIDs: `run_01M3WQ...`. Lexicographically
-  sortable by creation time, readable in a log line.
-- **Timestamps** are `TIMESTAMPTZ`, defaulting to `now()`, with `updated_at`
-  maintained by `onupdate`.
-- **Tenancy**: every scoped table carries `org_id` with an index, and appears
-  in `RLS_TABLES` in the initial migration.
-- **JSON columns** hold shapes that are read whole and never queried into:
-  plan steps, cache state, stage traces, audit diffs.
-- **Naming convention** is set on the metadata, so constraint names are stable
-  and Alembic autogenerate produces clean diffs.
+| Convention | Rule |
+| --- | --- |
+| **Identifiers** | prefixed ULIDs (`run_01M3WQ...`): sortable by creation time, readable in a log line |
+| **Timestamps** | `TIMESTAMPTZ`, defaulting to `now()`; `updated_at` maintained by `onupdate` |
+| **Tenancy** | every scoped table carries an indexed `org_id`, and has a row-level security policy |
+| **JSON columns** | only for shapes read whole and never queried into: plan steps, cache state, stage traces, audit diffs |
+| **Naming** | a naming convention on the metadata keeps constraint names stable, so Alembic autogenerate produces clean diffs |
 
 ## Related
 
 - [Migrations](migrations.md)
 - [Row-level security](rls.md)
+- [Backend](../architecture/backend.md)
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [Worked examples](../api/examples.md) | [Docs index](../README.md) | [Migrations](../database/migrations.md) |

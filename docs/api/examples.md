@@ -1,12 +1,25 @@
 # Worked examples
 
-Every example below runs against the deterministic mock with a `test` API key
-and consumes zero SerpApi credits.
+<p>
+  <a href="../README.md#api"><img alt="docs: API" src="https://img.shields.io/badge/docs-API-009688?logo=readthedocs&logoColor=white"></a>
+  <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
+  <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
+  <img alt="MCP: server" src="https://img.shields.io/badge/MCP-server-555555">
+  <a href="../../sdk/typescript/README.md"><img alt="source: typescript/README.md" src="https://img.shields.io/badge/source-typescript%2FREADME.md-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 2 min" src="https://img.shields.io/badge/read-2%20min-555555">
+</p>
+
+[Docs](../README.md) › [API](../README.md#api) › **Worked examples** · page 21 of 50
+
+- **Every example runs against the deterministic mock** with a `test` API key
+- **Each one spends zero SerpApi credits**
 
 ```bash
 make seed            # prints a test key
 export SERPFLOW_API_KEY=sf_test_...
 ```
+
+**On this page:** [plan](#plan-without-spending) · [execute](#execute) · [stream](#watch-it-happen) · [explain](#explain-a-run) · [false hit](#report-a-bad-semantic-hit) · [catalog](#explore-the-catalog) · [Python](#python-sdk) · [TypeScript](#typescript-sdk) · [SerpApi drop-in](#the-serpapi-drop-in) · [CLI](#cli) · [MCP](#mcp)
 
 ## Plan without spending
 
@@ -32,7 +45,7 @@ curl -s -X POST http://localhost:8000/v1/plan \
   "naive_cost": 101,
   "marginal_cost": 0,
   "savings": 101,
-  "candidate_count": 9,
+  "candidate_count": 8,
   "catalog_version": "v1.0.0",
   "marginal_replan_changed_selection": true,
   "replan_explanation": "Cache-aware replanning changed the selected plan. Ranked on cold cost alone, google_local>... would have won at 51 credits. google_maps>... costs 101 credits cold, but 3 of its 3 steps are already warm ...",
@@ -48,9 +61,11 @@ curl -s -X POST http://localhost:8000/v1/plan \
 }
 ```
 
-The whole thesis is visible in one response: what it would have cost cold, what
-it costs now, which plan the cold ranking would have chosen, and why each loser
-lost.
+**The whole thesis is visible in one response:**
+
+- what it would have cost cold, and what it costs now
+- which plan the cold ranking would have chosen
+- why each loser lost
 
 ## Execute
 
@@ -68,9 +83,8 @@ X-SerpFlow-Budget-Remaining: 60
 X-SerpFlow-Catalog-Version: v1.0.0
 ```
 
-The plan's `parameter_bindings` will contain `gl: kr` and `hl: ko`: Seoul
-implies a Korean locale, and getting that wrong silently returns a different
-result set.
+- **`parameter_bindings` will contain `gl: kr` and `hl: ko`:** Seoul implies a Korean locale
+- Getting that wrong would **silently** return a different result set
 
 ## Watch it happen
 
@@ -95,7 +109,7 @@ data: {"stage":"executing","status":"step_complete","elapsed_ms":227.1,...}
 data: {"stage":"complete","status":"complete","elapsed_ms":399.3,...}
 ```
 
-See [streaming](streaming.md) for the full contract.
+- The full contract: [streaming](streaming.md)
 
 ## Explain a run
 
@@ -104,9 +118,12 @@ curl -s -H "X-API-Key: $SERPFLOW_API_KEY" \
   http://localhost:8000/v1/runs/$RUN | python -m json.tool
 ```
 
-Returns the Run Inspector payload: every step with the cache layer that served
-it, the matched query and similarity for semantic hits, entry age, TTL source,
-credits and latency, plus the whole plan with every candidate.
+Returns the **Run Inspector payload**:
+
+- every step, with the cache layer that served it
+- the matched query and similarity, for semantic hits
+- entry age, TTL source, credits and latency
+- the whole plan, with every candidate
 
 ## Report a bad semantic hit
 
@@ -116,9 +133,9 @@ curl -s -X POST http://localhost:8000/v1/runs/$RUN/report-false-hit \
   -d '{"note":"cached entry was for a different neighbourhood","invalidate_entry":true}'
 ```
 
-Records the report, increments
-`serpflow_semantic_false_hit_reports_total`, and invalidates the offending
-entry so it cannot be served again.
+- **Records the report**
+- **Increments** `serpflow_semantic_false_hit_reports_total`
+- **Invalidates the offending entry**, so it cannot be served again
 
 ## Explore the catalog
 
@@ -141,8 +158,7 @@ curl -s -H "X-API-Key: $SERPFLOW_API_KEY" \
 }
 ```
 
-That is the typed graph answering directly: here is every way to reach reviewer
-identity from an ordinary query and a location.
+- **The typed graph, answering directly:** every way to reach reviewer identity from an ordinary query and a location
 
 ## Python SDK
 
@@ -198,12 +214,13 @@ try {
 }
 ```
 
-No runtime dependencies. Runs in Node 18+, Deno, Bun and the browser.
+- **No runtime dependencies.** Runs in Node 18+, Deno, Bun and the browser
+- More: [`sdk/typescript/README.md`](../../sdk/typescript/README.md)
 
 ## The SerpApi drop-in
 
-Existing SerpApi code keeps its shape. Change the base URL and the API key, and
-the request now goes through SerpFlow's cache layers and budget enforcement.
+- **Existing SerpApi code keeps its shape**
+- Change the base URL and the API key, and the request now goes through SerpFlow's cache layers and budget enforcement
 
 ```python
 from serpflow import SerpApiCompat
@@ -230,9 +247,9 @@ const search = new SerpApiCompat({
 const results = await search.getJson();
 ```
 
-This path does **not** re-route: you asked for an engine, you get that engine.
-What you gain is caching, budget enforcement and provenance. Adopt
-`client.search()` when you want routing as well.
+- **This path does not re-route:** you asked for an engine, you get that engine
+- **What you gain:** caching, budget enforcement and provenance
+- **Adopt `client.search()`** when you want routing as well
 
 ## CLI
 
@@ -249,8 +266,7 @@ serpflow benchmark compare
 serpflow health
 ```
 
-`serpflow plan` prints the cost comparison, the candidate set, every rejection
-reason and any budget reduction with its impact note.
+- **`serpflow plan` prints:** the cost comparison, the candidate set, every rejection reason, and any budget reduction with its impact note
 
 ## MCP
 
@@ -271,7 +287,17 @@ SERPFLOW_API_KEY=sf_test_... serpflow-mcp
 }
 ```
 
-Tools: `plan`, `search`, `explain`, `catalog`. Every call resolves a full
-principal including a service session with its own cap, so an agent is
-budgeted like any other caller rather than treated as a human with a shared
-key.
+- **Tools:** `plan`, `search`, `explain`, `catalog`
+- **Every call resolves a full principal**, including a service session with its own cap
+- So an agent is **budgeted like any other caller**, not treated as a human with a shared key
+
+## Related
+
+- [API overview](overview.md)
+- [SDKs](../../sdk/README.md)
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [Streaming](../api/streaming.md) | [Docs index](../README.md) | [Database schema](../database/schema.md) |

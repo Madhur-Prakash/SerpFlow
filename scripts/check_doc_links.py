@@ -36,6 +36,9 @@ SKIP_DIRS = {
     ".mypy_cache",
     ".ruff_cache",
     ".pytest_cache",
+    # Local render workspace for the product film: gitignored, and full of
+    # third-party package READMEs that are not this project's documentation.
+    "videos",
 }
 
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")

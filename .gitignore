@@ -40,3 +40,6 @@ backend/.serpflow-objects/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Rendered product videos and their render sources
+videos/

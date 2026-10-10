@@ -1,12 +1,22 @@
 # Routing benchmark
 
+<p>
+  <a href="../README.md#product"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <img alt="routing accuracy: 38.3%" src="https://img.shields.io/badge/routing%20accuracy-38.3%25-3fcf8e">
+  <img alt="tasks: 120" src="https://img.shields.io/badge/tasks-120-2F6BFF">
+  <img alt="Groq: BYOK" src="https://img.shields.io/badge/Groq-BYOK-F55036">
+  <a href="../../backend/fixtures/benchmark/results"><img alt="source: benchmark/results" src="https://img.shields.io/badge/source-benchmark%2Fresults-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
+</p>
+
+[Docs](../README.md) › [Product](../README.md#product) › **Routing benchmark** · page 4 of 50
+
 ```bash
 make benchmark
 ```
 
-120 hand-authored labelled tasks, three systems, results committed per catalog
-version. The suite makes real LLM calls, so it runs on demand and is
-deliberately **not** part of CI.
+- **120 hand-authored labelled tasks**, three systems, results committed per catalog version
+- The suite makes **real LLM calls**, so it runs on demand and is deliberately **not** part of CI
 
 ## Results
 
@@ -28,45 +38,36 @@ By category:
 | locale | 20 | 7 | 35.0% |
 | single_engine | 40 | 13 | 32.5% |
 
-Raw reports: [`backend/fixtures/benchmark/results/`](../../backend/fixtures/benchmark/results).
+Raw reports: [`backend/fixtures/benchmark/results/`](../../backend/fixtures/benchmark/results)
 
 ## Read this before quoting the number
 
-**38.3% is not a good routing accuracy.** It is the honest measurement of the
-deterministic adapter, the one that runs with no API keys at all, and it is
-reported as-is because an unqualified claim would be worth less than a
-qualified one.
+> **38.3% is not a good routing accuracy.** It is the honest measurement of the
+> deterministic adapter, the one that runs with no API keys at all.
 
-Three things it does and does not mean:
-
-- It is **not** a ceiling. Stage B is a keyword-and-affinity selector here. The
-  Groq adapter replaces it with a model that reads the retrieved shortlist and
-  its documented trade-offs. Run `LLM_PROVIDER=groq GROQ_API_KEY=... make benchmark`
-  to measure that configuration; it is a different system and should be
-  reported as one.
-- It **is** a fair comparison, because all three systems were measured in the
-  same conditions on the same tasks with the same scoring.
-- The scoring is **strict**. A chain must match exactly, or match a declared
-  acceptable alternative, and the locale parameters must match too. A plan that
-  routes to the right engine with the wrong `gl` scores zero on the task, not
-  half.
+- It is reported as-is: an unqualified claim would be worth less than a qualified one
+- **It is not a ceiling**
+  - stage B here is a keyword-and-affinity selector
+  - the Groq adapter replaces it with a model that reads the retrieved shortlist and its documented trade-offs
+  - measure that with `LLM_PROVIDER=groq GROQ_API_KEY=... make benchmark`. It is a different system, and should be reported as one
+- **It is a fair comparison:** all three systems ran in the same conditions, on the same tasks, with the same scoring
+- **The scoring is strict**
+  - a chain must match exactly, or match a declared acceptable alternative
+  - the locale parameters must match too
+  - the right engine with the wrong `gl` scores **zero** on the task, not half
 
 ### Why the baselines score zero on exact match
 
 They are not sabotaged. They are measured doing what they can actually do.
 
-**Unaided model** receives the intent and nothing else: no engine list, no
-dependency edges, no substitutes. Its engine-level accuracy of 10.8% is almost
-entirely `engine=google` being right by luck, which is also the condition most
-of the 111-of-185 community projects are effectively in. Without a catalog it
-has no way to learn that reviewer identity is reachable only through
-`google_maps_reviews.reviews[].user.contributor_id`.
-
-**Embedding retrieval** returns the single nearest engine by cosine similarity.
-It has no selector and no path-finding, so it structurally cannot produce a
-two-engine chain; every multi-hop task is lost before scoring begins. That is
-the point of including it: it isolates how much of SerpFlow's accuracy comes
-from the typed graph rather than from retrieval.
+- **Unaided model:** gets the intent and nothing else. No engine list, no dependency edges, no substitutes
+  - its 10.8% engine-level accuracy is almost all `engine=google` being right by luck
+  - that is the position most of the 111-of-185 community projects are in
+  - without a catalog it cannot learn that reviewer identity is only reachable through `google_maps_reviews.reviews[].user.contributor_id`
+- **Embedding retrieval:** returns the single nearest engine by cosine similarity
+  - no selector and no path-finding, so it **structurally cannot** produce a two-engine chain
+  - every multi-hop task is lost before scoring starts
+  - that is why it is included: it isolates how much of SerpFlow's accuracy comes from the **typed graph** rather than from retrieval
 
 ## Failure analysis
 
@@ -80,10 +81,9 @@ from the typed graph rather than from retrieval.
 
 ### wrong_engine (58)
 
-The dominant mode and the one that would move most with a real model. The
-deterministic selector scores capability vocabulary against the intent, and
-when an intent uses words the vocabulary does not cover, it falls back to
-whatever retrieval ranked highest. Representative examples:
+- **The dominant mode**, and the one a real model would move most
+- The deterministic selector scores capability vocabulary against the intent
+- When an intent uses words the vocabulary does not cover, it falls back to whatever retrieval ranked highest
 
 ```
 bm_015  "Who is Yann LeCun and which of his papers are the most cited?"
@@ -97,23 +97,21 @@ bm_029  "Show me the top listing for the Sony WH-1000XM6 and then ..."
            retailer, and the tie-break is not principled
 ```
 
-A handful are genuine judgement calls rather than errors. `bm_022`
-("Interior photos of the Ace Hotel in Shoreditch") expects `google_images`; the
-planner routes `google_maps -> google_maps_photos`, which arguably answers it
-better, and is scored wrong.
+- **A few are judgement calls, not errors:** `bm_022` ("Interior photos of the Ace Hotel in Shoreditch") expects `google_images`
+  - the planner routes `google_maps -> google_maps_photos`, which arguably answers it better, and is scored wrong
 
 ### locale_miss (3)
 
-All three are label disagreements rather than inference failures:
+All three are **label disagreements**, not inference failures:
 
 ```
 bm_039  "Breaking coverage of the Taiwan earthquake"
         expected gl=us, inferred gl=tw
 ```
 
-The planner infers the locale of the **subject**. The task labels the locale of
-the **searcher**. Both are defensible; the suite picked one and the planner
-picked the other. Noting it is more useful than special-casing it.
+- The planner infers the locale of the **subject**
+- The task labels the locale of the **searcher**
+- Both are defensible. Noting it is more useful than special-casing it
 
 ### no_plan (2)
 
@@ -121,13 +119,11 @@ picked the other. Noting it is more useful than special-casing it.
 bm_048  "Hotel availability in Kyoto for cherry blossom season."
 ```
 
-`google_hotels` requires `check_in_date` and `check_out_date`, and "cherry
-blossom season" does not resolve to dates. The planner refuses rather than
-fabricating a window. That is correct behaviour scored as a failure, and the
-right fix is a date resolver that understands seasons, not a planner that
-guesses.
+- `google_hotels` requires `check_in_date` and `check_out_date`, and "cherry blossom season" does not resolve to dates
+- **The planner refuses rather than fabricating a window:** correct behaviour, scored as a failure
+- The right fix is a date resolver that understands seasons, not a planner that guesses
 
-## What improved and by how much
+## What improved, and by how much
 
 The benchmark was not run once at the end. It drove three changes:
 
@@ -137,15 +133,13 @@ The benchmark was not run once at the end. It drove three changes:
 | Capability-aware retrieval plus a district and landmark gazetteer | 34.2% |
 | Selector depth rules, harness mirroring the planner ranking, wider vocabulary | 38.3% |
 
-The first was the largest single win and exposed a real defect: embedding
-similarity alone retrieved `home_depot` for "What is Nvidia trading at right
-now?", because engine documentation uses the vendor vocabulary and nothing in
-`google_finance`'s description contains the word "trading".
+- **The first was the largest single win**, and exposed a real defect:
+  - embedding similarity alone retrieved `home_depot` for "What is Nvidia trading at right now?"
+  - engine docs use vendor vocabulary, and nothing in `google_finance`'s description contains "trading"
 
 ## The task set
 
-[`backend/fixtures/benchmark/tasks_v1.json`](../../backend/fixtures/benchmark/tasks_v1.json),
-authored by hand and committed.
+- [`backend/fixtures/benchmark/tasks_v1.json`](../../backend/fixtures/benchmark/tasks_v1.json), authored by hand and committed
 
 ```json
 {
@@ -161,14 +155,13 @@ authored by hand and committed.
 }
 ```
 
-Distribution: 40 `single_engine`, 26 `multi_hop`, 20 `locale`, 16 `freshness`,
-18 `substitute`. Twelve tasks end in `google_maps_contributor_reviews`, ten are
-Korean-locale (Naver against Google), and seven are review-source substitution
-cases.
-
-Every chain in the file is validated against the real dependency edges: a
-two-engine chain must be an actual edge, a three-engine chain must be two
-chained edges. There are no invented relationships in the labels.
+- **Distribution:** 40 `single_engine`, 26 `multi_hop`, 20 `locale`, 16 `freshness`, 18 `substitute`
+  - 12 tasks end in `google_maps_contributor_reviews`
+  - 10 are Korean-locale (Naver against Google)
+  - 7 are review-source substitution cases
+- **Every chain is validated against the real dependency edges**
+  - a two-engine chain must be an actual edge; a three-engine chain must be two chained edges
+  - there are no invented relationships in the labels
 
 ## Scoring
 
@@ -180,8 +173,7 @@ params_correct    every key in expected_params matches, case-insensitively
 freshness_correct reported separately, not part of `correct`
 ```
 
-Freshness is scored but excluded from the headline so the number stays
-comparable with a routing-only baseline.
+- Freshness is scored, but **kept out of the headline** so the number stays comparable with a routing-only baseline
 
 ## Running it
 
@@ -191,16 +183,18 @@ serpflow benchmark run --system serpflow        # one system
 serpflow benchmark run --system serpflow --limit 20   # a subset, while iterating
 ```
 
-From the UI, the Benchmarks page triggers a run with the `benchmark:run`
-permission and renders accuracy by category, the failure breakdown and the full
-task set.
-
-Results are stored in `benchmark_runs` and `routing_evals` and exposed at
-`GET /v1/benchmarks`, tracked per `catalog_version` so a routing regression is
-attributable to a specific catalog change.
+- **From the UI:** the Benchmarks page triggers a run (needs `benchmark:run`) and shows accuracy by category, the failure breakdown and the full task set
+- **Storage:** `benchmark_runs` and `routing_evals`, exposed at `GET /v1/benchmarks`
+- **Tracked per `catalog_version`**, so a routing regression is attributable to a specific catalog change
 
 ## If you change the catalog
 
-Re-run the benchmark. A catalog edit that improves one route often degrades
-another, and the per-version tracking exists so that is visible rather than
-discovered later.
+- **Re-run the benchmark**
+- A catalog edit that improves one route often degrades another
+- Per-version tracking exists so that is visible, not discovered later
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [Execution modes](../product/execution-modes.md) | [Docs index](../README.md) | [Installation](../deployment/installation.md) |

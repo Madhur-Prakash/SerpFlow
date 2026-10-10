@@ -1,13 +1,30 @@
 # Docker
 
-The whole stack runs in containers. The same compose file serves three
-purposes, selected by profile: dependencies only (the default, for local
-development), the full application, and the observability stack.
+<p>
+  <a href="../README.md#deployment"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
+  <img alt="services: 8" src="https://img.shields.io/badge/services-8-2496ED">
+  <img alt="Docker: Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
+  <img alt="nginx: 1.27" src="https://img.shields.io/badge/nginx-1.27-009639?logo=nginx&logoColor=white">
+  <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
+  <img alt="Redis: 7" src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white">
+  <img alt="Kafka: 4.0 KRaft" src="https://img.shields.io/badge/Kafka-4.0%20KRaft-231F20?logo=apachekafka&logoColor=white">
+  <a href="../../backend/Dockerfile"><img alt="source: backend/Dockerfile" src="https://img.shields.io/badge/source-backend%2FDockerfile-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
+</p>
 
-Files: [`docker-compose.yml`](../../docker-compose.yml),
-[`backend/Dockerfile`](../../backend/Dockerfile),
-[`frontend/Dockerfile`](../../frontend/Dockerfile),
-[`docker/`](../../docker).
+[Docs](../README.md) › [Deployment](../README.md#deployment) › **Docker** · page 7 of 50
+
+The whole stack runs in containers, from one compose file:
+
+| You run | You get |
+| --- | --- |
+| `make up` | **dependencies only:** postgres, redis, kafka. What local dev needs |
+| `make docker-up` / `docker compose up` | the **full application**, built from source |
+| `--profile storage` | adds **MinIO** |
+| `--profile observability` | adds **Prometheus and Grafana** |
+| `--profile full` | everything |
+
+Files: [`docker-compose.yml`](../../docker-compose.yml) · [`backend/Dockerfile`](../../backend/Dockerfile) · [`frontend/Dockerfile`](../../frontend/Dockerfile) · [`docker/`](../../docker)
 
 ## Running
 
@@ -34,14 +51,13 @@ docker compose --profile full up -d           # everything
 | prometheus | 9090 | `observability` profile |
 | grafana | 3001 | `observability` profile |
 
-Every port is overridable through `.env` (`POSTGRES_PORT`, `BACKEND_PORT`, and
-so on), because a machine that already runs a PostgreSQL on 5432 should not
-have to stop it.
+- **Every port is overridable** through `.env` (`POSTGRES_PORT`, `BACKEND_PORT`, and so on)
+  - a machine already running PostgreSQL on 5432 should not have to stop it
+- **Services restart `unless-stopped`.** Containers come back on their own when Docker restarts. Use `make docker-down` to stop them for good
 
 ## The backend image
 
-Two stages. `uv` resolves and installs into `/opt/venv`; a slim runtime copies
-only that venv plus the application, so no build toolchain ships to production.
+**Two stages:** `uv` resolves and installs into `/opt/venv`; a slim runtime copies only that venv plus the application. No build toolchain ships to production.
 
 ```dockerfile
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
@@ -53,36 +69,29 @@ COPY app ./app
 FROM python:3.13-slim-bookworm AS runtime
 COPY --from=builder /opt/venv /opt/venv
 USER serpflow
+CMD ["python", "-m", "app.server", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-Four things worth noting:
-
-- **Dependencies are a separate layer.** `pyproject.toml` is copied before the
-  source, so editing a handler does not reinstall SQLAlchemy.
-- **It runs as a non-root user** (uid 1001), with only
-  `/app/.serpflow-objects` and `/app/logs` writable.
-- **Migrations run before the server.** The command is
-  `alembic upgrade head && exec python -m app.server`, so a fresh database is
-  usable the moment the container is up, and schema changes still go only
-  through Alembic.
-- **It starts `app.server`, not uvicorn directly.** That module exists to pass
-  an explicit asyncio `loop_factory`; see
-  [local development](local.md#troubleshooting).
-
-Runtime packages are `libpq5` and `curl` only. `curl` is there for the
-healthcheck.
+- **Dependencies are a separate layer:** `pyproject.toml` is copied before the source, so editing a handler does not reinstall SQLAlchemy
+- **It runs as a non-root user** (uid 1001); only `/app/.serpflow-objects` and `/app/logs` are writable
+- **It is self-bootstrapping:** the app itself migrates and seeds on startup
+  - `RUN_MIGRATIONS_ON_STARTUP` and `SEED_ON_STARTUP` are both on in compose
+  - both take a **PostgreSQL advisory lock**, so two replicas starting together cannot race
+  - a shell `alembic upgrade head &&` in front of the server could not do that
+  - schema changes still go only through Alembic. Details: [bootstrap](../operations/bootstrap.md)
+- **It starts `app.server`, not uvicorn directly:** that module passes an explicit asyncio `loop_factory`. See [local development](local.md#troubleshooting)
+- **It bundles the fixtures:** the startup seed loads the benchmark suite, and replay mode reads cassettes
+- **Runtime packages:** `libpq5` and `curl` only. `curl` is there for the healthcheck
 
 ## The frontend image
 
-Vite builds the bundle; nginx serves it and proxies `/v1` to the backend, so
-the browser talks to a single origin.
-
-That matters more than it looks for SSE. `EventSource` has no header API, and a
-cross-origin long-lived stream adds a CORS preflight to a connection that is
-meant to stay open. Same-origin removes the problem rather than configuring
-around it.
-
-`nginx.conf` disables buffering on the stream route specifically:
+- **Vite builds the bundle; nginx serves it** and proxies the API, so the browser talks to a single origin
+- **Proxied to the backend:** `/v1`, `/healthz`, `/readyz`, `/metrics`, `/docs`, `/redoc`, `/openapi.json`
+- **Why same-origin matters for SSE:**
+  - `EventSource` has no header API
+  - a cross-origin long-lived stream adds a CORS preflight to a connection meant to stay open
+  - same-origin removes the problem instead of configuring around it
+- **`nginx.conf` disables buffering on the stream route specifically:**
 
 ```nginx
 location ~ ^/v1/runs/[^/]+/stream$ {
@@ -96,34 +105,35 @@ location ~ ^/v1/runs/[^/]+/stream$ {
 }
 ```
 
-Without `proxy_buffering off`, frames are held until the response ends and the
-pipeline animation arrives all at once at the end, which defeats the point.
+- Without `proxy_buffering off`, frames are held until the response ends, and the pipeline animation arrives all at once at the end
+- **`VITE_API_BASE_URL` is a build argument**, not a runtime variable: Vite inlines it at build time
 
-`VITE_API_BASE_URL` is a build argument, not a runtime variable, because Vite
-inlines it at build time.
+### Known issue: `/docs` deep links
+
+- **Symptom:** in the container deployment, opening or refreshing an in-app docs URL such as `http://localhost:5173/docs/readme` returns a JSON `404` from the API
+- **Cause:** the proxy rule `location ~ ^/(v1|healthz|readyz|metrics|docs|redoc|openapi.json)` matches **every** path that starts with `/docs`, so the SPA's `/docs/*` routes reach the backend
+  - bare `/docs` shows the backend's Swagger UI instead of the docs browser
+  - clicking through inside the app still works, because client-side navigation makes no request
+- **Not caught by `make test-ui`:** that runs against `vite preview`, not nginx
+- **Fix:** drop `docs` from that rule and anchor it, for example `^/(v1|healthz|readyz|metrics|redoc|openapi\.json)(/|$)`. Swagger stays reachable on the API port at `:8000/docs`
 
 ## Service configuration
 
 ### PostgreSQL
 
-`pgvector/pgvector:pg17` already carries the `vector` extension;
-`docker/postgres/init/` creates `vector`, `pg_trgm` and `btree_gin` at first
-boot so migrations do not have to be superuser.
-
-`POSTGRES_INITDB_ARGS: --data-checksums` is set. It costs a little write
-throughput and turns silent corruption into a loud error.
+- `pgvector/pgvector:pg17` already carries the `vector` extension
+- `docker/postgres/init/` creates `vector`, `pg_trgm` and `btree_gin` at first boot, so migrations do not need superuser
+- **`POSTGRES_INITDB_ARGS: --data-checksums`** costs a little write throughput, and turns silent corruption into a loud error
 
 ### Redis
 
-`docker/redis/redis.conf` configures an LRU eviction policy with a memory cap.
-Redis holds the hot cache layer and the resolved principal cache - both
-reconstructible, neither a source of truth - so eviction under pressure is
-correct behaviour rather than data loss.
+- `docker/redis/redis.conf` sets an **LRU eviction policy with a memory cap**
+- Redis holds the hot cache layer and the resolved-principal cache: both reconstructible, neither a source of truth
+- So eviction under pressure is **correct behaviour**, not data loss
 
 ### Kafka
 
-Kafka 4.x in **KRaft mode**. There is no ZooKeeper service and there will not
-be one: ZooKeeper is removed in Kafka 4.
+- **Kafka 4.x in KRaft mode.** There is no ZooKeeper service, and there will not be one: ZooKeeper is removed in Kafka 4
 
 ```yaml
 KAFKA_PROCESS_ROLES: broker,controller
@@ -132,27 +142,20 @@ KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,INTERNAL://0
 KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,INTERNAL://kafka:19092
 ```
 
-Two client listeners, deliberately. `PLAINTEXT` advertises `localhost:9092` for
-a process on the host; `INTERNAL` advertises `kafka:19092` for containers on
-the compose network. A single listener cannot advertise an address that is
-correct from both sides, and the resulting failure - connect succeeds, metadata
-returns an unreachable address, producer hangs - is one of the more annoying
-ones to diagnose.
-
-Topics are created explicitly by `make kafka-topics` rather than relying on
-auto-creation, so partition counts are intentional.
+- **Two client listeners, deliberately:**
+  - `PLAINTEXT` advertises `localhost:9092`, for a process on the host
+  - `INTERNAL` advertises `kafka:19092`, for containers on the compose network
+- A single listener cannot advertise an address that is correct from both sides
+  - the failure is hard to diagnose: connect succeeds, metadata returns an unreachable address, the producer hangs
+- **Topics are created explicitly** by `make kafka-topics` rather than by auto-creation, so partition counts are intentional
 
 ## Healthchecks and ordering
 
-`depends_on` uses `condition: service_healthy` for PostgreSQL and Redis, so the
-backend does not start against a database that is still initialising. Kafka
-uses `service_started`, because the backend degrades rather than failing when
-the broker is not ready, and waiting 30 seconds for a quorum to serve a
-cached search would be the wrong trade.
-
-The backend's own healthcheck hits `/healthz`, which touches no dependency.
-`/readyz` is the one that checks PostgreSQL, Redis, Kafka, object storage and
-the catalog, and it returns 503 only when PostgreSQL is unreachable.
+- **`depends_on` waits for `service_healthy`** on PostgreSQL and Redis, so the backend never starts against a database that is still initialising
+- **Kafka uses `service_started`:** the backend degrades rather than failing when the broker is not ready
+  - waiting 30 seconds for a quorum to serve a cached search would be the wrong trade
+- **`/healthz`** (the backend's own healthcheck) touches no dependency
+- **`/readyz`** checks PostgreSQL, Redis, Kafka, object storage and the catalog, and returns `503` **only** when PostgreSQL is unreachable
 
 ## Volumes
 
@@ -162,8 +165,8 @@ object-data        filesystem payload store
 prometheus-data  grafana-data
 ```
 
-`make docker-down` runs `compose down -v` and drops all of them. `make down`
-stops the containers and keeps them.
+- `make docker-down` runs `compose down -v` and **drops all of them**
+- `make down` stops the containers and **keeps** them
 
 ## Building
 
@@ -173,11 +176,19 @@ docker compose build backend           # one
 docker compose build --no-cache backend
 ```
 
-Images carry OCI labels including `org.opencontainers.image.licenses="Apache-2.0"`.
+- Images carry OCI labels, including `org.opencontainers.image.licenses="Apache-2.0"`
+- **Memory:** the full stack plus the Docker Desktop VM wants several GB. On a 16 GB laptop, close heavy apps before also running a headless browser or a large build
 
 ## Related
 
 - [Local development](local.md)
 - [Production](production.md)
+- [Bootstrap](../operations/bootstrap.md)
 - [Kafka operations](../operations/kafka.md)
 - [Redis operations](../operations/redis.md)
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [Local development](../deployment/local.md) | [Docs index](../README.md) | [Deployment guide](../deployment/deployment-guide.md) |

@@ -1,9 +1,19 @@
 # Secrets
 
-Every secret the service holds, where it lives, and what happens if it leaks.
-Configuration is entirely environment driven; see
-[`.env.example`](../../.env.example) for the authoritative list and
-[`app/core/config.py`](../../backend/app/core/config.py) for the types.
+<p>
+  <a href="../README.md#security"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
+  <img alt="JWT: HS256" src="https://img.shields.io/badge/JWT-HS256-000000?logo=jsonwebtokens&logoColor=white">
+  <img alt="AES: 256-GCM" src="https://img.shields.io/badge/AES-256--GCM-6E40C9">
+  <a href="../../backend/app/core/config.py"><img alt="source: core/config.py" src="https://img.shields.io/badge/source-core%2Fconfig.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
+</p>
+
+[Docs](../README.md) › [Security](../README.md#security) › **Secrets** · page 29 of 50
+
+**Every secret the service holds, where it lives, and what happens if it leaks.**
+
+- Configuration is entirely environment-driven
+- The authoritative list: [`.env.example`](../../.env.example) · the types: [`app/core/config.py`](../../backend/app/core/config.py)
 
 ## Inventory
 
@@ -15,116 +25,109 @@ Configuration is entirely environment driven; see
 | Database password | `DATABASE_URL` | everything at rest | rotate and re-check network exposure |
 | S3 credentials | `S3_SECRET_ACCESS_KEY` | stored SERP payloads | rotate; payloads are content-addressed, not secret by themselves |
 | Webhook secrets | per channel, hashed | delivery authenticity | per-channel rotation only |
+| Gmail credential | `GMAIL_CREDENTIALS_B64` | the ability to send mail as your sender | revoke the OAuth grant in Google, mint a new one |
 | Groq key | `GROQ_API_KEY` | the planner's language model | upstream billing only; no SerpFlow data at risk |
 | SerpApi key | encrypted in the vault | upstream spend | see [credentials](credentials.md) |
 
-Blast radii are deliberately different sizes. A leaked JWT secret costs every
-user a re-login; a leaked pepper costs every API key. That is why the two are
-separate values rather than one `SECRET_KEY` reused everywhere, which is the
-common shortcut and the reason one leak usually means total compromise.
+- **Blast radii are deliberately different sizes**
+  - a leaked JWT secret costs every user a re-login
+  - a leaked pepper costs every API key
+- **That is why they are separate values**, not one `SECRET_KEY` reused everywhere
+  - the common shortcut, and the reason one leak usually means total compromise
 
 ## Where they are not
 
-- **Not in the database.** The pepper and the KEK are process environment only.
-  A database dump is not sufficient to verify a guessed API key or to decrypt a
-  credential.
-- **Not in the repository.** `.env` is gitignored; `.env.example` holds only
-  obvious placeholders, each marked `CHANGE ME`.
-- **Not in a log.** `CredentialRedactionFilter` is installed on the root logger
-  and scrubs message, args, `extra=` attributes and the exception path.
-- **Not in an error response.** Errors carry a stable code, a sentence, and a
-  request id. Never a stack trace, never a configuration value.
-- **Not in a response schema.** There is no field anywhere in `app/schemas`
-  that could carry a credential, and a test asserts it by walking every
-  response model rather than by inspection.
+- **Not in the database.** The pepper and the KEK are process environment only. A database dump cannot verify a guessed API key or decrypt a credential
+- **Not in the repository.** `.env` is gitignored; `.env.example` holds only obvious placeholders, each marked `CHANGE ME`
+- **Not in a log.** `CredentialRedactionFilter` is installed on the root logger, and scrubs message, args, `extra=` attributes and the exception path
+- **Not in an error response.** Errors carry a stable code, a sentence and a request id. Never a stack trace, never a configuration value
+- **Not in a response schema.** No field anywhere in `app/schemas` could carry a credential, and a test asserts it by walking every response model
 
 ## Local development
 
-The defaults in `.env.example` are deliberately working values, because
-`make dev` and `make seed` must work with **no keys at all**. The local KEK is
-a published base64 string; the pepper and JWT secret both say
-`change-me-...-local-dev-only`.
-
-This is a trade. A setup that demands four secrets before it will boot gets
-them generated badly, or shared. A setup that boots with obvious placeholders
-makes the danger visible: the string `change-me-in-production` in a production
-environment is grep-able, alarming, and easy to catch in review.
-
-With no keys at all you get:
-
-- deterministic planning, no network — until an organization brings a Groq key
-- `SERPFLOW_MODE=replay` — cassettes only, never the network
-- `sf_test_...` keys — deterministic mock results, zero SerpApi credits
-
-Note what is *not* in this file: the upstream keys. SerpApi and Groq access is
-[bring-your-own-key](byok.md) — each organization's keys live encrypted in the
-credential vault, not in the environment. The secrets below belong to the
-deployment itself.
+- **The defaults in `.env.example` are deliberately working values**, because `make dev` and `make seed` must work with **no keys at all**
+  - the local KEK is a published base64 string
+  - the pepper and JWT secret both say `change-me-...-local-dev-only`
+- **This is a trade:**
+  - a setup that demands four secrets before it boots gets them generated badly, or shared
+  - a setup that boots with obvious placeholders makes the danger **visible**: `change-me-in-production` in a production environment is grep-able, alarming and easy to catch in review
+- **With no keys at all you get:**
+  - deterministic planning, no network, until an organization brings a Groq key
+  - `SERPFLOW_MODE=replay`: cassettes only, never the network
+  - `sf_test_...` keys: deterministic mock results, zero SerpApi credits
+- **The upstream keys are not in this file.** SerpApi and Groq access is [bring-your-own-key](byok.md): each organization's keys live encrypted in the credential vault. The secrets above belong to the deployment itself
 
 ## Generating real ones
 
 ```bash
 # 32-byte KEK, base64
-python -c "import os,base64; print(base64.b64encode(os.urandom(32)).decode())"
+openssl rand -base64 32
+# or: python -c "import os,base64; print(base64.b64encode(os.urandom(32)).decode())"
 
 # pepper and JWT secret
-python -c "import secrets; print(secrets.token_urlsafe(48))"
+openssl rand -hex 32
+# or: python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-Each value should be distinct, and should come from a secret manager rather
-than a file, in any environment that is not a laptop.
+- **Each value distinct**
+- **From a secret manager, not a file**, in any environment that is not a laptop
+- Where they go in a real deployment: [deployment guide, steps 3-4](../deployment/deployment-guide.md#3-generate-secrets)
 
 ## Rotation
 
 ### KEK
 
-Envelope encryption is what makes this cheap. Only the wrapped DEKs change; the
-ciphertext does not move.
+**Envelope encryption is what makes this cheap:** only the wrapped DEKs change; the ciphertext does not move.
 
-1. Add the new KEK alongside the old, keyed by `kek_id`.
-2. For each credential: unwrap the DEK with the old KEK, rewrap with the new,
-   update `encrypted_dek` and `kek_id`.
-3. Remove the old KEK once no row references its id.
+1. Add the new KEK alongside the old, keyed by `kek_id`
+2. For each credential: unwrap the DEK with the old KEK, rewrap with the new, update `encrypted_dek` and `kek_id`
+3. Remove the old KEK once no row references its id
 
-Cost is proportional to the number of credentials, not to the volume of
-encrypted data.
+- **Cost is proportional to the number of credentials**, not to the volume of encrypted data
 
 ### Pepper
 
-The pepper is an input to the hash, so rotating it invalidates every stored
-hash. There is no re-peppering without the plaintext, and the plaintext is
-gone by design. Rotating the pepper means rotating every API key:
+- **The pepper is an input to the hash**, so rotating it invalidates **every** stored hash
+- There is no re-peppering without the plaintext, and the plaintext is gone **by design**
+- **Rotating the pepper means rotating every API key:**
 
-1. Mint replacements under the new pepper.
-2. Distribute them, using the rotation grace window.
-3. Switch the pepper and revoke the old keys.
+1. Mint replacements under the new pepper
+2. Distribute them, using the rotation grace window
+3. Switch the pepper and revoke the old keys
 
-Plan for this before you need it. It is the most disruptive rotation in the
-system, which is the correct trade for a value that never has to be read back.
+- **Plan for this before you need it.** It is the most disruptive rotation in the system: the correct trade for a value that never has to be read back
 
 ### JWT secret
 
-Sessions signed with the old secret stop verifying, so every user is logged
-out. Access tokens live 15 minutes and refresh tokens 14 days; rotating the
-secret cuts both immediately. For a planned rotation, accept both secrets for
-one refresh-token lifetime, then drop the old one.
+- **Sessions signed with the old secret stop verifying**, so every user is logged out
+- Access tokens live **15 minutes**, refresh tokens **14 days**; rotating the secret cuts both immediately
+- **For a planned rotation**, accept both secrets for one refresh-token lifetime, then drop the old one
 
 ## Production checklist
 
-- [ ] `ENVIRONMENT=production` and `DEBUG=false`
-- [ ] `JWT_SECRET`, `API_KEY_PEPPER`, `CREDENTIAL_KEK` all replaced, all distinct
-- [ ] `CREDENTIAL_KEK` held in a KMS, not an environment variable
-- [ ] `CORS_ORIGINS` set to real origins, never `*`
-- [ ] TLS terminated in front of the service
-- [ ] PostgreSQL reachable only from the application network
-- [ ] `LOG_JSON=true`, and log shipping configured
-- [ ] Database password rotated away from the compose default
-- [ ] The application's database role does not own the tables, so RLS applies
+| Check | Done when |
+| --- | --- |
+| Environment | `ENVIRONMENT=production` and `DEBUG=false` |
+| Deployment secrets | `JWT_SECRET`, `API_KEY_PEPPER`, `CREDENTIAL_KEK` all replaced, all distinct |
+| KEK custody | `CREDENTIAL_KEK` held in a KMS, not an environment variable |
+| CORS | `CORS_ORIGINS` set to real origins, never `*` |
+| Transport | TLS terminated in front of the service |
+| Network | PostgreSQL reachable only from the application network |
+| Logs | `LOG_JSON=true`, and log shipping configured |
+| Database | password rotated away from the compose default |
+| RLS | the application's database role does not own the tables, or `FORCE ROW LEVEL SECURITY` is set |
 
-See [production deployment](../deployment/production.md) for the rest.
+- The full runbook: [deployment guide](../deployment/deployment-guide.md) · the rest: [production](../deployment/production.md)
 
 ## Related
 
 - [Upstream credentials](credentials.md)
 - [API keys](api-keys.md)
+- [Bring your own key](byok.md)
 - [Threat model](threat-model.md)
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [API keys](../security/api-keys.md) | [Docs index](../README.md) | [Startup bootstrap](../operations/bootstrap.md) |
