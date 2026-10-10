@@ -660,4 +660,8 @@ make test-e2e         # includes the thesis assertion
 
 <sub>&copy; 2026 SerpFlow. All rights reserved. Released under the Apache-2.0 licence.</sub>
 
+<p align="center">
+  <sub>Made with ❤️ for the <a href="https://serpapi.github.io/serpapi-india-hackathon-2026/">SerpApi India Hackathon 2026</a> by <a href="https://github.com/Madhur-Prakash">Madhur-Prakash</a></sub>
+</p>
+
 </div>
