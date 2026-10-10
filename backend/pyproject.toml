@@ -1,6 +1,6 @@
 [project]
 name = "serpflow"
-version = "0.1.0"
+version = "1.0.0"
 description = "SerpFlow - a search control plane for SerpApi with cache-aware marginal-cost replanning"
 readme = "README.md"
 requires-python = ">=3.13"

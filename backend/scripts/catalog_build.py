@@ -41,7 +41,7 @@ log = get_logger("serpflow.catalog.build")
 
 DRAFT_DIR = DATA_ROOT / "_drafts"
 DOCS_INDEX = "https://serpapi.com/search-api"
-USER_AGENT = "serpflow-catalog-build/0.1 (+https://github.com/serpflow/serpflow)"
+USER_AGENT = "serpflow-catalog-build/1.0 (+https://github.com/serpflow/serpflow)"
 
 # Parameter names that imply the engine is locale sensitive.
 LOCALE_PARAMS = {

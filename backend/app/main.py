@@ -11,6 +11,7 @@ from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
+from app import __version__
 from app.api.middleware import (
     BodySizeLimitMiddleware,
     RequestContextMiddleware,
@@ -32,7 +33,7 @@ from app.workers import kafka
 
 log = get_logger("serpflow.main")
 
-VERSION = "0.1.0"
+VERSION = __version__
 
 DESCRIPTION = """
 SerpFlow is a search control plane for SerpApi.

@@ -32,7 +32,7 @@ export type ApiOperation = {
 export type ApiGroup = { tag: string; title: string; blurb: string };
 
 export const API_TITLE = "SerpFlow";
-export const API_VERSION = "0.1.0";
+export const API_VERSION = "1.0.0";
 export const API_OPERATION_COUNT = 84;
 export const API_PATH_COUNT = 73;
 

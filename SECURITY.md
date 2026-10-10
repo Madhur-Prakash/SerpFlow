@@ -48,7 +48,8 @@
 | Version | Supported |
 | --- | --- |
 | `main` | Yes: security fixes land here |
-| Anything else | No: SerpFlow is pre-1.0 and has no maintained release branches yet |
+| `1.0.x` | Yes: the current release; fixes ship as `1.0.x` patch releases |
+| `0.1.0` and earlier | No: upgrade to `1.0.x` |
 
 ## What SerpFlow holds
 

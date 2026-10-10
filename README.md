@@ -8,6 +8,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Madhur-Prakash/SerpFlow/releases/tag/v1.0.0"><img alt="release: v1.0.0" src="https://img.shields.io/badge/release-v1.0.0-2F6BFF?logo=github&logoColor=white"></a>
   <a href="docs/product/product-overview.md"><img alt="thesis: marginal-cost replanning" src="https://img.shields.io/badge/thesis-marginal--cost%20replanning-2F6BFF"></a>
   <a href="docs/product/benchmark.md"><img alt="routing accuracy 38.3%" src="https://img.shields.io/badge/routing%20accuracy-38.3%25-3fcf8e"></a>
   <a href="backend/tests"><img alt="tests: 216 passing" src="https://img.shields.io/badge/tests-216%20passing-3fcf8e"></a>

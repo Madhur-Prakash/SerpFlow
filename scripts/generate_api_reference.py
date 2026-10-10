@@ -218,7 +218,7 @@ export type ApiOperation = {{
 export type ApiGroup = {{ tag: string; title: string; blurb: string }};
 
 export const API_TITLE = {json.dumps(info.get("title", "SerpFlow"))};
-export const API_VERSION = {json.dumps(info.get("version", "0.1.0"))};
+export const API_VERSION = {json.dumps(info.get("version", "1.0.0"))};
 export const API_OPERATION_COUNT = {len(operations)};
 export const API_PATH_COUNT = {len(spec.get("paths", {}))};
 

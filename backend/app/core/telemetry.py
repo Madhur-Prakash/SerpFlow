@@ -29,6 +29,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.trace import Span, Status, StatusCode
 
+from app import __version__
 from app.core.config import settings
 
 SPAN_PLAN = "serpflow.plan"
@@ -57,7 +58,7 @@ def setup_telemetry(app: Any = None) -> None:
     resource = Resource.create(
         {
             "service.name": settings.service_name,
-            "service.version": "0.1.0",
+            "service.version": __version__,
             "deployment.environment": settings.environment,
         }
     )

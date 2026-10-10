@@ -3,7 +3,7 @@
 <p>
   <a href="https://keepachangelog.com/en/1.1.0/"><img alt="format: Keep a Changelog" src="https://img.shields.io/badge/format-Keep%20a%20Changelog-E05735"></a>
   <a href="https://semver.org/spec/v2.0.0.html"><img alt="versioning: SemVer" src="https://img.shields.io/badge/versioning-SemVer-3F4551"></a>
-  <img alt="version: 0.1.0, pre-1.0" src="https://img.shields.io/badge/version-0.1.0%20(pre--1.0)-2F6BFF">
+  <a href="https://github.com/Madhur-Prakash/SerpFlow/releases/tag/v1.0.0"><img alt="version: 1.0.0" src="https://img.shields.io/badge/version-1.0.0-2F6BFF?logo=github&logoColor=white"></a>
   <a href="LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
 </p>
 
@@ -16,6 +16,15 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-10
+
+First stable release. The thesis from 0.1.0 is unchanged, and `make demo`
+still fails unless cache state changes which plan wins. 1.0.0 adds what it takes
+to run SerpFlow for real: bring-your-own-key for SerpApi and Groq, an execution
+mode per project, custom roles, startup bootstrap, transactional email, a public
+landing page with a documentation browser and an API reference, and 216 tests,
+up from 115.
+
 ### Documentation
 
 - **Every documentation page rewritten** as short bullet points instead of paragraphs, with each number re-checked against the code
@@ -25,6 +34,7 @@
 - **Product film** (73 seconds, narrated) at `assets/serpflow-product.mp4`, embedded in the README
 - **`SECURITY.md`** now states the maintenance model: built and maintained by one person in their own time; started as a hackathon entry and grew into a full-scale, production-ready project; best-effort response
 - **Corrected facts:** 216 tests (was 115/180), 22 Prometheus metrics (was 20), four MCP tools (was "three"), 85 operations across 74 paths (was 78/69), 24 RLS tables (was 23), four migrations (was two), 8 demo candidates (was 9), Vite 6 (was 7), demo accounts `@serpflow.dev`, the project `PATCH` path `/v1/projects/{id}`, and the Docker bootstrap (the image no longer runs `alembic upgrade` in its `CMD`)
+- **README footer** credits the [SerpApi India Hackathon 2026](https://serpapi.github.io/serpapi-india-hackathon-2026/), where SerpFlow started
 - **Troubleshooting** gained entries for checkouts copied from Windows, the ignored `SERPAPI_API_KEY`, production `VITE_API_BASE_URL`, `TRUSTED_PROXY_HOPS`, exposed datastore ports, silently skipped tests and out-of-memory crashes
 
 ### Known issues
@@ -35,6 +45,15 @@
 
 ### Added
 
+- **Channel labels shape the email.** A notification channel's label (On-call,
+  Engineering, Billing, Security, Leadership, or any text you type) selects a
+  fixed template. The template sets how urgent the subject reads, whether
+  technical identifiers are included and how the mail opens and closes. The
+  facts are the same in every variant, and no model writes any of it, so the
+  same alert to the same label is byte-identical every time. An unrecognised
+  label falls back to a generic template that includes every detail.
+  `GET /v1/notification-channels/labels` lists the presets, and the console
+  describes each one beside the choice.
 - **Startup bootstrap.** `RUN_MIGRATIONS_ON_STARTUP` applies Alembic migrations
   when the API starts, and `SEED_ON_STARTUP` runs the idempotent seed, so a
   container plus an empty database becomes a working instance with no
@@ -180,6 +199,13 @@
 
 ### Changed
 
+- **`GROQ_MODEL` defaults to `openai/gpt-oss-120b`** (was
+  `llama-3.3-70b-versatile`). It only matters when a Groq key is present; with
+  none, planning still runs on the deterministic adapter.
+- **One version string.** The API, the OpenAPI document and the OpenTelemetry
+  resource read `app.__version__` instead of each hard-coding their own.
+- Landing page spotlight cards no longer tilt or track the pointer, and the
+  hero's type hierarchy is tightened.
 - **The dark theme is neutral.** Every grey carried a little hue 265, which on
   a large dark surface reads as a blue cast rather than as a deliberate colour.
   The greys are now chroma 0, which leaves the accent and the semantic colours
@@ -366,8 +392,9 @@ only the searches that still need a live call.
 - Fourteen architecture decision records under `docs/adr/`, each stating the
   alternative that was rejected and the cost that was accepted.
 
-[Unreleased]: https://github.com/serpflow/serpflow/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/serpflow/serpflow/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Madhur-Prakash/SerpFlow/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Madhur-Prakash/SerpFlow/compare/v0.1.0...v1.0.0
+[0.1.0]: https://github.com/Madhur-Prakash/SerpFlow/releases/tag/v0.1.0
 
 ---
 

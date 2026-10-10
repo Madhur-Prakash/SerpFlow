@@ -12,7 +12,7 @@ import contextlib
 import selectors
 import sys
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 # psycopg's async driver cannot run on the Windows ProactorEventLoop, which is
 # the platform default. Selecting the selector policy here - before any event
