@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from typing import Any
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 
@@ -634,17 +635,117 @@ def infer_locale(text: str) -> tuple[Locale, str | None]:
     return Locale(gl=code, hl=COUNTRY_LANGUAGE.get(code, "en"), country=code), name
 
 
+# Phrases that follow a preposition without being a place: "at right now",
+# "at least", "in the morning", "within a week". Each one used to come back as
+# a location ("location=right") and was sent upstream as if it were a city.
+_NON_PLACE_LEADS = (
+    "right now", "right this", "the moment", "this moment", "the time", "this time",
+    "the same time", "once", "least", "most", "best", "all", "first", "last", "time",
+    "times", "now", "present", "the morning", "the evening", "the afternoon", "the end",
+    "the beginning", "a week", "a day", "a month", "a year", "an hour", "minutes", "hours",
+    "days", "weeks", "months", "years", "total", "general", "particular", "detail",
+    "advance", "short", "full", "real time", "realtime",
+)
+
+
+_PHRASE_BREAKS = {
+    "at", "in", "on", "for", "with", "from", "to", "by", "during", "before", "after",
+    "until", "since", "right", "now", "today", "tonight", "tomorrow", "yesterday",
+    "this", "next", "last", "currently",
+}
+
+
+def _is_place_phrase(phrase: str) -> bool:
+    normalized = normalize(phrase)
+    return not any(
+        normalized == lead or normalized.startswith(lead + " ") for lead in _NON_PLACE_LEADS
+    )
+
+
 def extract_location_phrase(text: str) -> str | None:
     """The ``in <place>`` / ``near <place>`` span, used as the location param."""
-    match = re.search(
+    for match in re.finditer(
         r"\b(?:in|near|around|at|within|among|across|throughout)\s+([A-Za-zÀ-ɏ][\w'’-]*(?:\s+[A-Za-zÀ-ɏ][\w'’-]*){0,3})",
         text or "",
-    )
-    if not match:
-        return None
-    phrase = match.group(1).strip()
-    tokens = [t for t in phrase.split() if normalize(t) not in _ENTITY_STOPWORDS]
-    return " ".join(tokens) if tokens else None
+    ):
+        phrase = match.group(1).strip()
+        if not _is_place_phrase(phrase):
+            continue
+        # The place ends where the next clause begins: "Shibuya at the moment",
+        # "New York at night", "Kyoto for three nights".
+        words: list[str] = []
+        for word in phrase.split():
+            if normalize(word) in _PHRASE_BREAKS:
+                break
+            words.append(word)
+        tokens = [t for t in words if normalize(t) not in _ENTITY_STOPWORDS]
+        if tokens:
+            return " ".join(tokens)
+    return None
+
+
+# --------------------------------------------------------------------------
+# per-engine query adapters
+# --------------------------------------------------------------------------
+# Google Finance's ``q`` is a security identifier ("NVDA:NASDAQ"), not a
+# sentence. Sending the free-text intent made SerpApi answer "Google Finance
+# hasn't returned any results for this query" - a billed, empty search.
+FINANCE_SYMBOLS = {
+    "nvidia": "NVDA:NASDAQ", "nvda": "NVDA:NASDAQ",
+    "apple": "AAPL:NASDAQ", "aapl": "AAPL:NASDAQ",
+    "microsoft": "MSFT:NASDAQ", "msft": "MSFT:NASDAQ",
+    "alphabet": "GOOGL:NASDAQ", "google": "GOOGL:NASDAQ", "googl": "GOOGL:NASDAQ",
+    "amazon": "AMZN:NASDAQ", "amzn": "AMZN:NASDAQ",
+    "meta": "META:NASDAQ", "facebook": "META:NASDAQ",
+    "tesla": "TSLA:NASDAQ", "tsla": "TSLA:NASDAQ",
+    "netflix": "NFLX:NASDAQ", "nflx": "NFLX:NASDAQ",
+    "amd": "AMD:NASDAQ", "intel": "INTC:NASDAQ", "intc": "INTC:NASDAQ",
+    "broadcom": "AVGO:NASDAQ", "adobe": "ADBE:NASDAQ", "qualcomm": "QCOM:NASDAQ",
+    "oracle": "ORCL:NYSE", "ibm": "IBM:NYSE", "salesforce": "CRM:NYSE",
+    "jpmorgan": "JPM:NYSE", "visa": "V:NYSE", "walmart": "WMT:NYSE", "disney": "DIS:NYSE",
+    "coca cola": "KO:NYSE", "coca-cola": "KO:NYSE", "boeing": "BA:NYSE",
+    "berkshire hathaway": "BRK.B:NYSE", "berkshire": "BRK.B:NYSE",
+    "reliance": "RELIANCE:NSE", "infosys": "INFY:NSE", "tcs": "TCS:NSE",
+    "hdfc bank": "HDFCBANK:NSE", "samsung": "005930:KRX", "toyota": "7203:TYO", "sony": "6758:TYO",
+    "s&p 500": ".INX:INDEXSP", "sp500": ".INX:INDEXSP", "dow jones": ".DJI:INDEXDJX",
+    "nasdaq composite": ".IXIC:INDEXNASDAQ", "nifty 50": "NIFTY_50:INDEXNSE", "nifty": "NIFTY_50:INDEXNSE",
+    "sensex": "SENSEX:INDEXBOM", "bitcoin": "BTC-USD", "btc": "BTC-USD", "ethereum": "ETH-USD",
+    "eth": "ETH-USD",
+}
+_SYMBOL_PATTERN = re.compile(r"\b([A-Za-z0-9.]{1,10}:[A-Za-z]{2,12}|[A-Za-z]{3}-[A-Za-z]{3})\b")
+_FINANCE_FILLER = {
+    "what", "whats", "is", "are", "the", "a", "an", "of", "for", "how", "much", "does", "do",
+    "stock", "stocks", "share", "shares", "price", "prices", "quote", "trading", "trade",
+    "traded", "at", "right", "now", "today", "currently", "current", "latest", "live",
+    "value", "worth", "market", "cap", "doing", "performing", "on", "in", "this", "moment",
+}
+
+
+def finance_query(text: str) -> str:
+    """A Google Finance identifier for ``text``.
+
+    An explicit symbol in the text wins ("NVDA:NASDAQ", "BTC-USD"); then a known
+    company, index or currency name; otherwise the text with the conversational
+    filler removed, which Google Finance resolves far better than a sentence.
+    """
+    explicit = _SYMBOL_PATTERN.search(text or "")
+    if explicit:
+        return explicit.group(1).upper()
+    haystack = normalize(text or "")
+    for name in sorted(FINANCE_SYMBOLS, key=len, reverse=True):
+        if re.search(r"(?<![\w&])" + re.escape(name) + r"(?![\w&])", haystack):
+            return FINANCE_SYMBOLS[name]
+    kept = [w for w in re.findall(r"[\w&.-]+", haystack) if w not in _FINANCE_FILLER]
+    return " ".join(kept) or (text or "").strip()
+
+
+QUERY_ADAPTERS = {"google_finance": finance_query}
+
+
+def adapt_query(engine: str, value: Any) -> Any:
+    """Reshape the free-text query into what ``engine`` actually accepts."""
+    adapter = QUERY_ADAPTERS.get(engine)
+    return adapter(value) if adapter and isinstance(value, str) and value else value
 
 
 # --------------------------------------------------------------------------
@@ -928,6 +1029,8 @@ __all__ = [
     "classify_query",
     "extract_entities",
     "extract_location_phrase",
+    "adapt_query",
+    "finance_query",
     "extract_numerals",
     "extract_versions",
     "guard_tokens",

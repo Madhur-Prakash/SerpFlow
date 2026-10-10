@@ -27,6 +27,7 @@ from app.core import metrics, telemetry
 from app.core.config import settings
 from app.core.exceptions import NoViablePlanError
 from app.core.logging import get_logger
+from app.core.text import adapt_query
 from app.db.models.planning import Plan, PlanCandidate
 from app.integrations.llm import LLMAdapter, get_llm
 from app.integrations.llm.base import stricter_freshness
@@ -668,6 +669,11 @@ class PlannerService:
                 bound[name] = parameters[name]
         if "location" in parameters and "location" in spec.optional:
             bound["location"] = parameters["location"]
+        # Some engines take an identifier rather than a sentence in their query
+        # slot (Google Finance wants "NVDA:NASDAQ"); reshape root-bound values.
+        for binding in step.bindings:
+            if binding.source == "root" and isinstance(bound.get(binding.param), str):
+                bound[binding.param] = adapt_query(spec.engine, bound[binding.param])
         return bound
 
     def _build_candidate_row(

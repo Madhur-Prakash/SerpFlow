@@ -37,6 +37,18 @@ up from 115.
 - **README footer** credits the [SerpApi India Hackathon 2026](https://serpapi.github.io/serpapi-india-hackathon-2026/), where SerpFlow started
 - **Troubleshooting** gained entries for checkouts copied from Windows, the ignored `SERPAPI_API_KEY`, production `VITE_API_BASE_URL`, `TRUSTED_PROXY_HOPS`, exposed datastore ports, silently skipped tests and out-of-memory crashes
 
+### Fixed
+
+- **A SerpApi "no results" answer is no longer treated as a failure.** SerpApi bills a search that finds nothing ("Google Finance hasn't returned any results for this query"), but SerpFlow recorded 0 credits and discarded the response, so its ledger drifted from SerpApi's dashboard. It is now a successful, empty, billed search: spend is recorded, the result is cached, and the result panel shows SerpApi's own message
+- **Failed runs show why.** The search page now loads a failed run and shows its error, the credits recorded and a link to the Run Inspector, instead of waiting for a result that never comes
+- **Google Finance gets a ticker, not a sentence.** "what is nvidia trading at right now" now sends `q=NVDA:NASDAQ`. Well-known companies, indices and crypto map to Google Finance identifiers; an explicit symbol in the intent wins; anything else is sent with the conversational filler removed
+- **Temporal phrases are no longer locations.** "at right now", "at least" and "Shibuya at the moment" used to produce `location=right`, `location=least` and `location=Shibuya moment`
+- **Regional engines stay in their markets.** Naver (Korea), Baidu (China) and Yandex (Russia) are penalised outside their market unless the intent names them or is written in their script. "cafes in Koramangala" used to route to Naver because its description mentions cafes
+
+### Changed
+
+- **The search pipeline reveals stages one at a time.** Each stage is held as running for at least 320 ms before its real result is shown, so a fast run reads in order instead of appearing all at once. Nothing is ever shown complete before its real frame arrives
+
 ### Known issues
 
 - **`/docs/*` deep links return a JSON 404 in the container deployment:** the bundled `frontend/nginx.conf` proxies every path starting with `/docs` to the API. Fix described in [Docker: known issue](docs/deployment/docker.md#known-issue-docs-deep-links)

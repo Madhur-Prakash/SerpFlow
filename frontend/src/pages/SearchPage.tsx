@@ -55,7 +55,7 @@ import {
   Tooltip,
 } from "@/components/ui";
 import { useInvalidateRunData } from "@/hooks/useQueries";
-import { useRunStream } from "@/hooks/useRunStream";
+import { usePacedRun, useRunStream } from "@/hooks/useRunStream";
 import { api, ApiError } from "@/lib/api";
 import * as fmt from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -93,19 +93,27 @@ export function SearchPage() {
   const [result, setResult] = React.useState<SearchResponse | null>(null);
   const [starting, setStarting] = React.useState(false);
   const [error, setError] = React.useState<unknown>(null);
+  const [failedRun, setFailedRun] = React.useState<Run | null>(null);
 
-  const stream = useRunStream(runId);
+  // The raw stream is the truth; the paced view reveals it in order.
+  const stream = usePacedRun(useRunStream(runId), runId);
   const canExecute = can(PERMISSIONS.execute);
 
   // When the stream reports completion, fetch the persisted run. The UI reads
-  // stored values rather than reconstructing them from the event payloads.
+  // stored values rather than reconstructing them from the event payloads. A
+  // failed run is fetched too: it still has a plan, spend and an error to show.
   React.useEffect(() => {
-    if (!runId || !stream.finished || stream.failed) return;
+    if (!runId || !stream.finished) return;
     let cancelled = false;
     (async () => {
       try {
         const run = await api.run(runId);
         if (cancelled) return;
+        if (stream.failed) {
+          setFailedRun(run);
+          invalidate();
+          return;
+        }
         setResult({
           run,
           plan: run.plan!,
@@ -135,6 +143,7 @@ export function SearchPage() {
 
     setError(null);
     setResult(null);
+    setFailedRun(null);
     setRunId(null);
     setStarting(true);
 
@@ -159,6 +168,7 @@ export function SearchPage() {
   function reset() {
     setRunId(null);
     setResult(null);
+    setFailedRun(null);
     setError(null);
     stream.reset();
   }
@@ -173,7 +183,7 @@ export function SearchPage() {
         icon={SearchIcon}
         description="Describe what you want. SerpFlow discovers the engine or engine chain, inspects what is already warm, and executes only the steps that still need a live call."
         actions={
-          result ? (
+          result || failedRun ? (
             <>
               <Button variant="outline" size="sm" onClick={reset}>
                 <RotateCcw />
@@ -182,7 +192,7 @@ export function SearchPage() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => navigate("/app/runs/" + result.run.id)}
+                onClick={() => navigate("/app/runs/" + (result?.run.id ?? failedRun?.id))}
               >
                 <Eye />
                 Run Inspector
@@ -310,7 +320,7 @@ export function SearchPage() {
               <CardHeader
                 title="Execution pipeline"
                 icon={Route}
-                description="Driven by Server-Sent Events from the planner and executor. Nothing here is on a timer."
+                description="Driven by Server-Sent Events from the planner and executor. A stage only completes when its real event arrives; fast stages are held briefly so the order stays readable."
                 action={
                   mode ? <ModeBadge mode={mode.label} reason={mode.reason} /> : null
                 }
@@ -322,22 +332,19 @@ export function SearchPage() {
                   finished={stream.finished}
                   failed={stream.failed}
                 />
-                {stream.error ? (
-                  <Alert
-                    tone="danger"
-                    icon={AlertTriangle}
-                    title={stream.error.code}
-                    className="mt-4"
-                  >
-                    {stream.error.message}
-                  </Alert>
-                ) : null}
               </CardBody>
             </Card>
 
             <div className="space-y-5">
               {result ? (
                 <ResultPanel result={result} onReplay={reset} />
+              ) : stream.failed ? (
+                <FailedRunPanel
+                  run={failedRun}
+                  error={stream.error}
+                  onInspect={() => navigate("/app/runs/" + (failedRun?.id ?? runId))}
+                  onRetry={reset}
+                />
               ) : (
                 <Card>
                   <CardHeader title="Result" icon={CheckCircle} />
@@ -356,6 +363,59 @@ export function SearchPage() {
         ) : null}
       </AnimatePresence>
     </div>
+  );
+}
+
+// ---------------------------------------------------------- failed run
+
+/** What a failed run can still tell you: why, what it spent, where to look. */
+function FailedRunPanel({
+  run,
+  error,
+  onInspect,
+  onRetry,
+}: {
+  run: Run | null;
+  error: { code: string; message: string } | null;
+  onInspect: () => void;
+  onRetry: () => void;
+}) {
+  const message = error?.message || run?.error_message || "The run failed.";
+  return (
+    <Card>
+      <CardHeader title="Run failed" icon={AlertTriangle} />
+      <CardBody className="space-y-4">
+        <Alert tone="danger" icon={AlertTriangle} title={error?.code ?? "RUN_FAILED"}>
+          {message}
+        </Alert>
+        {run ? (
+          <dl className="grid grid-cols-2 gap-3 text-[12px]">
+            <div>
+              <dt className="text-ink-subtle">Credits recorded</dt>
+              <dd className="mono mt-0.5 text-[15px] text-ink">{run.credits_spent}</dd>
+            </div>
+            <div>
+              <dt className="text-ink-subtle">Mode</dt>
+              <dd className="mono mt-0.5 text-[15px] text-ink">{run.mode.toUpperCase()}</dd>
+            </div>
+          </dl>
+        ) : null}
+        <p className="text-[12px] leading-relaxed text-ink-subtle">
+          The plan and every step that ran are in the Run Inspector. Only searches SerpApi
+          actually processed are counted as spend.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" onClick={onInspect}>
+            <Eye />
+            Run Inspector
+          </Button>
+          <Button variant="outline" size="sm" onClick={onRetry}>
+            <RotateCcw />
+            New search
+          </Button>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -566,6 +626,15 @@ function ResultPanel({ result, onReplay }: { result: SearchResponse; onReplay: (
                   </li>
                 ))}
               </ul>
+            ) : summary?.notice ? (
+              <EmptyState
+                icon={SearchIcon}
+                title="SerpApi found no results"
+                description={
+                  summary.notice +
+                  " The search ran and was billed, so it is counted in your spend and cached; try rephrasing the intent."
+                }
+              />
             ) : (
               <EmptyState
                 icon={SearchIcon}

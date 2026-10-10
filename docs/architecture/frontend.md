@@ -66,7 +66,10 @@ executing required steps
 ```
 
 - **`useRunStream`** opens an `EventSource`, replays anything it missed from the server-side buffer, then tails live frames
-- **No timer, no simulated progression** anywhere in that path. If the backend sits on "inspecting cache state" for two seconds, so does the UI
+- **No simulated progression.** A stage only completes when its real frame arrives. If the backend sits on "inspecting cache state" for two seconds, so does the UI
+- **Paced, in order:** planning stages often finish within milliseconds of each other, so `usePacedRun` reveals them one at a time, holding each as running for at least 320 ms (600 ms for execution)
+  - it never runs ahead of the backend, the timings shown are the real ones, and the result appears only once the reveal has caught up
+- **A failed run still shows its result panel:** the error, the credits recorded and a link to the Run Inspector, instead of waiting forever
 - **Each stage renders detail straight from the frame's `detail` object:**
   - which engines were retrieved
   - which parameters were bound

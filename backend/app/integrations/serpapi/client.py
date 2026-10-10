@@ -38,7 +38,29 @@ class SerpApiResponse:
     headers: dict[str, str] = field(default_factory=dict)
 
     @property
+    def upstream_status(self) -> str | None:
+        return (self.payload.get("search_metadata") or {}).get("status")
+
+    @property
+    def is_empty_result(self) -> bool:
+        """SerpApi ran the search and found nothing.
+
+        SerpApi reports this through the same ``error`` field it uses for real
+        failures ("Google Finance hasn't returned any results for this query."),
+        but the search was processed and it is billed. Treating it as a failure
+        dropped the credit from the ledger and threw the response away, so the
+        console showed 0 credits for a search SerpApi had charged for.
+        """
+        if self.http_status >= 400 or not self.payload.get("error"):
+            return False
+        if self.upstream_status == "Success":
+            return True
+        return "returned any results" in str(self.payload.get("error")).lower()
+
+    @property
     def is_error(self) -> bool:
+        if self.is_empty_result:
+            return False
         return self.http_status >= 400 or bool(self.payload.get("error"))
 
     @property

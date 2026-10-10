@@ -1,9 +1,10 @@
 /**
  * The execution pipeline (sections 42, 69).
  *
- * Every stage below advances because an SSE frame arrived saying it did. There
- * is no timer, no simulated sequence and no optimistic progression. If the
- * backend sits on "inspecting cache state" for two seconds, so does this.
+ * Every stage below completes because an SSE frame arrived saying it did. There
+ * is no simulated sequence and no optimistic progression: if the backend sits on
+ * "inspecting cache state" for two seconds, so does this. `usePacedRun` holds
+ * very fast stages on screen briefly, in order, so the sequence stays readable.
  */
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -58,7 +59,7 @@ export function Pipeline({ stages, currentStage, finished, failed, className }: 
                 >
                   {stage.label}
                 </p>
-                {state ? (
+                {state && status !== "running" ? (
                   <span className="mono text-[11px] tabular text-ink-subtle">
                     {fmt.ms(state.elapsedMs)}
                   </span>

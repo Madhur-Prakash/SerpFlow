@@ -411,6 +411,8 @@ export interface ResultSummary {
   result_key?: string | null;
   count: number;
   items: ResultItem[];
+  /** SerpApi's own explanation when a billed search found nothing. */
+  notice?: string | null;
 }
 
 export interface SearchResponse {

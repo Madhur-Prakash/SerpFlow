@@ -2,9 +2,14 @@
  * Server-Sent Events for a run (sections 42, 69).
  *
  * Every frame this hook yields was published by the planner or the executor as
- * a stage actually completed. There is no timer here and no simulated
- * sequence: if the backend is slow, the pipeline sits on the stage it is
- * really on.
+ * a stage actually completed. There is no simulated sequence: if the backend is
+ * slow, the pipeline sits on the stage it is really on.
+ *
+ * `usePacedRun` sits on top. Planning stages often finish within a few
+ * milliseconds of each other, which painted the whole pipeline at once and made
+ * the order unreadable. It reveals stages strictly in order, holding each one
+ * as "running" for a short minimum before showing its real result. It never
+ * shows a stage as done before that stage's real frame has arrived.
  */
 
 import * as React from "react";
@@ -250,4 +255,89 @@ export function useRunStream(runId: string | null) {
   }, [runId]);
 
   return { ...state, reset };
+}
+
+/** How long a stage stays visibly "running" before its result is shown, at least. */
+export const STAGE_DWELL_MS = 320;
+/** Execution is the step that spends credits; give it a beat longer. */
+export const EXECUTING_DWELL_MS = 600;
+
+/**
+ * Reveal a run's stages one at a time, in order.
+ *
+ * Honest by construction: a stage is only shown complete (or failed) after its
+ * real frame arrived, the timings and details shown are the real ones, and the
+ * run only reads as finished once the reveal has caught up. The pacing adds at
+ * most STAGE_DWELL_MS per stage to how long the result takes to appear.
+ */
+export function usePacedRun(
+  raw: RunStreamState & { reset: () => void },
+  runId: string | null,
+): RunStreamState & { reset: () => void } {
+  const [revealed, setRevealed] = React.useState(0);
+  const [since, setSince] = React.useState(() => Date.now());
+
+  React.useEffect(() => {
+    setRevealed(0);
+    setSince(Date.now());
+  }, [runId]);
+
+  const settled = React.useCallback(
+    (index: number) => {
+      const stage = PIPELINE[index];
+      const status = raw.stages[stage.key]?.status;
+      if (status === "failed") return true;
+      // "executing" emits a frame per step, so it reads complete after the first
+      // step. Only the end of the run settles it.
+      if (stage.key === "executing") return raw.finished;
+      return status === "complete";
+    },
+    [raw.stages, raw.finished],
+  );
+
+  const nothingLeft =
+    raw.finished &&
+    PIPELINE.slice(revealed).every((_, offset) => !settled(revealed + offset));
+  const done = revealed >= PIPELINE.length || nothingLeft;
+
+  React.useEffect(() => {
+    if (done || revealed >= PIPELINE.length || !settled(revealed)) return;
+    const key = PIPELINE[revealed].key;
+    const dwell = key === "executing" ? EXECUTING_DWELL_MS : STAGE_DWELL_MS;
+    const timer = window.setTimeout(
+      () => {
+        const failedHere = raw.stages[key]?.status === "failed";
+        setRevealed((count) => (failedHere ? PIPELINE.length : count + 1));
+        setSince(Date.now());
+      },
+      Math.max(0, since + dwell - Date.now()),
+    );
+    return () => window.clearTimeout(timer);
+  }, [done, revealed, since, settled, raw.stages]);
+
+  const stages: Record<string, StageState> = {};
+  PIPELINE.forEach((stage, index) => {
+    const real = raw.stages[stage.key];
+    if (index < revealed) {
+      if (real) stages[stage.key] = real;
+    } else if (index === revealed && !done && runId) {
+      stages[stage.key] = {
+        status: "running",
+        elapsedMs: real?.elapsedMs ?? 0,
+        // Live per-step progress is worth showing while execution runs.
+        detail: stage.key === "executing" ? (real?.detail ?? {}) : {},
+      };
+    }
+  });
+
+  const finished = done && raw.finished;
+  return {
+    ...raw,
+    stages,
+    currentStage: !done && revealed < PIPELINE.length ? PIPELINE[revealed].key : raw.currentStage,
+    finished,
+    failed: finished && raw.failed,
+    error: finished ? raw.error : null,
+    summary: finished ? raw.summary : null,
+  };
 }

@@ -11,6 +11,8 @@ makes the unit tests meaningful.
 
 from __future__ import annotations
 
+import re
+
 import time
 from typing import Any
 
@@ -72,6 +74,19 @@ LOCALE_PREFERENCE: dict[str, dict[str, str]] = {
     "ru": {"web_search": "yandex"},
     "cn": {"web_search": "baidu"},
 }
+
+# The converse rule: a regional engine is not a contender outside its market.
+# Naver's catalog entry mentions "blogs and cafes", which used to win "cafes in
+# Koramangala" - a Bangalore neighbourhood - for a Korean search engine. The
+# penalty is lifted when the intent names the engine, or is written in the
+# market's own script.
+REGIONAL_ENGINES: dict[str, tuple[frozenset[str], str]] = {
+    "naver": (frozenset({"kr"}), r"[\uac00-\ud7a3]"),
+    "baidu": (frozenset({"cn"}), r"[\u4e00-\u9fff]"),
+    "yandex": (frozenset({"ru", "by", "kz"}), r"[\u0400-\u04ff]"),
+    "yandex_images": (frozenset({"ru", "by", "kz"}), r"[\u0400-\u04ff]"),
+}
+REGIONAL_PENALTY = 4.0
 
 
 def _is_addressable(candidate: dict[str, Any]) -> bool:
@@ -153,6 +168,19 @@ class MockLLMAdapter:
                         reasons.append("preferred for " + locale.gl + " locale")
                     elif engine in ("google", "google_light", "bing"):
                         score -= 0.5
+
+            regional = REGIONAL_ENGINES.get(engine)
+            if regional:
+                markets, script = regional
+                if (
+                    locale.gl not in markets
+                    and engine.split("_")[0] not in intent_words
+                    and not re.search(script, intent or "")
+                ):
+                    score -= REGIONAL_PENALTY
+                    reasons.append(
+                        engine + " serves " + "/".join(sorted(markets)) + "; this intent resolves to " + locale.gl
+                    )
 
             # Cheap engines win ties; nothing here is more expensive than 1
             # today, but the rule keeps the ranking honest if that changes.

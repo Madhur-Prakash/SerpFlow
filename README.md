@@ -496,7 +496,8 @@ executing required steps
 
 - Each frame carries `stage`, `status`, `elapsed_ms` and `detail`
 - The UI pipeline animation is driven **entirely** by these frames
-- There is no timer and no simulated sequence anywhere in the frontend
+- No stage is ever shown complete before its real frame arrives, and there is no simulated sequence
+- Very fast stages are held on screen for about 0.3 s each, in order, so the sequence stays readable
 
 ---
 

@@ -658,6 +658,12 @@ class ExecutorService:
         terminal = outcomes[-1] if outcomes else None
         payload = step_payloads.get(terminal.index) if terminal else None
         summary = summarize_payload(payload or {})
+        # A billed search that found nothing carries SerpApi's own explanation
+        # ("... hasn't returned any results for this query."). Pass it through so
+        # an empty result reads as an answer, not as a broken run.
+        notice = (payload or {}).get("error")
+        if notice and not summary.get("count"):
+            summary = {**summary, "notice": str(notice)[:300]}
         return {
             "summary": summary,
             "payload_ref": terminal.payload_ref if terminal else None,
