@@ -48,14 +48,7 @@
 
 ---
 
-<p align="center">
-  <a href="assets/serpflow-product.mp4"><img alt="SerpFlow product film, 73 seconds, narrated. Select to play." src="assets/serpflow-product-poster.jpg" width="100%"></a>
-</p>
-
-<p align="center">
-  <a href="assets/serpflow-product.mp4"><img alt="watch the product film" src="https://img.shields.io/badge/%E2%96%B6%20watch-product%20film%20%C2%B7%201%3A13-2F6BFF"></a>
-  <img alt="1080p, narrated" src="https://img.shields.io/badge/1080p-narrated-555555">
-</p>
+https://github.com/user-attachments/assets/48567a13-c2d4-4cb0-9511-80d50dceed76
 
 ---
 
