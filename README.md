@@ -726,17 +726,10 @@ make test-e2e         # includes the thesis assertion
 
 <h3>SerpFlow</h3>
 
-<p>
+<h2>
   <em>The cache should change which plan wins, not just make the same plan cheaper.</em><br>
-  <sub>A search control plane for SerpApi &middot; self-hosted, for now &middot; open source</sub>
-</p>
-
-<p>
-  <a href="docs/README.md"><img alt="Documentation" src="https://img.shields.io/badge/Documentation-2F6BFF?style=for-the-badge&logo=readthedocs&logoColor=white"></a>
-  <a href="docs/architecture/README.md"><img alt="Architecture" src="https://img.shields.io/badge/Architecture-2F6BFF?style=for-the-badge"></a>
-  <a href="docs/api/README.md"><img alt="API" src="https://img.shields.io/badge/API-009688?style=for-the-badge&logo=fastapi&logoColor=white"></a>
-  <a href="docs/sdks/README.md"><img alt="SDKs" src="https://img.shields.io/badge/SDKs-8250DF?style=for-the-badge"></a>
-</p>
+  <h3>A search control plane for SerpApi &middot; self-hosted, for now &middot; open source</h3>
+</h2>
 
 <p>
   <a href="#quick-start">Quick start</a> &middot;
@@ -747,7 +740,7 @@ make test-e2e         # includes the thesis assertion
   <a href="https://github.com/Madhur-Prakash/SerpFlow/issues">Issues</a>
 </p>
 
-<sub>&copy; 2026 SerpFlow Contributors &middot; released under the <a href="LICENSE">Apache-2.0 licence</a></sub>
+<h3>&copy; 2026 SerpFlow Contributors &middot; released under the <a href="LICENSE">Apache-2.0 licence</a></h3>
 
 <br>
 <br>

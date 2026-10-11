@@ -57,6 +57,7 @@ const SECTIONS: { id: string; title: string; blurb: string }[] = [
   { id: "database", title: "Database", blurb: "Schema, migrations, row-level security." },
   { id: "security", title: "Security", blurb: "Threat model, credentials, keys, secrets." },
   { id: "operations", title: "Operations", blurb: "Bootstrap, email, observability, Kafka, Redis." },
+  { id: "adr", title: "Decisions", blurb: "Why the core choices were made, and what each gave up." },
 ];
 
 const READING_RANK = new Map(DOC_READING_ORDER.map((slug, index) => [slug, index]));
@@ -82,6 +83,7 @@ const TITLE_OVERRIDES: Record<string, string> = {
   database: "Database index",
   security: "Security index",
   operations: "Operations index",
+  adr: "Decision records",
   "sdks/overview": "Overview",
   "sdks/python": "Python SDK",
   "sdks/typescript": "TypeScript SDK",
@@ -97,8 +99,11 @@ const TITLE_OVERRIDES: Record<string, string> = {
 function titleFromSlug(slug: string): string {
   if (TITLE_OVERRIDES[slug]) return TITLE_OVERRIDES[slug];
   const last = slug.split("/").pop() ?? slug;
-  const words = last.replace(/-/g, " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
+  // ADR filenames carry a number: "0008-coverage-before-price".
+  const adr = last.match(/^(\d{4})-(.+)$/);
+  const words = (adr ? adr[2] : last).replace(/-/g, " ");
+  const cased = words.charAt(0).toUpperCase() + words.slice(1);
+  return adr ? `${adr[1]}. ${cased}` : cased;
 }
 
 function slugFor(path: string): string {

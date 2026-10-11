@@ -88,6 +88,8 @@ ORDER = [
     "operations/kafka.md",
     "operations/redis.md",
     "operations/troubleshooting.md",
+    "adr/README.md",
+    *[f"adr/{p.name}" for p in sorted((DOCS / "adr").glob("[0-9][0-9][0-9][0-9]-*.md"))],
 ]
 
 # Section id -> (breadcrumb label, anchor on the index page, badge colour)
@@ -100,6 +102,7 @@ SECTIONS = {
     "database": ("Database", "database", "4169E1"),
     "security": ("Security", "security", "6E40C9"),
     "operations": ("Operations", "operations", "E6522C"),
+    "adr": ("Decisions", "decisions", "555555"),
 }
 
 # The stack, as badges: label, message, colour, simple-icons logo, logo colour.
@@ -184,6 +187,7 @@ PAGES: dict[str, dict] = {
     "operations/kafka.md": {"facts": [], "tech": ["kafka"]},
     "operations/redis.md": {"facts": [("authoritative", "never", "555555")], "tech": ["redis"]},
     "operations/troubleshooting.md": {"facts": [], "tech": ["docker", "postgres", "redis", "kafka"]},
+    "adr/README.md": {"facts": [("records", "6", "555555"), ("status", "all accepted", "3fcf8e")], "tech": []},
 }
 
 HEADER_MARK = "img.shields.io/badge/docs-"
@@ -229,6 +233,9 @@ def short_title(rel_docs: str) -> str:
     if is_section_index(rel_docs):
         # "Product" alone reads like a page about the product, not a contents page.
         return f"{SECTIONS[rel_docs.split('/')[0]][0]} index"
+    if rel_docs.startswith("adr/"):
+        number, _, rest = title.partition(". ")
+        title = f"ADR {number}: {rest}"
     return title if len(title) <= 52 else title[:50].rstrip() + "…"
 
 
@@ -286,7 +293,8 @@ def render(rel_docs: str, index: int) -> str:
     head, body = strip_generated(page.read_text(encoding="utf-8"))
     section = rel_docs.split("/")[0]
     label, anchor, color = SECTIONS[section]
-    meta = PAGES.get(rel_docs, {"facts": [], "tech": []})
+    default = {"facts": [("status", "accepted", "3fcf8e")] if rel_docs.startswith("adr/") else [], "tech": []}
+    meta = PAGES.get(rel_docs, default)
     index_link = link_to("README.md", rel_docs)
 
     # Every page points up to its section index; the section index points up to
