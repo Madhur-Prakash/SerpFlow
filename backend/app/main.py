@@ -108,7 +108,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    contact={"name": "SerpFlow", "url": "https://github.com/madhur-prakash/serpflow"},
+    contact={"name": "SerpFlow", "url": "https://github.com/Madhur-Prakash/SerpFlow"},
     license_info={"name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0"},
 )
 

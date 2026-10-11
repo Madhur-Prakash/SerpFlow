@@ -51,7 +51,7 @@ sudo ufw enable
 ## 2. Get the code
 
 ```bash
-git clone https://github.com/madhur-prakash/serpflow.git /opt/serpflow
+git clone https://github.com/Madhur-Prakash/SerpFlow.git /opt/serpflow
 cd /opt/serpflow
 git checkout <release-tag>           # or stay on main
 ```

@@ -14,7 +14,7 @@
 
 ---
 
-**TypeScript client for [SerpFlow](https://github.com/madhur-prakash/serpflow)**, a search control plane for SerpApi.
+**TypeScript client for [SerpFlow](https://github.com/Madhur-Prakash/SerpFlow)**, a search control plane for SerpApi.
 
 - **No runtime dependencies**
 - Runs in **Node 18+, Deno, Bun and the browser**

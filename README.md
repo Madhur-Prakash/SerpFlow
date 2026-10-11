@@ -273,7 +273,7 @@ restaurants in Koramangala   never matches   restaurants in Indiranagar
 > Putting it on a server: [**Deployment guide**](docs/deployment/deployment-guide.md).
 
 ```bash
-git clone https://github.com/madhur-prakash/serpflow.git
+git clone https://github.com/Madhur-Prakash/SerpFlow.git
 cd serpflow
 cp .env.example .env
 

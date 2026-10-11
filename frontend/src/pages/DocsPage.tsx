@@ -32,7 +32,7 @@ import {
 } from "@/lib/docs";
 import { cn } from "@/lib/utils";
 
-const GITHUB_BASE = "https://github.com/madhur-prakash/serpflow/blob/main/";
+const GITHUB_BASE = "https://github.com/Madhur-Prakash/SerpFlow/blob/main/";
 
 // --------------------------------------------------------------------------
 // Navigation

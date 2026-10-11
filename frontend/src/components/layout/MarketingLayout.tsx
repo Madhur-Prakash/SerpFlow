@@ -236,7 +236,7 @@ const FOOTER_GROUPS: { title: string; links: { label: string; to?: string; href?
       { label: "Architecture", to: "/docs/architecture/overview" },
       { label: "Decision records", to: "/docs/adr" },
       { label: "Security", to: "/docs/security/threat-model" },
-      { label: "GitHub", href: "https://github.com/madhur-prakash/serpflow" },
+      { label: "GitHub", href: "https://github.com/Madhur-Prakash/SerpFlow" },
     ],
   },
 ];
@@ -257,7 +257,7 @@ function MarketingFooter() {
             <div className="flex items-center gap-2">
               <Tooltip content="Source on GitHub">
                 <a
-                  href="https://github.com/madhur-prakash/serpflow"
+                  href="https://github.com/Madhur-Prakash/SerpFlow"
                   target="_blank"
                   rel="noreferrer noopener"
                   aria-label="Source on GitHub"

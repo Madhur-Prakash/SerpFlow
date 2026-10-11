@@ -36,7 +36,7 @@ FROM python:3.13-slim-bookworm AS runtime
 LABEL org.opencontainers.image.title="SerpFlow" \
       org.opencontainers.image.description="A search control plane for SerpApi with cache-aware marginal-cost replanning." \
       org.opencontainers.image.licenses="Apache-2.0" \
-      org.opencontainers.image.source="https://github.com/madhur-prakash/serpflow"
+      org.opencontainers.image.source="https://github.com/Madhur-Prakash/SerpFlow"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

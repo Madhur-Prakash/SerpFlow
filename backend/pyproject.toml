@@ -67,8 +67,8 @@ serpflow = "app.cli.main:app"
 serpflow-mcp = "app.mcp.server:main"
 
 [project.urls]
-Homepage = "https://github.com/madhur-prakash/serpflow"
-Documentation = "https://github.com/madhur-prakash/serpflow/tree/main/docs"
+Homepage = "https://github.com/Madhur-Prakash/SerpFlow"
+Documentation = "https://github.com/Madhur-Prakash/SerpFlow/tree/main/docs"
 
 [build-system]
 requires = ["hatchling"]

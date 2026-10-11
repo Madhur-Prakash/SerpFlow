@@ -129,7 +129,7 @@ function ConsoleFooter() {
             Settings
           </Link>
           <a
-            href="https://github.com/madhur-prakash/serpflow"
+            href="https://github.com/Madhur-Prakash/SerpFlow"
             target="_blank"
             rel="noreferrer noopener"
             className="text-ink-subtle transition-colors hover:text-ink"
