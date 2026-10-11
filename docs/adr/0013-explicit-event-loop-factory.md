@@ -3,17 +3,18 @@
 <p>
   <a href="../README.md#decisions"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
   <img alt="status: accepted" src="https://img.shields.io/badge/status-accepted-3fcf8e">
-  <img alt="read: 2 min" src="https://img.shields.io/badge/read-2%20min-555555">
+  <a href="../../backend/app/__init__.py"><img alt="source: app/__init__.py" src="https://img.shields.io/badge/source-app%2F____init____.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 3 min" src="https://img.shields.io/badge/read-3%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../README.md#decisions) › **0013. Run uvicorn through an explicit loop factory** · page 49 of 50
+[Docs](../README.md) › [Decisions](../README.md#decisions) › **0013. Run uvicorn through an explicit loop factory** · page 56 of 57
 
 **Status** Accepted
 
 ## Context
 
-- **psycopg's async driver cannot run on Windows' `ProactorEventLoop`.** Every database call fails with an `InterfaceError`
-- **The standard fix is the event loop policy**, set at import:
+- **psycopg's async driver cannot run on Windows' `ProactorEventLoop`.** Every database call fails with an `InterfaceError` ([async on Windows](../architecture/backend.md#async-on-windows))
+- **The standard fix is the event loop policy**, set at import ([`app/__init__.py`](../../backend/app/__init__.py)):
 
 ```python
 # app/__init__.py
@@ -34,7 +35,7 @@ asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 ## Decision
 
-**A dedicated entry point that drives uvicorn with an explicit loop factory.**
+**A dedicated entry point that drives uvicorn with an explicit loop factory** ([`app/server.py`](../../backend/app/server.py)).
 
 ```python
 # app/server.py
@@ -52,7 +53,8 @@ def _loop_factory():
 
 - **`SelectorEventLoop` exists on Windows** as the non-default alternative; on Linux and macOS it is already the default, so this is a no-op there, and behaviour is identical across all three
 - **The `--reload` and `--workers` paths are handed back to `uvicorn.run()` unchanged:** uvicorn spawns subprocesses there and already picks a selector loop for them
-- **`make backend` and the container both run `python -m app.server`**
+- **[`make backend`](../deployment/local.md#everyday-targets) and the [container](../deployment/docker.md#the-backend-image) both run `python -m app.server`**
+  - `make backend` passes `--reload`, so it takes the `uvicorn.run()` path; the container's `CMD` does not, so it takes the explicit factory
 - **The policy in `app/__init__.py` stays too:** it covers scripts, the CLI and the test suite, which do not go through this entry point
 
 ## Alternatives rejected
@@ -60,8 +62,8 @@ def _loop_factory():
 | Alternative | Why it lost |
 | --- | --- |
 | **Policy only** | Does not work, as above. It is what everyone tries first, and why this ADR exists |
-| **Use asyncpg instead of psycopg** | Avoids the issue, but psycopg 3 is the better driver for this workload, notably for `SET LOCAL` under pooling, which RLS depends on. Changing drivers to work around a loop-selection detail is the wrong direction |
-| **Document "use WSL on Windows"** | The goal is that `make dev` works on a clean machine. Telling a Windows contributor their platform is unsupported is worse than fifteen lines in an entry point |
+| **Use asyncpg instead of psycopg** | Avoids the issue, but psycopg 3 is the better driver for this workload, notably for `SET LOCAL` under pooling, which [RLS](../database/rls.md#how-it-works) depends on. Changing drivers to work around a loop-selection detail is the wrong direction |
+| **Document "use WSL on Windows"** | The goal is that [`make dev`](../deployment/local.md#first-run) works on a clean machine. Telling a Windows contributor their platform is unsupported is worse than fifteen lines in an entry point |
 | **Pin an older uvicorn** | Freezes a dependency over one behaviour, and the behaviour is not a bug |
 
 ## Cost
@@ -72,8 +74,12 @@ def _loop_factory():
 
 ## See also
 
-- [Backend architecture](../architecture/backend.md#async-on-windows)
-- [Troubleshooting](../operations/troubleshooting.md#psycopg-fails-on-windows-proactoreventloop)
+- [Backend: async on Windows](../architecture/backend.md#async-on-windows): the rule as the backend applies it, alongside the policy in `app/__init__.py`
+- [Troubleshooting: psycopg fails on Windows](../operations/troubleshooting.md#psycopg-fails-on-windows-proactoreventloop): the `InterfaceError` this prevents, and what to check if it appears
+- [Docker: the backend image](../deployment/docker.md#the-backend-image): the container `CMD` that starts `app.server`
+- [Local development: everyday targets](../deployment/local.md#everyday-targets): `make backend` and `make dev`, both through the entry point
+- [Installation: Windows](../deployment/installation.md#windows): the native Windows setup this decision keeps working
+- [ADR 0011: tenant isolation enforced twice](0011-rls-plus-application-guards.md): the `SET LOCAL` under pooling that keeps the driver psycopg 3
 
 ---
 

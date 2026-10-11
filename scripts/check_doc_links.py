@@ -16,6 +16,15 @@ Three kinds of reference are checked:
 The last two matter because a doc that *names* a file it does not link is just
 as wrong when that file is renamed, and those are the references a link checker
 normally misses.
+
+    python scripts/check_doc_links.py --interlinks  # also check the docs are woven together
+
+With `--interlinks`, every page under docs/ must also end with a `## Related`
+(or, for a decision record, `## See also`) section of at least three links,
+and must be linked from the body of at least one other page. The generated
+badge header, breadcrumb and previous / next footer do not count: a page that
+is reachable only by pressing Next is an orphan. Related links that are not
+returned are listed, as a prompt rather than a failure.
 """
 
 from __future__ import annotations
@@ -74,10 +83,67 @@ def anchors_in(path: Path) -> set[str]:
     return found
 
 
+RELATED = re.compile(r"^## (?:Related|See also)\s*$", re.MULTILINE)
+DOCS = ROOT / "docs"
+
+
+def doc_links(body: str, page: Path) -> set[Path]:
+    """The docs pages a page's body links to, excluding itself."""
+    found = set()
+    for target in LINK.findall(body):
+        path_part = target.partition("#")[0]
+        if not path_part or target.startswith(("http://", "https://", "mailto:", "//")):
+            continue
+        resolved = (page.parent / path_part).resolve()
+        if resolved.suffix == ".md" and resolved.is_relative_to(DOCS) and resolved != page:
+            found.add(resolved)
+    return found
+
+
+def check_interlinks() -> tuple[list[str], list[str], int]:
+    """Pages without a closing Related section, orphans, and one-way Related links."""
+    from build_docs_nav import strip_generated  # same directory; strips the generated blocks
+
+    index = DOCS / "README.md"
+    pages = sorted(p.resolve() for p in DOCS.rglob("*.md") if p.resolve() != index.resolve())
+    bodies = {p: strip_generated(p.read_text(encoding="utf-8"))[1] for p in pages}
+    related: dict[Path, set[Path]] = {}
+    problems: list[str] = []
+
+    for page, body in bodies.items():
+        match = None
+        for match in RELATED.finditer(body):
+            pass
+        section = body[match.end():] if match else ""
+        related[page] = doc_links(section, page)
+        if len(LINK.findall(section)) < 3:
+            problems.append(f"{page.relative_to(ROOT)}  no closing Related / See also section of 3+ links")
+
+    inbound = {page: 0 for page in pages}
+    total = 0
+    for page, body in bodies.items():
+        for target in doc_links(body, page):
+            total += 1
+            if target in inbound:
+                inbound[target] += 1
+    problems += [f"{p.relative_to(ROOT)}  orphan: no other page links to it" for p, n in inbound.items() if not n]
+
+    one_way = sorted(
+        f"{a.relative_to(DOCS).as_posix()} -> {b.relative_to(DOCS).as_posix()}"
+        for a, targets in related.items()
+        for b in targets
+        if b in related and a not in related[b] and a not in doc_links(bodies[b], b)
+    )
+    return problems, one_way, total
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check documentation links.")
     parser.add_argument(
         "--anchors", action="store_true", help="also verify #fragments resolve to a heading"
+    )
+    parser.add_argument(
+        "--interlinks", action="store_true", help="also require Related sections and no orphan pages"
     )
     args = parser.parse_args()
 
@@ -141,6 +207,15 @@ def main() -> int:
     print("  cited paths      " + str(path_count))
     if args.anchors:
         print("  anchors          checked")
+    if args.interlinks:
+        problems, one_way, cross_links = check_interlinks()
+        broken += problems
+        print("  page cross-links " + str(cross_links))
+        if one_way:
+            print("")
+            print("  " + str(len(one_way)) + " Related link(s) not returned (the target never links back):")
+            for item in one_way:
+                print("    " + item)
     print("")
 
     if broken:

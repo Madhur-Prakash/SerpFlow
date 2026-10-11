@@ -3,7 +3,7 @@
  *
  * Do not edit by hand: run `make api-reference` (or
  * `python scripts/generate_api_reference.py`) after changing a router. A
- * hand-maintained list of 84 operations is a list that goes stale.
+ * hand-maintained list of 85 operations is a list that goes stale.
  */
 
 export type ApiParameter = {
@@ -33,8 +33,8 @@ export type ApiGroup = { tag: string; title: string; blurb: string };
 
 export const API_TITLE = "SerpFlow";
 export const API_VERSION = "1.0.0";
-export const API_OPERATION_COUNT = 84;
-export const API_PATH_COUNT = 73;
+export const API_OPERATION_COUNT = 85;
+export const API_PATH_COUNT = 74;
 
 export const API_GROUPS: ApiGroup[] = [
   {
@@ -3966,6 +3966,51 @@ export const API_OPERATIONS: ApiOperation[] = [
         "status": "200",
         "description": "Successful Response",
         "type": "AlertResponse"
+      },
+      {
+        "status": "422",
+        "description": "Validation Error",
+        "type": "HTTPValidationError"
+      }
+    ]
+  },
+  {
+    "id": "list_channel_labels_v1_notification_channels_labels_get",
+    "method": "GET",
+    "path": "/v1/notification-channels/labels",
+    "tag": "governance",
+    "summary": "List Channel Labels",
+    "description": "The labels the console offers, and what each changes about the email.",
+    "deprecated": false,
+    "parameters": [
+      {
+        "name": "access_token",
+        "location": "query",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "authorization",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "X-API-Key",
+        "location": "header",
+        "required": false,
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "body": null,
+    "responses": [
+      {
+        "status": "200",
+        "description": "Successful Response",
+        "type": "object"
       },
       {
         "status": "422",

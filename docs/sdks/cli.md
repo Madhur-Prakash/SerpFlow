@@ -1,5 +1,15 @@
 # CLI
 
+<p>
+  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <img alt="commands: 14" src="https://img.shields.io/badge/commands-14-8250DF">
+  <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
+  <a href="../../backend/app/cli/main.py"><img alt="source: cli/main.py" src="https://img.shields.io/badge/source-cli%2Fmain.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
+</p>
+
+[Docs](../README.md) › [SDKs](../README.md#sdks) › **CLI** · page 26 of 57
+
 - **`serpflow`: fourteen commands** for planning, searching, inspecting runs, exploring the catalog, the cache and the benchmark: [`app/cli/main.py`](../../backend/app/cli/main.py)
 - **Built on [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/)**, so plans render as tables and errors as panels
 - **Installed with the backend** as a console script, next to `serpflow-mcp`
@@ -14,7 +24,7 @@ source backend/.venv/bin/activate     # Windows: backend\.venv\Scripts\activate
 serpflow --help
 ```
 
-- **Without activating:** `backend/.venv/bin/serpflow` (Windows: `backend\.venv\Scripts\serpflow.exe`), or `python -m app.cli.main` from `backend/`, which is what the Makefile uses
+- **Without activating:** `.venv/bin/serpflow` inside `backend/` (Windows: `.venv\Scripts\serpflow.exe`), or `python -m app.cli.main` from `backend/`, which is what the Makefile uses
 - **Or through uv**, from anywhere: `uv --directory backend run --no-sync serpflow ...`
 - **No shell completion is installed** (`add_completion=False`)
 
@@ -176,4 +186,15 @@ serpflow catalog validate || exit 1
 
 ## Related
 
-- [SDKs and tools](overview.md) · [MCP server](mcp.md) · [Local development](../deployment/local.md#everyday-targets)
+- [SDKs and tools](overview.md#configuration): the environment variables the CLI shares with the SDKs
+- [MCP server](mcp.md): the same service layer, for agents instead of terminals
+- [Local development](../deployment/local.md#everyday-targets): the Make targets that wrap these commands
+- [Catalog](../architecture/catalog.md): what `catalog explore` and `catalog paths` are reading
+- [Benchmark](../product/benchmark.md): what `benchmark compare` measures, and the latest results
+- [Troubleshooting](../operations/troubleshooting.md): when `serpflow health` says something is wrong
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [TypeScript SDK](../sdks/typescript.md) | [Docs index](../README.md) | [MCP server](../sdks/mcp.md) |

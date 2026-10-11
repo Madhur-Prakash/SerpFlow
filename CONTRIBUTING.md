@@ -2,7 +2,7 @@
 
 <p>
   <a href="#getting-set-up"><img alt="setup: no API keys" src="https://img.shields.io/badge/setup-no%20API%20keys-3fcf8e"></a>
-  <a href="#tests"><img alt="tests: 216 passing" src="https://img.shields.io/badge/tests-216%20passing-3fcf8e?logo=pytest&logoColor=white"></a>
+  <a href="#tests"><img alt="tests: 236 passing" src="https://img.shields.io/badge/tests-236%20passing-3fcf8e?logo=pytest&logoColor=white"></a>
   <a href="#before-you-open-a-pull-request"><img alt="make demo: must stay PROVEN" src="https://img.shields.io/badge/make%20demo-must%20stay%20PROVEN-2F6BFF"></a>
   <img alt="Python 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="TypeScript 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
@@ -31,14 +31,16 @@ make install        # uv venv on Python 3.13, plus npm install
 make up             # postgres with pgvector, redis, kafka in KRaft mode
 make upgrade        # alembic migrations
 make seed           # catalog, benchmark fixtures, demo organization
-make test           # 216 tests
+make test           # 236 tests
 ```
 
 - **No API keys are required**
-  - planning uses a deterministic adapter
-  - `test` API keys route to a deterministic SerpApi mock
+  - planning uses a [deterministic adapter](docs/architecture/planner.md#stage-b-select)
+  - `test` API keys route to a deterministic SerpApi mock ([execution modes](docs/product/execution-modes.md))
   - so the whole project works offline
 - Prerequisites for every OS: [installation guide](docs/deployment/installation.md)
+- Everyday targets, modes and real keys on a laptop: [local development](docs/deployment/local.md)
+- Something fails on the way: [troubleshooting](docs/operations/troubleshooting.md#setup)
 
 ## Before you open a pull request
 
@@ -48,11 +50,12 @@ make lint           # ruff check, eslint
 make typecheck      # mypy, tsc
 make test           # unit, integration and e2e
 make demo           # the thesis must still hold
-make docs-check     # if you touched docs: every link and path resolves
+make docs-check     # if you touched docs: every link, path and anchor resolves
 ```
 
 - **`make demo` exits non-zero if cache-aware replanning stops changing the selected plan**
-- That is not a style check: **it is the product**
+- That is not a style check: **it is the product**. What it proves: [the reference demo](docs/product/demo.md)
+- The everyday targets, grouped: [local development](docs/deployment/local.md#everyday-targets)
 
 ## Where things live
 
@@ -63,9 +66,14 @@ make docs-check     # if you touched docs: every link and path resolves
 | How candidates are generated and ranked | `backend/app/services/planner/` |
 | Cache layers, the entity guard, TTL | `backend/app/services/cache/` |
 | Execution order and credential handling | `backend/app/services/executor/` |
+| Execution-mode precedence | `backend/app/services/runs.py`, `backend/app/integrations/serpapi/__init__.py` |
 | Endpoints | `backend/app/api/v1/` |
+| The Python SDK, CLI and MCP server | `backend/app/sdk/`, `backend/app/cli/`, `backend/app/mcp/` |
+| The TypeScript SDK | `sdk/typescript/` |
 | The control-plane UI | `frontend/src/pages/` |
 | The documentation | `docs/`, plus `scripts/build_docs_nav.py` for navigation |
+
+- How the pieces fit: [architecture overview](docs/architecture/overview.md) · [backend module map](docs/architecture/backend.md#module-map) · [frontend](docs/architecture/frontend.md) · [SDKs and tools](docs/sdks/overview.md)
 
 ## Changing the catalog
 
@@ -81,9 +89,9 @@ make docs-check     # if you touched docs: every link and path resolves
 - **Run `make catalog-validate` after any catalog change**
   - every engine must declare substitutes, or state in `single_source_note` why nothing competes with it
   - so the planner can explain the absence instead of staying silent
-- **Re-run `make benchmark`:** a catalog edit that improves one route often degrades another
+- **Re-run `make benchmark`:** a catalog edit that improves one route often degrades another ([if you change the catalog](docs/product/benchmark.md#if-you-change-the-catalog))
 
-More: [catalog architecture](docs/architecture/catalog.md)
+More: [catalog architecture](docs/architecture/catalog.md#how-the-catalog-is-authored) · [ADR 0002: two edge sets](docs/adr/0002-typed-catalog-edges.md)
 
 ## Changing the planner
 
@@ -98,7 +106,7 @@ More: [catalog architecture](docs/architecture/catalog.md)
 
 - **Coverage is ranked before price:** a cheaper narrow-coverage substitute is no reason to answer a different question. Cost only breaks ties within a coverage band
 
-More: [planner](docs/architecture/planner.md) · [marginal replanning](docs/architecture/marginal-replanning.md)
+More: [planner](docs/architecture/planner.md) · [marginal replanning](docs/architecture/marginal-replanning.md) · [ADR 0008: coverage before price](docs/adr/0008-coverage-before-price.md) · [ADR 0009: freshness gates warmth](docs/adr/0009-freshness-gates-warmth.md) · [ADR 0014: persist every candidate](docs/adr/0014-persist-every-candidate.md)
 
 ## Changing the cache
 
@@ -110,19 +118,19 @@ More: [planner](docs/architecture/planner.md) · [marginal replanning](docs/arch
   - `iphone 16` never matches `iphone 17`
   - `restaurants in Koramangala` never matches `restaurants in Indiranagar`
 
-More: [caching](docs/architecture/caching.md) · [ADR 0003](docs/adr/0003-deterministic-semantic-guard.md)
+More: [caching](docs/architecture/caching.md#the-entity-and-numeral-guard) · [ADR 0003](docs/adr/0003-deterministic-semantic-guard.md)
 
 ## Secrets
 
 **Three rules, all tested:**
 
-- **The upstream SerpApi credential is decrypted in exactly one place: the executor.** Decrypting it in an API handler means something went wrong upstream of that line
+- **The upstream SerpApi credential is decrypted only immediately before an upstream call:** in the executor for a search, and in the credential service for its validation and quota probes. Decrypting it in an API handler means something went wrong upstream of that line
 - **No response schema may contain a field that could carry it.** Not excluded: **absent**. `tests/unit/test_security.py` walks every Pydantic model in `app/schemas` and fails if one appears
 - **The redaction filter runs on the log record, the formatted message and the exception path.** The leak path is always an exception handler
 
 - **Never commit `.env`**, and never paste a real token into an issue, a PR or a log excerpt
 
-More: [secrets](docs/security/secrets.md) · [credentials](docs/security/credentials.md)
+More: [secrets](docs/security/secrets.md) · [credentials](docs/security/credentials.md#where-it-is-decrypted) · [API keys](docs/security/api-keys.md) · [ADR 0006: absent, not excluded](docs/adr/0006-no-credential-field-in-schemas.md)
 
 ## Database changes
 
@@ -139,33 +147,42 @@ make downgrade      # confirm it reverses cleanly
   - a row-level security policy: add it to `RLS_TABLES`, or enable it in the new migration as `0003_custom_roles` does
 - **The application guards in `app/api/deps.py` are the primary check**; RLS is the backstop for the query somebody forgets to scope
 
-More: [migrations](docs/database/migrations.md) · [row-level security](docs/database/rls.md)
+- **Read the autogenerated file before running it:** autogenerate does not produce HNSW indexes, RLS policies, triggers or backfills
+
+More: [migrations: writing a new revision](docs/database/migrations.md#writing-a-new-revision) · [row-level security: adding a table](docs/database/rls.md#adding-a-table) · [ADR 0011](docs/adr/0011-rls-plus-application-guards.md)
 
 ## Changing the docs
 
 - **Write short bullets, not paragraphs**, and link every claim to the code it describes
-- **Navigation is generated.** After adding or renaming a page:
+- **Link the first mention of a concept to its canonical page**, with a `#anchor` where a section covers it, and an ADR wherever the page describes a decision that has one
+- **Every page ends with `## Related`** (ADRs keep `## See also`): at least three links, each with a reason, including pages from other sections
+- **A new term goes in the [glossary](docs/product/glossary.md)**, with a link to the page that explains it
+- **Navigation is generated.** Never edit a page's badge header, breadcrumb or previous/next footer by hand. After adding or renaming a page:
 
 ```bash
 # add the page to ORDER (and its badges to PAGES) in scripts/build_docs_nav.py, then:
-make docs-nav       # regenerate every page's badge header, breadcrumb and prev/next footer
-make docs-check     # verify every relative link and repository path
+make docs-nav       # regenerate every page's badge header, breadcrumb and prev/next footer,
+                    # and the docs browser's reading order
+make docs-check     # every link, cited path and #anchor resolves; every page has a
+                    # Related section and is linked from another page's body
 ```
 
-- **The in-app docs renderer is a subset of markdown:** no HTML comments (they render as text), no task-list checkboxes, and no markdown image syntax inside a link. Badges are an HTML `<p>` of `<a><img></a>`
+- **The in-app docs renderer is a subset of markdown:** no HTML comments (they render as text), no task-list checkboxes, and no markdown image syntax inside a link. Badges are an HTML `<p>` of `<a><img></a>`. Root files such as this one are rendered there too. See [the documentation browser](docs/architecture/web.md#the-documentation-browser)
 - **Check numbers against the code**, not against another doc. Counts drift; the code does not
+- **A decision whose alternative was genuinely defensible gets an ADR:** numbered next in sequence, with the five parts (context, decision, alternatives rejected, cost, see also), added to the table in the ADR index and to `ORDER`. See [writing a new one](docs/adr/README.md#writing-a-new-one)
 
 ## Tests
 
 | Suite | Needs | Covers |
 | --- | --- | --- |
-| `tests/unit` (188) | nothing | catalog, path-finding, candidates, cost, freshness, guard, keys, credentials, RBAC, TTL, redaction |
-| `tests/integration` | postgres, redis | the real app over HTTP, SSE frames, provenance headers, audit chain, bootstrap seeding |
-| `tests/e2e` | postgres, redis | the thesis assertion, single-candidate reasoning, locale inference |
+| `tests/unit` (208) | nothing | catalog, path-finding, candidates, cost, freshness, guard, keys, credentials, RBAC, TTL, redaction, execution modes, email, real SerpApi response shapes, the SDK, CLI and MCP entry points |
+| `tests/integration` (25) | postgres, redis | the real app over HTTP, SSE frames, provenance headers, audit chain, bootstrap seeding |
+| `tests/e2e` (3) | postgres, redis | the thesis assertion, single-candidate reasoning, locale inference |
 
 - **Integration and e2e tests skip themselves cleanly** when PostgreSQL is not reachable, so `make test` is useful on a laptop with nothing running
-  - which also means a green run can hide them: use `pytest -rs` to see skip reasons
-- **The benchmark is not part of CI.** It makes real LLM calls and runs on demand with `make benchmark`; results commit per catalog version under `backend/fixtures/benchmark/results/`
+  - which also means a green run can hide them: use `pytest -rs` to see skip reasons ([troubleshooting](docs/operations/troubleshooting.md#integration-tests-all-report-skipped))
+- **`tests/unit/test_email.py` expects no Gmail credential:** with `GMAIL_CREDENTIALS_B64` set in your `.env`, the console-transport test fails. Unset it for the run ([email: testing](docs/operations/email.md#testing))
+- **The benchmark is not part of CI.** With `LLM_PROVIDER=groq` it makes real model calls; it runs on demand with `make benchmark`, and results commit per catalog version under `backend/fixtures/benchmark/results/` ([running it](docs/product/benchmark.md#running-it))
 
 ## Style
 
@@ -176,7 +193,7 @@ make docs-check     # verify every relative link and repository path
 
 ## Reporting a security issue
 
-- **Please do not open a public issue.** See [SECURITY.md](SECURITY.md)
+- **Please do not open a public issue.** See [SECURITY.md](SECURITY.md), and the [threat model](docs/security/threat-model.md) for what is in and out of scope
 
 ---
 

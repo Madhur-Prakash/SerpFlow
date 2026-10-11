@@ -3,16 +3,17 @@
 <p>
   <a href="../README.md#decisions"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
   <img alt="status: accepted" src="https://img.shields.io/badge/status-accepted-3fcf8e">
-  <img alt="read: 2 min" src="https://img.shields.io/badge/read-2%20min-555555">
+  <a href="../../backend/app/workers/kafka.py"><img alt="source: workers/kafka.py" src="https://img.shields.io/badge/source-workers%2Fkafka.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 3 min" src="https://img.shields.io/badge/read-3%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../README.md#decisions) › **0007. Interactive search does not go through Kafka** · page 43 of 50
+[Docs](../README.md) › [Decisions](../README.md#decisions) › **0007. Interactive search does not go through Kafka** · page 50 of 57
 
 **Status** Accepted
 
 ## Context
 
-- **The stack includes Kafka, and there is a strong pull to route everything through it:**
+- **The stack includes [Kafka](../operations/kafka.md), and there is a strong pull to route everything through it:**
   - a request arrives, a message is produced
   - a worker consumes it, executes the run, publishes progress
   - the client subscribes to the progress stream
@@ -20,7 +21,7 @@
 
 ## Decision
 
-**`POST /v1/search` executes in-process**, including the streaming variant.
+**[`POST /v1/search`](../api/overview.md#plan-and-execute) executes in-process**, including the streaming variant.
 
 ```
 Kafka          scheduled runs, bulk runs, retries, webhook-triggered runs,
@@ -30,7 +31,8 @@ Kafka          scheduled runs, bulk runs, retries, webhook-triggered runs,
 Not Kafka      interactive POST /v1/search
 ```
 
-- **With `"stream": true`**, the endpoint returns `202` and a `stream_url`, then runs the plan **in the same process** and emits SSE frames from it
+- **The background side is 8 topics** ([topics](../operations/kafka.md#topics), declared in [`app/workers/kafka.py`](../../backend/app/workers/kafka.py)); none of them carries an interactive search
+- **With `"stream": true`**, the endpoint returns `202` and a `stream_url`, then runs the plan **in the same process** (an `asyncio` task in [`app/api/v1/search.py`](../../backend/app/api/v1/search.py)) and emits [SSE frames](../api/streaming.md#starting-a-run-you-can-stream) from it
 - The client tails `GET /v1/runs/{id}/stream`
 
 ## Alternatives rejected
@@ -44,17 +46,22 @@ Not Kafka      interactive POST /v1/search
 
 - **Two execution paths to maintain**
 - **The SSE buffer has to work across workers**, because the client may reconnect to a different process
-  - handled: the frame buffer is mirrored into Redis, and `Last-Event-ID` resumption works across a reconnect that lands elsewhere
+  - handled: the frame buffer is mirrored into [Redis](../operations/redis.md#what-lives-in-it), and [`Last-Event-ID` resumption](../api/streaming.md#reconnecting) works across a reconnect that lands elsewhere
   - real complexity, accepted in exchange for keeping a broker **out of the latency path** of the main endpoint
-- **A consequence that is a benefit:** nothing user-facing depends on Kafka, so a broker outage **degrades rather than fails**
+- **A consequence that is a benefit:** nothing user-facing depends on Kafka, so a broker outage **[degrades rather than fails](../operations/kafka.md#degradation)**
   - the producer logs `kafka.degraded` once and returns
-  - `/readyz` reports degraded, not 503
+  - [`/readyz`](../operations/observability.md#health) reports degraded, not 503
   - search keeps working
 
 ## See also
 
-- [Kafka operations](../operations/kafka.md)
-- [Streaming](../api/streaming.md)
+- [Kafka: what goes through it, and what does not](../operations/kafka.md#what-goes-through-it-and-what-does-not): the split this decision draws, topic by topic
+- [Streaming: reconnecting](../api/streaming.md#reconnecting): the Redis-mirrored buffer that makes in-process streaming survive a reconnect elsewhere
+- [Architecture overview: the shape of a request](../architecture/overview.md#the-shape-of-a-request): the synchronous path a search takes end to end
+- [Backend: degradation](../architecture/backend.md#degradation): what each dependency's outage does to the API
+- [`test_api.py`](../../backend/tests/integration/test_api.py): `test_sse_stream_replays_real_stage_events` checks the in-process stream emits real stages
+- [Troubleshooting: `kafka.degraded` in the logs](../operations/troubleshooting.md#kafkadegraded-in-the-logs): why search keeps working, and what stops
+- [Production: Kafka](../deployment/production.md#kafka): the broker topology the background side needs once it carries real work
 
 ---
 

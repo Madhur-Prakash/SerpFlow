@@ -319,9 +319,9 @@ export class SerpFlow {
  *   const results = await search.getJson();
  *
  * Existing SerpApi code keeps its shape; the request now goes through
- * SerpFlow's cache layers and budget enforcement. It does not re-route: you
- * asked for an engine, you get that engine. Adopt `SerpFlow.search` when you
- * want routing as well.
+ * SerpFlow's cache layers and budget enforcement. Only `q` (or `query`) is
+ * sent, as the intent of a search, so SerpFlow's planner chooses the engines;
+ * `engine` and the other parameters are echoed back, not forwarded.
  */
 export class SerpApiCompat {
   private readonly params: Record<string, unknown>;

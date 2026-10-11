@@ -8,10 +8,11 @@
   <img alt="nginx: 1.27" src="https://img.shields.io/badge/nginx-1.27-009639?logo=nginx&logoColor=white">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
   <img alt="Prometheus: metrics" src="https://img.shields.io/badge/Prometheus-metrics-E6522C?logo=prometheus&logoColor=white">
-  <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
+  <a href="../../backend/app/api/deps.py"><img alt="source: api/deps.py" src="https://img.shields.io/badge/source-api%2Fdeps.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../README.md#deployment) › **Deployment guide** · page 8 of 50
+[Docs](../README.md) › [Deployment](../README.md#deployment) › **Deployment guide** · page 9 of 57
 
 **A runbook: from a blank server to a verified production instance**, with every command. It deploys the bundled Docker Compose stack on **one host**, behind a TLS proxy.
 
@@ -53,12 +54,15 @@ sudo ufw enable
 ```bash
 git clone https://github.com/Madhur-Prakash/SerpFlow.git /opt/serpflow
 cd /opt/serpflow
-git checkout <release-tag>           # or stay on main
+git checkout <release-tag>           # e.g. v1.0.0 (git tag lists them), or stay on main
 ```
+
+- **The explicit target directory** keeps the path lowercase; a bare `git clone` creates `SerpFlow`
+- What each release changed: [`CHANGELOG.md`](../../CHANGELOG.md)
 
 ## 3. Generate secrets
 
-Every value distinct. Store them in a password manager or secret store **before** you continue.
+Every value distinct. Store them in a password manager or secret store **before** you continue. What each one protects: [secrets: inventory](../security/secrets.md#inventory); the same commands, with alternatives: [generating real ones](../security/secrets.md#generating-real-ones).
 
 ```bash
 openssl rand -hex 32                 # JWT_SECRET
@@ -70,9 +74,9 @@ openssl rand -hex 16                 # GRAFANA_PASSWORD
 
 | Secret | If you lose it or change it carelessly |
 | --- | --- |
-| `CREDENTIAL_KEK` | every stored SerpApi/Groq credential becomes **undecryptable**. Rotate only with the [rewrap procedure](../security/secrets.md#kek) |
-| `API_KEY_PEPPER` | **every API key stops working**. Rotation means re-issuing all keys: [pepper rotation](../security/secrets.md#pepper) |
-| `JWT_SECRET` | every user is signed out. Recoverable |
+| `CREDENTIAL_KEK` | every stored SerpApi/Groq credential becomes **undecryptable**. Rotate only with the [rewrap procedure](../security/secrets.md#kek); why it wraps per-credential keys: [ADR 0005](../adr/0005-envelope-encryption.md) |
+| `API_KEY_PEPPER` | **every API key stops working**. Rotation means re-issuing all keys: [pepper rotation](../security/secrets.md#pepper); why a pepper: [ADR 0004](../adr/0004-hmac-for-api-keys.md) |
+| `JWT_SECRET` | every user is signed out. Recoverable ([JWT secret rotation](../security/secrets.md#jwt-secret)) |
 | `POSTGRES_PASSWORD` | only set at first initialisation of the volume; changing it later needs `ALTER ROLE` too |
 
 ## 4. Configure the environment
@@ -118,19 +122,22 @@ METRICS_ENABLED=true
 
 Why the less obvious ones matter:
 
-- **`VITE_API_BASE_URL` must be your public URL.** It is baked into the frontend bundle at build time
-  - left at the default, every visitor's browser calls **its own** `localhost:8000`
+- **`VITE_API_BASE_URL` must be your public URL.** It is baked into the frontend bundle at build time ([Docker: the frontend image](docker.md#the-frontend-image))
+  - left at the default, every visitor's browser calls **its own** `localhost:8000` ([troubleshooting](../operations/troubleshooting.md#the-production-frontend-calls-localhost8000))
   - an empty value does **not** work: compose's `${VITE_API_BASE_URL:-http://localhost:8000}` substitutes the default for empty as well as unset
-- **`TRUSTED_PROXY_HOPS`** is how many proxies sit in front of the backend; the client IP is taken that far from the end of `X-Forwarded-For`
-  - TLS proxy + bundled nginx = **2**. At 1, every visitor shares one rate-limit bucket
-- **`SEED_ON_STARTUP`** is refused in `production` anyway: demo accounts with a published password never reach a real deployment
+- **`TRUSTED_PROXY_HOPS`** is how many proxies sit in front of the backend; the client IP is taken that far from the end of `X-Forwarded-For` ([`app/api/deps.py`](../../backend/app/api/deps.py))
+  - TLS proxy + bundled nginx = **2**. At 1, the audit log, sessions and keys record the TLS proxy's address for every caller ([troubleshooting](../operations/troubleshooting.md#every-caller-is-recorded-with-the-proxys-ip))
+  - the [rate limit](../api/overview.md#rate-limiting) is per principal and path, so this setting does not affect it
+- **`SEED_ON_STARTUP`** is refused in `production` anyway: demo accounts with a published password never reach a real deployment ([the environment refusal](../operations/bootstrap.md#3-an-environment-refusal))
+- **`POSTGRES_*` build the backend's `DATABASE_URL`:** compose overrides any `DATABASE_URL` in `.env` for the container ([Docker: how the backend container is configured](docker.md#running))
 - **Do not set `SERPAPI_API_KEY`.** It does not exist. Organizations bring their own keys: [BYOK](../security/byok.md)
-- **Leave `GROQ_API_KEY` unset** unless you intend your key to answer for every organization that has not brought one
+- **Leave `GROQ_API_KEY` unset** unless you intend your key to answer for every organization that has not brought one ([the self-hosting exception](../security/byok.md#the-self-hosting-exception))
 - **`SERPFLOW_MODE`** is the instance default. `replay` is safe; projects opt into `live` themselves: [execution modes](../product/execution-modes.md)
-- **Real email** (address verification, password reset, alert notifications): set `GMAIL_CREDENTIALS_B64` and `GMAIL_SENDER`, see [email](../operations/email.md)
+- **Real email** (address verification, password reset, alert notifications): set `GMAIL_CREDENTIALS_B64` and `GMAIL_SENDER`, see [setting up Gmail](../operations/email.md#setting-up-gmail)
   - without it **nothing is delivered**: the log records only that a message would have been sent, never the link it carried
-  - so **password resets need Gmail** in production
+  - so **password resets need Gmail** in production ([troubleshooting](../operations/troubleshooting.md#password-reset-or-verification-email-never-arrives))
 - **Object storage:** the default `filesystem` writes to the `object-data` volume. For S3, see [production: storage](production.md#storage)
+- **The CLI, SDK and MCP variables** (`SERPFLOW_API_KEY`, `SERPFLOW_BASE_URL`, `SERPFLOW_MCP_SESSION`) do not belong in this file: those tools read them from the shell of whoever runs them ([local development: CLI, SDK and MCP](local.md#cli-sdk-and-mcp))
 
 ## 5. Lock down the ports
 
@@ -153,8 +160,9 @@ services:
       - "127.0.0.1:5173:80"
 ```
 
-- **Datastores** become reachable only on the compose network
+- **Datastores** become reachable only on the compose network ([troubleshooting: datastore ports are open](../operations/troubleshooting.md#datastore-ports-are-open-on-a-server))
 - **The backend and frontend** listen on localhost only; the TLS proxy in step 9 is the one public entry point
+- **Profile services publish ports too:** add `prometheus`, `grafana` and `minio` entries before starting a profile (step 12)
 - `!reset` and `!override` need **Compose 2.24+**
 - **Use both files on every command from here on:**
 
@@ -172,6 +180,7 @@ grep -n "location ~ ^/(v1" frontend/nginx.conf      # confirm the new rule
 ```
 
 - Swagger stays available on the API port (`127.0.0.1:8000/docs`), which is now private: reach it over an SSH tunnel
+- The symptom this prevents: [troubleshooting: `/docs/...` returns a JSON 404](../operations/troubleshooting.md#docs-returns-a-json-404-in-the-container-deployment)
 
 ## 7. Build and start
 
@@ -188,17 +197,23 @@ Expect these events in the backend log:
 bootstrap.migrations_start  ->  bootstrap.migrations_done  ->  app.startup
 ```
 
-- **Migrations run under a PostgreSQL advisory lock:** start more replicas and they wait instead of racing. See [bootstrap](../operations/bootstrap.md)
-- **Kafka topics** are auto-created on first use. To create them explicitly with intentional partition counts:
+- **Migrations run under a PostgreSQL advisory lock:** start more replicas and they wait instead of racing. See [bootstrap](../operations/bootstrap.md#1-an-advisory-lock)
+- **With `SEED_ON_STARTUP=false` there is no seed event**; left `true`, the log shows `bootstrap.seed_refused` and the server carries on ([the environment refusal](../operations/bootstrap.md#3-an-environment-refusal))
+- **A migration failure is fatal:** the backend refuses to boot rather than serve an un-migrated schema, and `restart: unless-stopped` retries it ([failure behaviour](../operations/bootstrap.md#failure-behaviour))
+- **Kafka topics** are auto-created on first use (the compose broker has auto-creation on, 3 partitions). To create all 8 up front, as `make kafka-topics` does ([topics](../operations/kafka.md#topics)):
 
 ```bash
 dc exec backend python -m app.workers.topics
 ```
 
+- **The API also runs the Kafka consumers in-process** while `KAFKA_ENABLED=true`, so this single-host stack needs no separate worker ([production: scaling](production.md#scaling))
+
 ## 8. Make row-level security bind
 
-- **The table owner bypasses row-level security by default**, and the backend connects as the owner (`POSTGRES_USER`)
-- Force the policies onto the owner too. With the policy's empty-setting clause, migrations and workers keep working:
+- **The table owner bypasses [row-level security](../database/rls.md) by default**, and the backend connects as the owner (`POSTGRES_USER`)
+- **Worse, the official postgres image creates `POSTGRES_USER` as a superuser, and a superuser bypasses RLS always, `FORCE` included.** On the bundled compose stack, forcing alone changes nothing
+  - **So first connect the backend as a separate role that is not a superuser**: the [`serpflow_app` recipe in production](production.md#before-anything-else). Until then the [application guards](../database/rls.md#the-application-guards) are the only tenant boundary
+- Then force the policies onto the owner too, for any path that still connects as it. With the policy's [empty-setting clause](../database/rls.md#the-empty-value-clause), migrations and workers keep working. Why both RLS and application guards: [ADR 0011](../adr/0011-rls-plus-application-guards.md)
 
 ```bash
 dc exec -T postgres psql -U serpflow -d serpflow <<'SQL'
@@ -214,7 +229,8 @@ WHERE relforcerowsecurity AND relnamespace = 'public'::regnamespace;
 SQL
 ```
 
-- **Expect `forced = 24`**
+- **Expect `forced = 24`**: the 22 tenant tables of `0001_initial`, plus `organizations` and `custom_roles` ([covered tables](../database/rls.md#covered-tables))
+- **A count is not proof.** Connected as the role the backend uses, run the `BEGIN ... ROLLBACK` check in [verifying it](../database/rls.md#verifying-it): it must return `0`. As a superuser it returns every row
 - **Re-run it after any upgrade that adds a table**
 - The alternative, a separate non-owner application role, is in [production](production.md#before-anything-else)
 
@@ -234,6 +250,7 @@ sudo apt-get update && sudo apt-get install -y caddy
 ```
 serpflow.example.com {
     encode gzip
+    respond /metrics 404         # keep Prometheus metrics off the public origin
     reverse_proxy 127.0.0.1:5173 {
         flush_interval -1        # stream SSE frames immediately
     }
@@ -243,18 +260,20 @@ serpflow.example.com {
 ```bash
 sudo systemctl reload caddy
 curl -sI https://serpflow.example.com | head -1     # HTTP/2 200
+curl -s -o /dev/null -w '%{http_code}\n' https://serpflow.example.com/metrics   # 404
 ```
 
 - **One public origin** serves the app, the API (`/v1`, proxied by the bundled nginx) and the SSE stream
-- **`flush_interval -1`** matters: without it, pipeline frames arrive all at once at the end. See [streaming](../api/streaming.md#behind-a-proxy)
+- **`/metrics` is unauthenticated**, and the bundled nginx proxies it ([`app/main.py`](../../backend/app/main.py), [`frontend/nginx.conf`](../../frontend/nginx.conf)). The `respond` line hides it publicly; Prometheus scrapes `backend:8000` on the compose network and is unaffected
+- **`flush_interval -1`** matters: without it, pipeline frames arrive all at once at the end. See [streaming](../api/streaming.md#behind-a-proxy) and [troubleshooting](../operations/troubleshooting.md#the-stream-arrives-all-at-once-at-the-end)
 - Using nginx instead? Copy the stream block from [production: behind a reverse proxy](production.md#behind-a-reverse-proxy)
 
 ## 10. Create the first admin
 
-**No demo data exists in production**, so register the first owner. Registering creates the user **and** a new organization they own.
+**No demo data exists in production**, so register the first owner. Registering creates the user **and** a new organization they own ([identity and access](../api/overview.md#identity-and-access)).
 
 - **In the browser:** open `https://serpflow.example.com/register`
-- **Or with curl:**
+- **Or with curl** (the password needs 10 to 128 characters, mixing letters with digits or symbols: [`app/schemas/identity.py`](../../backend/app/schemas/identity.py)):
 
 ```bash
 curl -s -X POST https://serpflow.example.com/v1/auth/register \
@@ -264,10 +283,10 @@ curl -s -X POST https://serpflow.example.com/v1/auth/register \
 
 Then, signed in as the owner:
 
-1. **Settings → Credentials:** add your **SerpApi** key, and optionally a **Groq** key
-2. **Settings → Projects:** create a project, and set its execution mode (`live` to spend real credits)
-3. **Settings → API keys:** mint a `test` key for smoke tests and a `live` key for production use
-4. **Budgets:** set an organization budget before the first live call
+1. **Settings → Credentials:** add your **SerpApi** key, and optionally a **Groq** key ([adding a key](../security/byok.md#adding-a-key) · [how it is stored](../security/credentials.md#envelope-encryption))
+2. **Settings → Projects:** create a project, and set its execution mode (`live` to spend real credits): [execution modes: setting it](../product/execution-modes.md#setting-it)
+3. **Settings → API keys:** mint a `test` key for smoke tests and a `live` key for production use ([API keys](../security/api-keys.md))
+4. **Budgets** (`/app/budgets`): set an organization budget before the first live call ([budget enforcement](../architecture/executor.md#budget-enforcement))
 5. **Settings → Members:** add your team, and give each person the least role they need ([roles](../security/api-keys.md#roles))
 
 ## 11. Verify the deployment
@@ -278,7 +297,7 @@ curl -s https://serpflow.example.com/readyz           # every check "ok"
 dc exec backend python -m app.cli.main health        # the same, from inside
 ```
 
-Smoke-test with the **test key**. It routes to the deterministic mock and **spends zero credits**:
+Smoke-test with the **test key**. It routes to the deterministic mock and **spends zero credits** ([test keys](../security/api-keys.md#test-keys) · [ADR 0010](../adr/0010-test-key-mode-precedence.md)):
 
 ```bash
 export KEY=sf_test_...
@@ -292,25 +311,40 @@ curl -s -D- -o /dev/null -X POST https://serpflow.example.com/v1/search \
 
 | Check | Pass |
 | --- | --- |
-| `/readyz` | `"status":"ok"`, catalog `54` engines |
-| `/v1/plan` with the test key | a plan with `naive_cost`, `marginal_cost`, `candidate_count` |
-| `/v1/search` with the test key | `X-SerpFlow-Mode: MOCK` |
+| `/readyz` | `"status":"ok"`, catalog `54` engines ([health](../operations/observability.md#health)) |
+| `/v1/plan` with the test key | a plan with `naive_cost`, `marginal_cost`, `candidate_count` ([plan without executing](../api/overview.md#plan-without-executing)) |
+| `/v1/search` with the test key | `X-SerpFlow-Mode: MOCK` ([provenance headers](../api/overview.md#provenance-headers)) |
 | A docs deep link, e.g. `/docs/readme`, after a refresh | the docs page, not JSON (step 6) |
 | The browser console on `/app/search` | no CORS errors (step 4) |
+| `/metrics` on the public origin | `404` (step 9) |
 
 - **`make demo` and `make api-check` are for staging**, not production: they expect the seeded demo organization
+- **`dc exec backend python -m app.cli.main health`** is the `serpflow` CLI inside the container; from your own machine, the CLI reads `SERPFLOW_BASE_URL` from your shell ([CLI](../sdks/cli.md#serpflow-health))
 
 ## 12. Observability
+
+**First keep both off the public internet.** Compose publishes them on every interface, and `ufw` will not stop it (step 1). Add to `docker-compose.prod.yml`:
+
+```yaml
+  prometheus:
+    ports: !override
+      - "127.0.0.1:9090:9090"
+  grafana:
+    ports: !override
+      - "127.0.0.1:3001:3000"
+```
+
+- The same applies to `minio` (`9000`, `9001`) if you start the `storage` profile
 
 ```bash
 dc --profile observability up -d                     # Prometheus + Grafana
 ssh -L 3001:localhost:3001 -L 9090:localhost:9090 you@server   # view them privately
 ```
 
-- **Grafana** at `http://localhost:3001` (user `admin`, `GRAFANA_PASSWORD`); Prometheus is provisioned as its datasource
-- **Keep both off the public internet:** bind them to `127.0.0.1` in `docker-compose.prod.yml`, as in step 5
-- **Traces:** set `OTEL_ENABLED=true` and `OTEL_EXPORTER_OTLP_ENDPOINT`
-- **The alert that is specific to SerpFlow:** `serpflow_semantic_false_hit_reports_total` rising is a **correctness** page
+- **Grafana** at `http://localhost:3001` (user `GRAFANA_USER`, default `admin`, and `GRAFANA_PASSWORD`); Prometheus is provisioned as its datasource ([`docker/grafana/provisioning/`](../../docker/grafana/provisioning/datasources/prometheus.yml))
+- **Prometheus scrapes `backend:8000/metrics` every 15 s** ([`docker/prometheus/prometheus.yml`](../../docker/prometheus/prometheus.yml)): 22 metrics, listed in [observability: metrics](../operations/observability.md#metrics)
+- **Traces:** set `OTEL_ENABLED=true` and `OTEL_EXPORTER_OTLP_ENDPOINT` ([tracing](../operations/observability.md#tracing))
+- **The alert that is specific to SerpFlow:** `serpflow_semantic_false_hit_reports_total` rising is a **correctness** page ([alerting](../operations/observability.md#alerting) · [the guard that should have caught each one](../architecture/caching.md#the-entity-and-numeral-guard))
 - Rules and dashboards: [observability](../operations/observability.md)
 
 ## 13. Backups
@@ -342,8 +376,10 @@ dc exec -T postgres pg_restore -U serpflow -d serpflow --clean --if-exists < /op
 curl -s -H "Authorization: Bearer <owner token>" https://serpflow.example.com/v1/audit/verify
 ```
 
-- **Redis needs no backup:** it is a hot cache and repopulates lazily
-- **Copy backups off the server**, and test a restore before you need one
+- **`/v1/audit/verify` walks the audit log's hash chain** and reports the first break, so a restore that lost entries shows up. It needs `audit:read` (owner or admin): [the audit log](../database/rls.md#the-audit-log) · [ADR 0012](../adr/0012-append-only-audit-log.md)
+- **Redis needs no backup:** it is a hot cache and repopulates lazily ([why none of it is authoritative](../operations/redis.md#why-none-of-it-is-authoritative))
+- **The volume names** carry the compose project prefix, `serpflow_` ([Docker: volumes](docker.md#volumes))
+- **Copy backups off the server**, and test a restore before you need one. Point-in-time recovery: [production: PostgreSQL](production.md#postgresql)
 
 ## 14. Upgrades and rollback
 
@@ -356,8 +392,8 @@ dc up -d                               # migrations apply on start, advisory-loc
 dc logs --tail=100 backend             # bootstrap.migrations_done, app.startup
 ```
 
-- **Re-apply step 6** if `frontend/nginx.conf` changed upstream, and **step 8** if the release added tables
-- **Migrations are expand-only**, so the previous release still runs against the upgraded schema
+- **Re-apply step 6** if `frontend/nginx.conf` changed upstream, and **step 8** if the release added tables ([the revision chain](../database/migrations.md#the-revision-chain))
+- **Migrations are expand-only**, so the previous release still runs against the upgraded schema ([zero-downtime deploys](production.md#zero-downtime-deploys))
 
 **Rollback:**
 
@@ -366,7 +402,7 @@ git checkout <previous-release-tag>
 dc build && dc up -d
 ```
 
-- **Only if a migration must be undone:** `dc exec backend python -m alembic downgrade -1`. Read its `downgrade()` first, or restore the pre-upgrade dump instead
+- **Only if a migration must be undone:** `dc exec backend python -m alembic downgrade -1`. Read its `downgrade()` first, or restore the pre-upgrade dump instead ([migrations: commands](../database/migrations.md#commands))
 
 ## 15. Operations cheat sheet
 
@@ -394,19 +430,25 @@ dc build && dc up -d
 | 4 | `TRUSTED_PROXY_HOPS=2` behind TLS + nginx | 4 |
 | 5 | Datastore ports unpublished; app bound to localhost | 5 |
 | 6 | `/docs` proxy rule fixed | 6 |
-| 7 | `FORCE ROW LEVEL SECURITY` on all 24 tables | 8 |
+| 7 | Backend connects as a non-superuser; `FORCE ROW LEVEL SECURITY` on all 24 tables; the RLS check returns `0` | 8 |
 | 8 | TLS working; SSE streams frame by frame | 9 |
 | 9 | Organization budget set before the first live call | 10 |
 | 10 | Test-key smoke test passes; `X-SerpFlow-Mode: MOCK` | 11 |
 | 11 | Nightly backups, copied off-host, restore tested | 13 |
+| 12 | `/metrics` returns 404 on the public origin; Prometheus and Grafana bound to `127.0.0.1` | 9, 12 |
+
+- The same list from the security side: [secrets: production checklist](../security/secrets.md#production-checklist)
 
 ## Related
 
-- [Installation](installation.md)
-- [Docker](docker.md)
+- [Installation](installation.md): the laptop version of this, with no secrets to generate
+- [Docker](docker.md): the compose file, images and healthchecks this runbook deploys
 - [Production](production.md): scaling, pooling, Kafka topology, zero-downtime deploys
-- [Secrets](../security/secrets.md)
-- [Troubleshooting](../operations/troubleshooting.md)
+- [Secrets](../security/secrets.md): what each secret protects, and how to rotate it
+- [Startup bootstrap](../operations/bootstrap.md): what happens in step 7, and why seeding is refused here
+- [Row-level security](../database/rls.md): the policies step 8 forces onto the owner
+- [Threat model](../security/threat-model.md): what the locked ports, TLS and RLS steps defend against
+- [Troubleshooting: deployment](../operations/troubleshooting.md#deployment): the failures this runbook's steps prevent
 
 ---
 

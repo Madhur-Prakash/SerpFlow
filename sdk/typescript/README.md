@@ -7,28 +7,37 @@
   <img alt="Deno" src="https://img.shields.io/badge/Deno-supported-000000?logo=deno&logoColor=white">
   <img alt="Bun" src="https://img.shields.io/badge/Bun-supported-000000?logo=bun&logoColor=white">
   <img alt="browser" src="https://img.shields.io/badge/browser-supported-4285F4?logo=googlechrome&logoColor=white">
+  <img alt="ESM only" src="https://img.shields.io/badge/module-ESM%20only-555555">
   <img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128">
 </p>
 
-[README](../../README.md) › [SDKs](../README.md) › **TypeScript SDK** · [Docs index](../../docs/README.md) · [API examples](../../docs/api/examples.md)
+[SerpFlow](https://github.com/Madhur-Prakash/SerpFlow) › [SDKs](https://github.com/Madhur-Prakash/SerpFlow/blob/main/sdk/README.md) › **TypeScript SDK** · [Full reference](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/typescript.md) · [Docs index](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/README.md)
 
 ---
 
-**TypeScript client for [SerpFlow](https://github.com/Madhur-Prakash/SerpFlow)**, a search control plane for SerpApi.
+**TypeScript client for [SerpFlow](https://github.com/Madhur-Prakash/SerpFlow)**, a search control plane for SerpApi: it routes a natural-language intent to the right SerpApi engines, re-plans around what is already cached, and executes only what is required.
 
-- **No runtime dependencies**
+- **No runtime dependencies.** Only `fetch`, `ReadableStream` and `TextDecoder`
 - Runs in **Node 18+, Deno, Bun and the browser**
+- **ES module only**, with type declarations
 
 ```bash
 npm install @serpflow/sdk
 ```
+
+- **Until the first release is on npm**, install from a checkout: [building from source](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/typescript.md#install)
 
 ## Use
 
 ```typescript
 import { SerpFlow, SerpFlowError } from "@serpflow/sdk";
 
-const client = new SerpFlow({ apiKey: "sf_test_..." });
+const client = new SerpFlow({
+  apiKey: "sf_test_...",                 // required; there is no environment fallback
+  baseUrl: "http://localhost:8000",      // the default
+  // projectId: "prj_...",               // optional: the key's project otherwise
+  // fetch: myFetch,                     // optional: timeouts, proxies, tests
+});
 ```
 
 ### Plan without spending
@@ -38,11 +47,11 @@ const client = new SerpFlow({ apiKey: "sf_test_..." });
 ```typescript
 const plan = await client.route("review rings among Koramangala cafes", 20);
 
-console.log(plan.engines.join(" -> "));   // google_maps -> google_maps_reviews -> ...
+console.log(plan.engines.join(" -> "));             // google_maps -> google_maps_reviews -> ...
 console.log(plan.naiveCost, "->", plan.marginalCost);   // 101 -> 0
 
-if (plan.marginalReplanChangedSelection) {
-  console.log(plan.replanExplanation);
+if (plan.changedSelection) {
+  console.log(plan.explanation);                    // why cache state changed the winner
 }
 ```
 
@@ -51,9 +60,10 @@ if (plan.marginalReplanChangedSelection) {
 ```typescript
 const result = await client.search("recent reviews for Ichiran in Seoul", 20);
 console.log(result.mode, result.creditsSpent, result.creditsSaved);
+for (const item of result.items) console.log(item.title);
 ```
 
-- **`result.mode` is always present.** Mocked or replayed data is never presented as live
+- **`result.mode` is always present:** `LIVE`, `MOCK`, `REPLAY` or `RECORD`. Mocked or replayed data is never presented as live
 
 ### Stream
 
@@ -65,7 +75,16 @@ for await (const event of client.stream("bakeries in Koramangala")) {
 }
 ```
 
-- The frame contract: [streaming](../../docs/api/streaming.md)
+- The frame contract: [streaming](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/api/streaming.md)
+
+### Inspect
+
+```typescript
+const why = await client.explain(result.runId);   // every candidate, and why the winner won
+const again = await client.replay(result.runId);   // the same intent, against today's cache
+const recent = await client.runs(10);
+const engine = await client.catalog("google_maps_reviews");
+```
 
 ### Errors
 
@@ -74,19 +93,19 @@ try {
   await client.search("...", 20);
 } catch (error) {
   if (error instanceof SerpFlowError) {
-    console.error(error.code, error.message);
+    console.error(error.code, error.status, error.message, error.requestId);
     if (error.remedy) console.error("Fix:", error.remedy);
   }
 }
 ```
 
-- **Codes are stable**, and each carries a `remedy`
+- **Codes are stable.** Four of them carry a `remedy`
 - `BUDGET_EXHAUSTED` (your SerpFlow cap) and `UPSTREAM_QUOTA_EXHAUSTED` (SerpApi's) are **never conflated**
-- The full list: [API errors](../../docs/api/overview.md#errors)
+- Every code: [API errors](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/api/overview.md#errors)
 
 ## The SerpApi drop-in
 
-- **Existing SerpApi code keeps its shape**
+- **Existing SerpApi code keeps its shape:** a params object in, `getJson()` out
 - What you gain: caching, budget enforcement and provenance
 
 ```typescript
@@ -100,28 +119,38 @@ const search = new SerpApiCompat({
 const results = await search.getJson();
 ```
 
-- **This path does not re-route:** you asked for an engine, you get that engine
-- **Adopt `client.search()`** when you want routing as well
+- **`q` becomes the intent, and SerpFlow's planner picks the engines.** `engine` and the other parameters are echoed back in `search_parameters`, not forwarded
 
 ## Test keys
 
 - **A `sf_test_...` key routes to the deterministic mock** and spends zero SerpApi credits, whatever the server's mode is
-- `make seed` prints one. See [API keys](../../docs/security/api-keys.md#test-keys)
+- A local SerpFlow's `make seed` prints one. See [API keys](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/security/api-keys.md#test-keys)
+
+## In the browser
+
+- **The SerpFlow API must allow your origin** in `CORS_ORIGINS`
+- **Never ship a live key to a browser.** Use a test key for demos, or call SerpFlow from your own server
+
+## More
+
+- [Full reference](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/typescript.md): every method, type, option and known limitation
+- [All the SDKs and tools](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/overview.md): Python, the CLI and the MCP server
+- [Releasing this package](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/releasing.md)
 
 ## Build
 
 ```bash
 npm install
-npm run build        # tsc -> dist/
 npm run typecheck
+npm run build        # tsc -> dist/
 ```
 
 ## License
 
-[Apache-2.0](../../LICENSE).
+[Apache-2.0](https://github.com/Madhur-Prakash/SerpFlow/blob/main/LICENSE).
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [SDKs](../README.md) | [Docs index](../../docs/README.md) | [Backend package](../../backend/README.md) |
+| [SDKs](https://github.com/Madhur-Prakash/SerpFlow/blob/main/sdk/README.md) | [Docs index](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/README.md) | [Backend package](https://github.com/Madhur-Prakash/SerpFlow/blob/main/backend/README.md) |

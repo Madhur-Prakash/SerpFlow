@@ -1,5 +1,17 @@
 # SDKs and tools
 
+<p>
+  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <img alt="surfaces: Python · TypeScript · CLI · MCP" src="https://img.shields.io/badge/surfaces-Python%20%C2%B7%20TypeScript%20%C2%B7%20CLI%20%C2%B7%20MCP-8250DF">
+  <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
+  <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
+  <img alt="MCP: server" src="https://img.shields.io/badge/MCP-server-555555">
+  <a href="../../backend/app/sdk/__init__.py"><img alt="source: sdk/__init__.py" src="https://img.shields.io/badge/source-sdk%2F____init____.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
+</p>
+
+[Docs](../README.md) › [SDKs](../README.md#sdks) › **SDKs and tools** · page 23 of 57
+
 - **Four ways to drive SerpFlow from code**, besides calling the [REST API](../api/overview.md) yourself
 - **Two of them speak HTTP to a running API.** The CLI mostly does. **The MCP server does not:** it runs the service layer in its own process, against the database
 - **All four are version 1.0.0** and live in this repository. **Neither SDK is on a package registry yet:** see [releasing](releasing.md)
@@ -112,6 +124,17 @@ $env:SERPFLOW_API_KEY = "sf_test_..."
 
 ## Related
 
-- [Python SDK](python.md) · [TypeScript SDK](typescript.md) · [CLI](cli.md) · [MCP server](mcp.md) · [Releasing](releasing.md)
-- [API examples](../api/examples.md): the same calls as `curl`
-- [SDKs in the repository](../../sdk/README.md)
+- [Python SDK](python.md#install): installing, configuring and calling the Python clients
+- [TypeScript SDK](typescript.md#install): the same for Node, Deno, Bun and the browser
+- [CLI](cli.md): every `serpflow` command, and which ones need the API running
+- [MCP server](mcp.md#connect-a-client): wiring the four tools into Claude Code or Claude Desktop
+- [Releasing](releasing.md): publishing both SDKs to npm and PyPI
+- [API overview](../api/overview.md#authentication): the HTTP surface every SDK wraps
+- [API keys](../security/api-keys.md#test-keys): why a `sf_test_...` key spends nothing
+- [SDKs in the repository](../../sdk/README.md): where the source of each SDK lives
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [Worked examples](../api/examples.md) | [Docs index](../README.md) | [Python SDK](../sdks/python.md) |

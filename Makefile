@@ -27,8 +27,8 @@ ARGS             ?=
 
 .PHONY: help install install-backend install-frontend dev backend frontend worker mcp \
         up down restart logs ps migrate migration upgrade downgrade seed demo \
-        kafka-topics catalog-build catalog-validate benchmark api-check docs-check docs-nav test test-unit \
-        test-integration test-e2e lint format typecheck build clean health \
+        kafka-topics catalog-build catalog-validate benchmark api-check api-reference docs-check docs-nav \
+        test test-unit test-integration test-e2e test-ui lint format typecheck build clean health \
         docker-build docker-up docker-down shell psql redis-cli
 
 # ---------------------------------------------------------------- help
@@ -125,8 +125,8 @@ kafka-topics:  ## Create every Kafka topic
 api-reference:  ## Regenerate the API reference page from the OpenAPI schema
 	$(PYTHON) scripts/generate_api_reference.py $(ARGS)
 
-docs-check:  ## Verify every relative link in every markdown file resolves
-	$(PYTHON) scripts/check_doc_links.py
+docs-check:  ## Verify every link, path and anchor resolves, and every doc page is cross-linked
+	$(PYTHON) scripts/check_doc_links.py --anchors --interlinks
 
 docs-nav:  ## Regenerate the badge header and previous/next footer on every doc page
 	$(PYTHON) scripts/build_docs_nav.py $(ARGS)

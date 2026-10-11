@@ -3,21 +3,22 @@
 <p>
   <a href="../README.md#decisions"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
   <img alt="status: accepted" src="https://img.shields.io/badge/status-accepted-3fcf8e">
-  <img alt="read: 3 min" src="https://img.shields.io/badge/read-3%20min-555555">
+  <a href="../../backend/app/db/session.py"><img alt="source: db/session.py" src="https://img.shields.io/badge/source-db%2Fsession.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../README.md#decisions) › **0011. Tenant isolation enforced twice** · page 47 of 50
+[Docs](../README.md) › [Decisions](../README.md#decisions) › **0011. Tenant isolation enforced twice** · page 54 of 57
 
 **Status** Accepted
 
 ## Context
 
-**A multi-tenant system must stop one organization reading another's data.** The two standard approaches are usually presented as alternatives:
+**A [multi-tenant](../architecture/overview.md#tenancy) system must stop one organization reading another's data.** The two standard approaches are usually presented as alternatives:
 
 | Approach | Strength | Weakness |
 | --- | --- | --- |
 | **Application-level scoping**: every query filters by `org_id` | fast, explicit, visible in the code | fails the moment somebody writes a query that forgets |
-| **PostgreSQL row-level security**: the database enforces it | cannot be forgotten | invisible at the call site; a surprising empty result set is unpleasant to debug |
+| **PostgreSQL [row-level security](../database/rls.md#how-it-works)**: the database enforces it | cannot be forgotten | invisible at the call site; a surprising empty result set is unpleasant to debug |
 
 - **Each covers the other's failure mode**
 
@@ -25,9 +26,10 @@
 
 **Both.**
 
-- **Application guards are primary.** Every resource fetched by id is checked against the caller's `org_id`:
+- **[Application guards](../database/rls.md#the-application-guards) are primary.** Every resource fetched by id is checked against the caller's `org_id`:
 
 ```python
+# app/api/deps.py: get_project, condensed
 project = await session.get(Project, target)
 if project is None or project.org_id != principal.org_id:
     # Cross-tenant access returns 404, not 403. Confirming that an id
@@ -35,12 +37,13 @@ if project is None or project.org_id != principal.org_id:
     raise NotFoundError("Project not found.")
 ```
 
-- **RLS is the backstop.** 24 tables carry a policy reading `current_setting('app.current_org')`, which the session sets per transaction with `SET LOCAL` right after the principal resolves
-  - 23 from the initial migration, plus `custom_roles` from `0003`
+- **RLS is the backstop.** [24 tables](../database/rls.md#covered-tables) carry a policy reading `current_setting('app.current_org')`, which the session sets per transaction with `SET LOCAL` right after the principal resolves
+  - 23 from the [initial migration](../database/migrations.md#0001_initial), plus `custom_roles` from [`0003`](../database/migrations.md#0003_custom_roles)
+  - the call is `set_config('app.current_org', :org, true)`, the function form of `SET LOCAL` that takes a bound parameter ([`set_tenant`](../../backend/app/db/session.py))
 - **Three supporting rules:**
   - cross-tenant access returns `404`, never `403`
-  - **`SET LOCAL` is transaction-scoped**, so a pooled connection never carries one request's tenant into the next. It also works through PgBouncer in transaction mode, which a session-level `SET` would not
-  - **authorization is centralised** in `require(Permission.X)`: no business-logic module runs its own check, and `can()` denies by default
+  - **`SET LOCAL` is transaction-scoped**, so a pooled connection never carries one request's tenant into the next. It also works through [PgBouncer in transaction mode](../deployment/production.md#postgresql), which a session-level `SET` would not
+  - **authorization is [centralised](../security/api-keys.md#checks-are-centralised)** in `require(Permission.X)` ([`app/api/deps.py`](../../backend/app/api/deps.py)): no business-logic module runs its own check, and `can()` denies by default
 
 ## Alternatives rejected
 
@@ -57,16 +60,21 @@ if project is None or project.org_id != principal.org_id:
 - **One sharp edge, called out because it silently disables the backstop: a table owner bypasses RLS by default**
   - run the application as the role that owns the tables, and the policies never apply
   - production must connect as a non-owner role, or mark the tables `FORCE ROW LEVEL SECURITY`: see [deployment guide, step 8](../deployment/deployment-guide.md#8-make-row-level-security-bind)
-- **A deliberate compromise:** the policy also matches when `app.current_org` is **unset**
+- **A deliberate compromise:** the policy also matches when `app.current_org` is **[unset](../database/rls.md#the-empty-value-clause)**
   - for migrations, the seed script and cross-org background workers
   - a trusted-path exemption, documented rather than hidden
   - removable in favour of a `BYPASSRLS` role, for a stricter posture
 
 ## See also
 
-- [Row-level security](../database/rls.md)
-- [Threat model](../security/threat-model.md)
-- [Production](../deployment/production.md)
+- [Row-level security: how it works](../database/rls.md#how-it-works): the policy, `set_tenant` and the empty-value clause as implemented
+- [Row-level security: verifying it](../database/rls.md#verifying-it): the queries that prove the policies bind; no automated test covers RLS today
+- [Threat model: cross-tenant data access](../security/threat-model.md#cross-tenant-data-access): the threat both layers answer
+- [Production: before anything else](../deployment/production.md#before-anything-else): the non-owner database role, without which the backstop is silently off
+- [Deployment guide, step 8](../deployment/deployment-guide.md#8-make-row-level-security-bind): the same role change on a single server
+- [`test_security.py`](../../backend/tests/unit/test_security.py): `test_permission_check_denies_by_default` and the role tests behind `require()`
+- [ADR 0012: append-only audit log](0012-append-only-audit-log.md): `audit_log` is one of the 24 tables, with a trigger on top
+- [ADR 0013: explicit event loop factory](0013-explicit-event-loop-factory.md): why the driver stays psycopg 3, whose `SET LOCAL` under pooling this depends on
 
 ---
 

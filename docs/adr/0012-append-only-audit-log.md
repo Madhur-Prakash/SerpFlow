@@ -4,16 +4,16 @@
   <a href="../README.md#decisions"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
   <img alt="status: accepted" src="https://img.shields.io/badge/status-accepted-3fcf8e">
   <a href="../../backend/app/services/audit/service.py"><img alt="source: audit/service.py" src="https://img.shields.io/badge/source-audit%2Fservice.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 3 min" src="https://img.shields.io/badge/read-3%20min-555555">
+  <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../README.md#decisions) › **0012. The audit log is append-only in the database** · page 48 of 50
+[Docs](../README.md) › [Decisions](../README.md#decisions) › **0012. The audit log is append-only in the database** · page 55 of 57
 
 **Status** Accepted
 
 ## Context
 
-- **An audit log that application code can rewrite is not an audit log.** It is a table of events that happens to be mostly accurate
+- **An [audit log](../database/rls.md#the-audit-log) that application code can rewrite is not an audit log.** It is a table of events that happens to be mostly accurate
 - **The adversary that matters is not an outsider:** it is a compromised administrator, or application code with a bug, modifying history after the fact
 - **Both have the application's database credentials**, so an application-level rule ("we never UPDATE audit_log") is a convention, not a guarantee
 
@@ -29,13 +29,14 @@ CREATE TRIGGER serpflow_audit_no_update
   FOR EACH ROW EXECUTE FUNCTION serpflow_audit_append_only();
 ```
 
+- Installed by the [initial migration](../database/migrations.md#0001_initial) on [`audit_log`](../database/schema.md#audit_log)
 - **`UPDATE` is refused unconditionally**
 - **`DELETE` is refused** unless the transaction explicitly set `app.audit_purge`
 
 ### 2. A hash chain makes tampering detectable
 
-- **Each entry carries `prev_hash` and `entry_hash`**, chained per organization
-- **`GET /v1/audit/verify`** walks the chain and reports the first break by sequence number
+- **Each entry carries `prev_hash` and `entry_hash`**, chained per organization (`compute_hash` and `AuditService.verify_chain` in [`audit/service.py`](../../backend/app/services/audit/service.py))
+- **[`GET /v1/audit/verify`](../api/overview.md#governance)** walks the chain and reports the first break by sequence number
   - removing or altering an entry breaks every hash after it
 - **`entry_hash` is computed in the application** before the INSERT, with an explicit `created_at`, not by a trigger
   - a trigger that mutated the row would have to run `BEFORE INSERT`, placing it inside the very surface the chain protects
@@ -44,9 +45,9 @@ CREATE TRIGGER serpflow_audit_no_update
 
 - **The original trigger refused every `UPDATE` and `DELETE`**, which broke two legitimate operations:
   - deleting an organization, which owners are entitled to do
-  - `make seed --reset`
+  - [`make seed ARGS=--reset`](../deployment/local.md#resetting)
 - **Both fail on a cascade**, not an explicit delete, so neither could be special-cased in application code
-- **Migration `0002_audit_purge` narrows the guard:**
+- **Migration [`0002_audit_purge`](../database/migrations.md#0002_audit_purge) narrows the guard:**
 
 ```sql
 IF TG_OP = 'DELETE'
@@ -60,6 +61,9 @@ RAISE EXCEPTION 'audit_log is append-only; % is not permitted', TG_OP;
 - **The setting is transaction-scoped**, and set in exactly one function: [`AuditService.allow_purge`](../../backend/app/services/audit/service.py)
 - So the guarantee survives, and the legitimate path works
 - **An honest hole, deliberately sized:** anyone with database access can set the variable, but the hash chain makes the resulting gap **visible**
+- **Update (2026-10-11): one of the two paths exists today**
+  - owners hold `org:delete`, but no endpoint deletes an organization yet
+  - so the only caller of `allow_purge` at HEAD is the seed's demo reset ([`app/db/seed.py`](../../backend/app/db/seed.py)); the purge path is ready for the deletion endpoint when it lands
 
 ## Alternatives rejected
 
@@ -77,8 +81,13 @@ RAISE EXCEPTION 'audit_log is append-only; % is not permitted', TG_OP;
 
 ## See also
 
-- [Migrations](../database/migrations.md)
-- [Row-level security](../database/rls.md)
+- [Row-level security: the audit log](../database/rls.md#the-audit-log): the trigger, the purge setting and the hash chain as implemented
+- [Migrations: `0002_audit_purge`](../database/migrations.md#0002_audit_purge): the revision that narrowed the trigger to allow a purge
+- [API overview: governance](../api/overview.md#governance): `GET /v1/audit`, `/verify` and `/export`, and the permissions they need
+- [Threat model: tampering with the audit log](../security/threat-model.md#tampering-with-the-audit-log): what the two mechanisms do and do not stop
+- [`test_api.py`](../../backend/tests/integration/test_api.py): `test_audit_chain_verifies` walks a real chain end to end
+- [Troubleshooting: `audit_log is append-only`](../operations/troubleshooting.md#audit_log-is-append-only-delete-is-not-permitted): the cascade that hits the trigger, and the fix
+- [ADR 0011: tenant isolation enforced twice](0011-rls-plus-application-guards.md): the row-level security that also scopes `audit_log` to one organization
 
 ---
 

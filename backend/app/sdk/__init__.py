@@ -13,8 +13,8 @@ Three verbs mirror the service layer::
     search(intent)   plan with replanning, then execute
 
 ``SerpApiCompat`` is the drop-in: change only the base URL and existing SerpApi
-code routes through SerpFlow, gaining caching and budget enforcement without
-adopting routing at all.
+code routes through SerpFlow, gaining caching and budget enforcement while
+keeping its call shape.
 """
 
 from __future__ import annotations
@@ -395,8 +395,9 @@ class SerpApiCompat:
     query costs nothing and an exhausted budget fails with a clear code rather
     than a surprise invoice.
 
-    This path does not re-route: you asked for an engine, you get that engine.
-    Adopt ``SerpFlow.search`` when you want routing as well.
+    Only ``q`` (or ``query``) is sent, as the intent of a search, so SerpFlow's
+    planner chooses the engines. ``engine`` and the other parameters are echoed
+    back in ``search_parameters`` and ``search_metadata``, not forwarded.
     """
 
     def __init__(self, params: dict[str, Any], *, base_url: str | None = None) -> None:

@@ -1,10 +1,11 @@
 """MCP server (section 58).
 
-Three tools, implemented on the same service layer the REST API uses::
+Four tools, implemented on the same service layer the REST API uses::
 
     search(intent, budget?)
-    plan(intent)
+    plan(intent, budget?)
     explain(run_id)
+    catalog(engine?)
 
 No planner or executor logic is duplicated here - every call goes through
 ``app.services.runs``, which is the single place a plan becomes a run.

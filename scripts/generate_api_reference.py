@@ -6,7 +6,7 @@
 Writes ``frontend/src/lib/api-reference.generated.ts``.
 
 The reference page is generated rather than written because a hand-maintained
-list of 78 operations is a list that goes stale. The schema is the source of
+list of 85 operations is a list that goes stale. The schema is the source of
 truth; this turns it into something a React page can render without shipping a
 400 KB spec to the browser, and ``make api-reference`` reruns it.
 """

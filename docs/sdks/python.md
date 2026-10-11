@@ -1,5 +1,15 @@
 # Python SDK
 
+<p>
+  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <img alt="runtime deps: httpx" src="https://img.shields.io/badge/runtime%20deps-httpx-3fcf8e">
+  <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
+  <a href="../../backend/app/sdk/__init__.py"><img alt="source: sdk/__init__.py" src="https://img.shields.io/badge/source-sdk%2F____init____.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
+</p>
+
+[Docs](../README.md) › [SDKs](../README.md#sdks) › **Python SDK** · page 24 of 57
+
 - **A sync client, an async client and a SerpApi drop-in**, in one module: [`app/sdk/__init__.py`](../../backend/app/sdk/__init__.py)
 - **One runtime dependency, `httpx`.** The module imports nothing else from the backend, so it can be lifted out into its own distribution unchanged
 - **Imported as `serpflow`** through [`backend/serpflow.py`](../../backend/serpflow.py), a re-export shim
@@ -120,10 +130,10 @@ All three are `dataclass(slots=True)`. **Each keeps the untouched JSON in `raw`*
 | `catalog_version` | `str` | e.g. `v1.0.0` |
 | `warm_steps` | `list[dict]` | which steps the cache already satisfies |
 | `marginal_replan_changed_selection` | `bool` | **the thesis:** did cache state change which plan won? |
-| `replan_explanation` | `str \| None` | why, in a sentence |
+| `replan_explanation` | `str` or `None` | why, in a sentence |
 | `rejected_alternatives` | `list[dict]` | every loser, with its costs, coverage and reason |
-| `budget_reduction` | `dict \| None` | fan-outs cut to fit the budget, with an impact note per step |
-| `projected_full_scale_cost` | `int \| None` | a projection only; never executed live |
+| `budget_reduction` | `dict` or `None` | fan-outs cut to fit the budget, with an impact note per step |
+| `projected_full_scale_cost` | `int` or `None` | a projection only; never executed live |
 | `raw` | `dict` | the full plan JSON, including `steps` and their `cache_state` |
 
 ### SearchResult
@@ -291,5 +301,15 @@ SerpApiCompat(params, *, base_url=None)
 
 ## Related
 
-- [SDKs and tools](overview.md) · [TypeScript SDK](typescript.md) · [Releasing](releasing.md)
-- [API overview](../api/overview.md) · [Streaming](../api/streaming.md) · [API examples](../api/examples.md)
+- [SDKs and tools](overview.md#what-each-can-do): how the Python clients compare with the other surfaces
+- [TypeScript SDK](typescript.md): the same API, for JavaScript runtimes
+- [API overview](../api/overview.md#errors): every error code `SerpFlowError.code` can carry
+- [Streaming](../api/streaming.md): the frame contract behind `stream()`
+- [Execution modes](../product/execution-modes.md): what `result.mode` means, and how to get `LIVE`
+- [Releasing](releasing.md#before-the-first-python-release): what has to change before `pip install serpflow` works
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [SDKs and tools](../sdks/overview.md) | [Docs index](../README.md) | [TypeScript SDK](../sdks/typescript.md) |

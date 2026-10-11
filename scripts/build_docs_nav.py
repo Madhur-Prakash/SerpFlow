@@ -16,6 +16,10 @@ Both blocks are generated: running this again replaces them rather than
 appending, so it is safe after every edit. The breadcrumb and footer are plain
 markdown links, which `make docs-check` verifies. The badges are an HTML block
 because the docs browser in the app has no inline-image syntax.
+
+The same reading order is written to `frontend/src/lib/docs-order.generated.ts`,
+which the docs browser sorts its sidebar and its previous / next pager by, so
+the app and the footer on every page never disagree about what comes next.
 """
 
 from __future__ import annotations
@@ -29,6 +33,7 @@ from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
+ORDER_TS = ROOT / "frontend" / "src" / "lib" / "docs-order.generated.ts"
 
 # Reading order, start to finish. Every page in docs/ except the index.
 ORDER = [
@@ -36,6 +41,7 @@ ORDER = [
     "product/demo.md",
     "product/execution-modes.md",
     "product/benchmark.md",
+    "product/glossary.md",
     "deployment/installation.md",
     "deployment/local.md",
     "deployment/docker.md",
@@ -53,6 +59,12 @@ ORDER = [
     "api/overview.md",
     "api/streaming.md",
     "api/examples.md",
+    "sdks/overview.md",
+    "sdks/python.md",
+    "sdks/typescript.md",
+    "sdks/cli.md",
+    "sdks/mcp.md",
+    "sdks/releasing.md",
     "database/schema.md",
     "database/migrations.md",
     "database/rls.md",
@@ -77,6 +89,7 @@ SECTIONS = {
     "deployment": ("Deployment", "deployment", "2496ED"),
     "architecture": ("Architecture", "architecture", "2F6BFF"),
     "api": ("API", "api", "009688"),
+    "sdks": ("SDKs", "sdks", "8250DF"),
     "database": ("Database", "database", "4169E1"),
     "security": ("Security", "security", "6E40C9"),
     "operations": ("Operations", "operations", "E6522C"),
@@ -115,7 +128,7 @@ TECH = {
     "serpapi": ("SerpApi", "54 engines", "2F6BFF", None, None),
     "groq": ("Groq", "BYOK", "F55036", None, None),
     "mcp": ("MCP", "server", "555555", None, None),
-    "pytest": ("pytest", "216 passing", "0A9EDC", "pytest", "white"),
+    "pytest": ("pytest", "236 passing", "0A9EDC", "pytest", "white"),
     "minio": ("MinIO", "S3", "C72E49", "minio", "white"),
     "yaml": ("YAML", "catalog v1.0.0", "CB171E", "yaml", "white"),
 }
@@ -127,6 +140,7 @@ PAGES: dict[str, dict] = {
     "product/demo.md": {"facts": [("make demo", "PROVEN", "3fcf8e"), ("naive", "101 to 0 credits", "3fcf8e")], "tech": ["python"]},
     "product/execution-modes.md": {"facts": [("modes", "live · record · replay", "2F6BFF"), ("test keys", "always mock", "3fcf8e")], "tech": ["serpapi"]},
     "product/benchmark.md": {"facts": [("routing accuracy", "38.3%", "3fcf8e"), ("tasks", "120", "2F6BFF")], "tech": ["groq"]},
+    "product/glossary.md": {"facts": [("terms", "109", "2F6BFF")], "tech": []},
     "deployment/installation.md": {"facts": [("API keys", "not required", "3fcf8e"), ("paths", "dev · docker", "2496ED")], "tech": ["python", "uv", "node", "docker"]},
     "deployment/local.md": {"facts": [("API keys", "not required", "3fcf8e")], "tech": ["python", "uv", "node", "docker"]},
     "deployment/docker.md": {"facts": [("services", "8", "2496ED")], "tech": ["docker", "nginx", "postgres", "redis", "kafka"]},
@@ -144,6 +158,12 @@ PAGES: dict[str, dict] = {
     "api/overview.md": {"facts": [("operations", "85", "009688"), ("paths", "74", "009688")], "tech": ["fastapi", "openapi", "jwt"]},
     "api/streaming.md": {"facts": [("stages", "11", "009688")], "tech": ["sse", "fastapi"]},
     "api/examples.md": {"facts": [], "tech": ["python", "typescript", "mcp"]},
+    "sdks/overview.md": {"facts": [("surfaces", "Python · TypeScript · CLI · MCP", "8250DF")], "tech": ["python", "typescript", "mcp"]},
+    "sdks/python.md": {"facts": [("runtime deps", "httpx", "3fcf8e")], "tech": ["python"]},
+    "sdks/typescript.md": {"facts": [("runtime deps", "none", "3fcf8e")], "tech": ["typescript", "node"]},
+    "sdks/cli.md": {"facts": [("commands", "14", "8250DF")], "tech": ["python"]},
+    "sdks/mcp.md": {"facts": [("tools", "4", "8250DF"), ("transport", "stdio", "555555")], "tech": ["mcp", "python", "postgres"]},
+    "sdks/releasing.md": {"facts": [("registries", "npm · PyPI", "8250DF")], "tech": ["typescript", "python"]},
     "database/schema.md": {"facts": [("tables", "33", "4169E1")], "tech": ["postgres", "sqlalchemy"]},
     "database/migrations.md": {"facts": [("revisions", "4", "4169E1")], "tech": ["alembic", "postgres"]},
     "database/rls.md": {"facts": [("RLS tables", "24", "4169E1")], "tech": ["postgres"]},
@@ -286,6 +306,26 @@ def render(rel_docs: str, index: int) -> str:
     return "\n".join([head, "", "<p>", *rows, "</p>", "", crumb, "", body, "", footer, ""])
 
 
+def slug_of(rel_docs: str) -> str:
+    """The docs browser's route for a page: "adr/README.md" is "adr"."""
+    return re.sub(r"(^|/)README$", "", rel_docs.removesuffix(".md"))
+
+
+def render_order_ts() -> str:
+    slugs = "\n".join(f'  "{slug_of(rel_docs)}",' for rel_docs in ORDER)
+    return (
+        "/**\n"
+        " * The docs reading order, generated by scripts/build_docs_nav.py from its\n"
+        " * ORDER list. Do not edit by hand: run `make docs-nav`.\n"
+        " *\n"
+        " * The docs browser sorts its sidebar and its previous / next pager by this,\n"
+        " * so they agree with the footer at the end of every page.\n"
+        " */\n"
+        "\n"
+        f"export const DOC_READING_ORDER: readonly string[] = [\n{slugs}\n];\n"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="report stale pages, change nothing")
@@ -298,21 +338,34 @@ def main() -> int:
         for m in missing:
             print(f"  docs/{m}")
         return 1
+    absent = [p for p in ORDER if not (DOCS / p).exists()]
+    if absent:
+        print("pages in the reading order that do not exist:")
+        for a in absent:
+            print(f"  docs/{a}")
+        return 1
 
     stale = []
     for i, rel_docs in enumerate(ORDER):
         page = DOCS / rel_docs
         new = render(rel_docs, i)
         if page.read_text(encoding="utf-8").replace("\r\n", "\n") != new:
-            stale.append(rel_docs)
+            stale.append(f"docs/{rel_docs}")
             if not args.check:
                 page.write_text(new, encoding="utf-8", newline="\n")
 
+    order_ts = render_order_ts()
+    current = ORDER_TS.read_text(encoding="utf-8").replace("\r\n", "\n") if ORDER_TS.exists() else ""
+    if current != order_ts:
+        stale.append(ORDER_TS.relative_to(ROOT).as_posix())
+        if not args.check:
+            ORDER_TS.write_text(order_ts, encoding="utf-8", newline="\n")
+
     if args.check:
         for s in stale:
-            print(f"  stale  docs/{s}")
+            print(f"  stale  {s}")
         return 1 if stale else 0
-    print(f"  {len(ORDER)} pages, {len(stale)} rewritten")
+    print(f"  {len(ORDER)} pages, {len(stale)} files rewritten")
     return 0
 
 

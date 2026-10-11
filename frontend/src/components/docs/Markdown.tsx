@@ -645,12 +645,13 @@ type Block =
   | { kind: "html"; source: string }
   | { kind: "rule" };
 
+/** Split a table row on its unescaped pipes: GFM writes a literal one as `\|`. */
 function splitRow(line: string): string[] {
   return line
     .replace(/^\s*\|/, "")
-    .replace(/\|\s*$/, "")
-    .split("|")
-    .map((cell) => cell.trim());
+    .replace(/(?<!\\)\|\s*$/, "")
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.trim().replace(/\\\|/g, "|"));
 }
 
 function parse(markdown: string): Block[] {

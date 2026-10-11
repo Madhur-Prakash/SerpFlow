@@ -1,5 +1,16 @@
 # TypeScript SDK
 
+<p>
+  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <img alt="runtime deps: none" src="https://img.shields.io/badge/runtime%20deps-none-3fcf8e">
+  <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
+  <img alt="Node: 22" src="https://img.shields.io/badge/Node-22-5FA04E?logo=nodedotjs&logoColor=white">
+  <a href="../../sdk/typescript/src/index.ts"><img alt="source: src/index.ts" src="https://img.shields.io/badge/source-src%2Findex.ts-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
+</p>
+
+[Docs](../README.md) › [SDKs](../README.md#sdks) › **TypeScript SDK** · page 25 of 57
+
 - **`@serpflow/sdk`: one file, no runtime dependencies**: [`src/index.ts`](../../sdk/typescript/src/index.ts)
 - **Uses only `fetch`, `ReadableStream` and `TextDecoder`**, so it runs in Node 18+, Deno, Bun and the browser
 - **ES module only.** `package.json` declares `"type": "module"` and an `import` export, with type declarations beside it
@@ -109,11 +120,11 @@ All exported, so you can annotate your own code with them.
 | `confidence` | `number` | |
 | `catalogVersion` | `string` | e.g. `v1.0.0` |
 | `changedSelection` | `boolean` | **the thesis:** did cache state change which plan won? |
-| `explanation` | `string \| null` | why, in a sentence |
+| `explanation` | `string` or `null` | why, in a sentence |
 | `warmSteps` | `Record<string, unknown>[]` | which steps the cache already satisfies |
 | `rejectedAlternatives` | `Record<string, unknown>[]` | every loser, with costs, coverage and reason |
-| `budgetReduction` | `Record<string, unknown> \| null` | fan-outs cut to fit the budget |
-| `projectedFullScaleCost` | `number \| null` | a projection only; never executed live |
+| `budgetReduction` | `Record<string, unknown>` or `null` | fan-outs cut to fit the budget |
+| `projectedFullScaleCost` | `number` or `null` | a projection only; never executed live |
 | `raw` | `Record<string, unknown>` | the full plan JSON |
 
 ### SearchResult
@@ -137,7 +148,7 @@ All exported, so you can annotate your own code with them.
 | `status` | `string` | `running`, `complete`, `step_complete`, `failed`, ... |
 | `elapsedMs` | `number` | since the run started |
 | `detail` | `Record<string, unknown>` | stage-specific; an `error` frame carries `code` and `message` |
-| `type` | `"stage" \| "complete" \| "error" \| "heartbeat"` | heartbeats are never yielded |
+| `type` | `"stage"`, `"complete"`, `"error"` or `"heartbeat"` | heartbeats are never yielded |
 
 - Also exported: `SerpFlowOptions`, `PlanStep`, `SerpFlowError`, `SerpApiCompat`
 
@@ -280,6 +291,15 @@ npm run build         # tsc -> dist/index.js + dist/index.d.ts
 
 ## Related
 
-- [SDKs and tools](overview.md) · [Python SDK](python.md) · [Releasing](releasing.md)
-- [The npm README](../../sdk/typescript/README.md), which is what npmjs.com shows
-- [API overview](../api/overview.md) · [Streaming](../api/streaming.md)
+- [SDKs and tools](overview.md#what-each-can-do): how the TypeScript client compares with the other surfaces
+- [Python SDK](python.md): the same API, with sync and async clients
+- [API overview](../api/overview.md#errors): every error code `SerpFlowError.code` can carry
+- [Streaming](../api/streaming.md): the frame contract behind `stream()`
+- [Releasing](releasing.md#before-the-first-typescript-release): what has to change before `npm install @serpflow/sdk` works
+- [The npm README](../../sdk/typescript/README.md): the page npmjs.com will show
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [Python SDK](../sdks/python.md) | [Docs index](../README.md) | [CLI](../sdks/cli.md) |

@@ -8,12 +8,13 @@
 </p>
 
 <p align="center">
-  <a href="#read-it-end-to-end"><img alt="pages: 55" src="https://img.shields.io/badge/pages-55-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="#read-it-end-to-end"><img alt="pages: 62" src="https://img.shields.io/badge/pages-62-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <a href="adr/README.md"><img alt="decision records: 14" src="https://img.shields.io/badge/decision%20records-14-555555"></a>
   <a href="api/overview.md"><img alt="API: 85 operations" src="https://img.shields.io/badge/API-85%20operations-009688?logo=fastapi&logoColor=white"></a>
+  <a href="sdks/overview.md"><img alt="clients: Python · TypeScript · CLI · MCP" src="https://img.shields.io/badge/clients-Python%20%C2%B7%20TypeScript%20%C2%B7%20CLI%20%C2%B7%20MCP-8250DF"></a>
   <a href="architecture/catalog.md"><img alt="catalog: 54 engines" src="https://img.shields.io/badge/catalog-54%20engines-2F6BFF"></a>
   <a href="product/benchmark.md"><img alt="routing accuracy 38.3%" src="https://img.shields.io/badge/routing%20accuracy-38.3%25-3fcf8e"></a>
-  <a href="../backend/tests"><img alt="tests: 216 passing" src="https://img.shields.io/badge/tests-216%20passing-3fcf8e?logo=pytest&logoColor=white"></a>
+  <a href="../backend/tests"><img alt="tests: 236 passing" src="https://img.shields.io/badge/tests-236%20passing-3fcf8e?logo=pytest&logoColor=white"></a>
   <a href="../LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
 </p>
 
@@ -34,15 +35,18 @@
   <a href="#deployment">Deployment</a> &middot;
   <a href="#architecture">Architecture</a> &middot;
   <a href="#api">API</a> &middot;
+  <a href="#sdks">SDKs</a> &middot;
   <a href="#database">Database</a> &middot;
   <a href="#security">Security</a> &middot;
   <a href="#operations">Operations</a> &middot;
-  <a href="#decisions">Decisions</a>
+  <a href="#decisions">Decisions</a> &middot;
+  <a href="product/glossary.md">Glossary</a>
 </p>
 
 </div>
 
 > **These pages are also served by the running app at `/docs`**, with a sidebar, filtering and on-page contents.
+> The sidebar and its previous / next buttons follow the same reading order as the footer of every page.
 > The API reference at **`/api`** is generated from the OpenAPI schema, not written by hand.
 
 ## Start here
@@ -54,24 +58,45 @@
 | **Put it on a server** | [**Deployment guide**](deployment/deployment-guide.md) |
 | See the central claim proved | [Demo walkthrough](product/demo.md) |
 | Call the API | [API overview](api/overview.md) |
+| Call it from Python, TypeScript, a terminal or an agent | [SDKs overview](sdks/overview.md) |
 | Understand the design | [Architecture overview](architecture/overview.md) |
 | Know why something is the way it is | [Decision records](adr/README.md) |
+| Look up a term | [Glossary](product/glossary.md) |
 | Fix something | [Troubleshooting](operations/troubleshooting.md) |
 
 ## Read it end to end
 
 **Every page ends with previous / index / next links in this order**, and opens with a badge header and a breadcrumb. Start at [Product overview](product/product-overview.md) and keep pressing **Next**.
 
-1. **Product:** [overview](product/product-overview.md) → [demo](product/demo.md) → [execution modes](product/execution-modes.md) → [benchmark](product/benchmark.md)
+1. **Product:** [overview](product/product-overview.md) → [demo](product/demo.md) → [execution modes](product/execution-modes.md) → [benchmark](product/benchmark.md) → [glossary](product/glossary.md)
 2. **Deployment:** [installation](deployment/installation.md) → [local](deployment/local.md) → [docker](deployment/docker.md) → [deployment guide](deployment/deployment-guide.md) → [production](deployment/production.md)
 3. **Architecture:** [overview](architecture/overview.md) → [catalog](architecture/catalog.md) → [planner](architecture/planner.md) → [marginal replanning](architecture/marginal-replanning.md) → [caching](architecture/caching.md) → [executor](architecture/executor.md) → [backend](architecture/backend.md) → [frontend](architecture/frontend.md) → [web](architecture/web.md)
 4. **API:** [overview](api/overview.md) → [streaming](api/streaming.md) → [examples](api/examples.md)
-5. **Database:** [schema](database/schema.md) → [migrations](database/migrations.md) → [RLS](database/rls.md)
-6. **Security:** [threat model](security/threat-model.md) → [BYOK](security/byok.md) → [credentials](security/credentials.md) → [API keys](security/api-keys.md) → [secrets](security/secrets.md)
-7. **Operations:** [bootstrap](operations/bootstrap.md) → [email](operations/email.md) → [observability](operations/observability.md) → [kafka](operations/kafka.md) → [redis](operations/redis.md) → [troubleshooting](operations/troubleshooting.md)
-8. **Decisions:** [index](adr/README.md) → ADR [0001](adr/0001-marginal-cost-replanning.md) to [0014](adr/0014-persist-every-candidate.md)
+5. **SDKs:** [overview](sdks/overview.md) → [Python](sdks/python.md) → [TypeScript](sdks/typescript.md) → [CLI](sdks/cli.md) → [MCP](sdks/mcp.md) → [releasing](sdks/releasing.md)
+6. **Database:** [schema](database/schema.md) → [migrations](database/migrations.md) → [RLS](database/rls.md)
+7. **Security:** [threat model](security/threat-model.md) → [BYOK](security/byok.md) → [credentials](security/credentials.md) → [API keys](security/api-keys.md) → [secrets](security/secrets.md)
+8. **Operations:** [bootstrap](operations/bootstrap.md) → [email](operations/email.md) → [observability](operations/observability.md) → [kafka](operations/kafka.md) → [redis](operations/redis.md) → [troubleshooting](operations/troubleshooting.md)
+9. **Decisions:** [index](adr/README.md) → ADR [0001](adr/0001-marginal-cost-replanning.md) to [0014](adr/0014-persist-every-candidate.md)
 
-- **The navigation is generated:** run `make docs-nav` after adding or renaming a page, and `make docs-check` to verify every link
+## How the pages connect
+
+**Reading order is one way through. These are the others.**
+
+| Link | Where | What it does |
+| --- | --- | --- |
+| **Inline** | the first mention of a concept on a page | goes to the one page that owns it: a table to the [schema](database/schema.md), a metric to [observability](operations/observability.md), an environment variable to [secrets](security/secrets.md), a decision to its ADR |
+| **Related** | the end of every page | four to eight pages worth reading next, each with the reason, across sections |
+| **See also** | the end of every decision record | the pages that implement the decision, the tests that enforce it, and the neighbouring ADRs |
+| **Glossary** | [one page](product/glossary.md) | every term, defined in a sentence, linked to the page that explains it |
+| **Source** | the badge header, and inline | the file that implements what the page describes |
+
+- **The navigation is generated:** run `make docs-nav` after adding or renaming a page
+  - it rewrites every page's badge header, breadcrumb and footer, and the docs browser's reading order in [`docs-order.generated.ts`](../frontend/src/lib/docs-order.generated.ts), from the `ORDER` list in [`build_docs_nav.py`](../scripts/build_docs_nav.py)
+- **The links are checked:** `make docs-check` runs [`check_doc_links.py`](../scripts/check_doc_links.py) and fails on
+  - a relative link, a cited repository path or a `#fragment` that does not resolve
+  - a page with no closing Related (or See also) section
+  - an orphan: a page whose only way in is this index or the **Next** button, because no other page links to it
+- **The same markdown works in both places:** the docs browser resolves every relative link against the file it is written in, so a page under `docs/` opens in `/docs`, and anything else (source, scripts, `.env.example`) opens on GitHub
 
 ## Product
 
@@ -81,6 +106,7 @@
 | [Demo](product/demo.md) | the reference scenario, step by step |
 | [Execution modes](product/execution-modes.md) | live, record, replay; who chooses and in what order |
 | [Benchmark](product/benchmark.md) | 120 labelled tasks, measured results, error analysis |
+| [Glossary](product/glossary.md) | every term in these docs, defined and linked to its page |
 
 ## Deployment
 
@@ -112,7 +138,18 @@
 | --- | --- |
 | [Overview](api/overview.md) | authentication, all 85 operations, errors, headers |
 | [Streaming](api/streaming.md) | the SSE contract, stages, reconnection |
-| [Examples](api/examples.md) | worked requests, SDKs, CLI, MCP, the SerpApi drop-in |
+| [Examples](api/examples.md) | worked requests, the SerpApi drop-in, one example per client |
+
+## SDKs
+
+| Page | Covers |
+| --- | --- |
+| [Overview](sdks/overview.md) | the four clients, which to use, configuration, test keys |
+| [Python](sdks/python.md) | install, methods, errors, async, the SerpApi drop-in |
+| [TypeScript](sdks/typescript.md) | install, errors and remedies, runtimes, building from source |
+| [CLI](sdks/cli.md) | every `serpflow` command, what each needs, exit codes, scripting |
+| [MCP](sdks/mcp.md) | the agent server, its tools, sessions and budgets, connecting a client |
+| [Releasing](sdks/releasing.md) | publishing the clients to npm and PyPI |
 
 ## Database
 
@@ -120,7 +157,7 @@
 | --- | --- |
 | [Schema](database/schema.md) | 33 tables, indexes, conventions |
 | [Migrations](database/migrations.md) | Alembic, the four-revision chain, writing one |
-| [Row-level security](database/rls.md) | tenant isolation on 24 tables, policies, the audit trigger |
+| [Row-level security](database/rls.md) | tenant isolation on 24 tables, policies, the audit trigger, and why a superuser connection defeats it |
 
 ## Security
 
@@ -155,7 +192,7 @@
 | [Contributing](../CONTRIBUTING.md) | how to work on it, and what the bar is |
 | [Security policy](../SECURITY.md) | how to report something, and who maintains it |
 | [Changelog](../CHANGELOG.md) | what changed, and why |
-| [SDKs](../sdk/README.md) | the TypeScript and Python clients |
+| [SDK packages](../sdk/README.md) | the TypeScript and Python client packages, documented in [SDKs](sdks/overview.md) |
 | [Backend](../backend/README.md) | the backend package |
 | [License](../LICENSE) | Apache-2.0 |
 
@@ -175,7 +212,9 @@
   <a href="deployment/deployment-guide.md">Deployment</a> &middot;
   <a href="architecture/overview.md">Architecture</a> &middot;
   <a href="api/overview.md">API</a> &middot;
+  <a href="sdks/overview.md">SDKs</a> &middot;
   <a href="adr/README.md">Decisions</a> &middot;
+  <a href="product/glossary.md">Glossary</a> &middot;
   <a href="operations/troubleshooting.md">Troubleshooting</a>
 </p>
 

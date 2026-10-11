@@ -6,12 +6,15 @@
   <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
   <img alt="Vite: 6" src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white">
   <img alt="Tailwind CSS: 4" src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
-  <img alt="read: 3 min" src="https://img.shields.io/badge/read-3%20min-555555">
+  <a href="../../frontend/src/hooks/useRunStream.ts"><img alt="source: hooks/useRunStream.ts" src="https://img.shields.io/badge/source-hooks%2FuseRunStream.ts-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **Frontend** · page 17 of 50
+[Docs](../README.md) › [Architecture](../README.md#architecture) › **Frontend** · page 18 of 57
 
 **React 19, TypeScript, Vite, Tailwind CSS v4**, plus Radix primitives, TanStack Query, Zustand, Framer Motion, GSAP, Lenis, Recharts and Lucide.
+
+This page is the signed-in console under `/app`. The landing page, the docs browser and the API reference are the [public web surface](web.md).
 
 ## What it is not
 
@@ -30,32 +33,38 @@ src/
 │   ├── ui/          Radix behaviour plus Tailwind styling, no wrapper library
 │   ├── layout/      AppShell, MarketingLayout, CommandPalette
 │   ├── charts/      Recharts with one palette and one tooltip
-│   ├── graphs/      PlanGraph and CatalogGraph, animated with GSAP
-│   ├── tables/      dense data tables
+│   ├── graphs/      PlanGraph (edges drawn with GSAP) and CatalogGraph
 │   ├── docs/        the markdown renderer for the docs browser
-│   ├── marketing/   landing-page sections
-│   └── shared/      ModeBadge, CacheLayerBadge, CostComparison, EmptyState
-├── pages/           one per route, plus landing/
-├── hooks/           useQueries (TanStack), useRunStream (SSE)
-├── lib/             api client, formatters, docs loader
-├── stores/          session
+│   ├── marketing/   landing-page sections, SectionRail
+│   └── shared/      ModeBadge, CacheLayerBadge, CostComparison, EmptyState,
+│                    Pipeline, ThemeToggle
+├── pages/           one per route, plus landing/ and settings/
+├── hooks/           useQueries (TanStack), useRunStream and usePacedRun (SSE),
+│                    useConsoleMotion, useSmoothScroll, useReducedMotion,
+│                    useMediaQuery
+├── lib/             api client, formatters, theme, scroll, docs loader,
+│                    generated API reference and docs reading order
+├── stores/          session, ui-prefs
 ├── animations/      Framer variants, GSAP helpers
+├── styles/          globals.css
+├── types/           api.ts, the server's response shapes
 └── routes/
 ```
 
-- **Domain components carry the SerpFlow vocabulary:** execution mode, cache layer, warm versus cold, naive versus marginal
+- **Domain components carry the [SerpFlow vocabulary](../product/glossary.md):** [execution mode](../product/execution-modes.md), [cache layer](caching.md), warm versus cold, [naive versus marginal](marginal-replanning.md#the-distinction)
 - The product concepts appear **consistently**, instead of being re-described on every screen
 
 ## No fake data
 
 - **There is no mock layer and no fixture data in the frontend**
 - **Every number on every chart was computed by the server**
-- **Stored decisions are read, not recomputed:** the Plan Inspector's counterfactual comes from the persisted Plan
+- **Stored decisions are read, not recomputed:** the Plan Inspector's counterfactual comes from the persisted Plan and its candidates ([ADR 0014](../adr/0014-persist-every-candidate.md))
   - a recomputation that disagreed with what actually executed would be worse than no display at all
+- **When a run finishes, the search page fetches the persisted run** and renders that, rather than reconstructing the result from stream frames
 
 ## The pipeline animation
 
-The search page animates **eleven stages**. Each one advances because an SSE frame arrived saying it did:
+The search page animates **eleven stages**. Each one advances because an [SSE frame](../api/streaming.md#the-stage-sequence) arrived saying it did:
 
 ```
 analyzing intent -> finding candidate engines -> synthesizing parameters ->
@@ -65,16 +74,24 @@ calculating marginal cost -> re-ranking plans -> checking budget ->
 executing required steps
 ```
 
-- **`useRunStream`** opens an `EventSource`, replays anything it missed from the server-side buffer, then tails live frames
+Code: [`hooks/useRunStream.ts`](../../frontend/src/hooks/useRunStream.ts) · [`pages/SearchPage.tsx`](../../frontend/src/pages/SearchPage.tsx) · [`components/shared/Pipeline.tsx`](../../frontend/src/components/shared/Pipeline.tsx)
+
+- **The search page starts a streamed run:** `POST /v1/search` with `stream: true` returns 202 and the run id ([starting a run you can stream](../api/streaming.md#starting-a-run-you-can-stream))
+- **`useRunStream`** opens an `EventSource` on `/v1/runs/{id}/stream`; the server replays what it has buffered for the run, then live frames follow
+  - the access token travels as a query parameter, because `EventSource` cannot set headers ([streaming: authentication](../api/streaming.md#authentication))
+  - a stream that closes before any frame arrives surfaces as `STREAM_DISCONNECTED`
 - **No simulated progression.** A stage only completes when its real frame arrives. If the backend sits on "inspecting cache state" for two seconds, so does the UI
-- **Paced, in order:** planning stages often finish within milliseconds of each other, so `usePacedRun` reveals them one at a time, holding each as running for at least 320 ms (600 ms for execution)
-  - it never runs ahead of the backend, the timings shown are the real ones, and the result appears only once the reveal has caught up
-- **A failed run still shows its result panel:** the error, the credits recorded and a link to the Run Inspector, instead of waiting forever
-- **Each stage renders detail straight from the frame's `detail` object:**
+- **Paced, in order:** planning stages often finish within milliseconds of each other, so `usePacedRun` reveals them one at a time, holding each as running for at least `STAGE_DWELL_MS` (320 ms), or `EXECUTING_DWELL_MS` (600 ms) for execution
+  - it never shows a stage complete before its real frame, never runs ahead of the backend, the timings shown are the real ones, and the result appears only once the reveal has caught up
+  - `executing` emits a frame per step, so it settles only when the run ends; a failed stage ends the reveal there
+- **Each stage renders detail straight from the frame's [`detail`](../api/streaming.md#what-detail-carries) object:**
   - which engines were retrieved
   - which parameters were bound
   - how many candidates were generated, and how many steps are warm
   - what each candidate costs cold and on the margin
+- **A failed run still shows a result panel** instead of waiting forever: the error code and message, the persisted run's credits and mode, and a link to the Run Inspector
+  - a failed run's transaction is rolled back, so it records 0 credits and no steps even when an earlier step was billed ([executor: when a run fails](executor.md#when-a-run-fails))
+- **A billed search that found nothing shows SerpApi's own message** (`summary.notice`, typed in [`types/api.ts`](../../frontend/src/types/api.ts)) under "SerpApi found no results", and says it was counted and cached ([executor: an empty answer](executor.md#an-empty-answer-is-still-a-billed-answer))
 
 ## Animation
 
@@ -82,9 +99,13 @@ executing required steps
 | --- | --- | --- |
 | Lenis | Smooth scrolling on the public pages only; the console scrolls natively ([web: smooth scrolling](web.md#smooth-scrolling)) | Never started |
 | Framer Motion | Page transitions, dialogs, lists, cards | Variants collapse to instant |
-| GSAP | Plan graph edges, catalog graph reveal, counting credit figures, landing-page scroll scenes | Helpers set the end state directly |
+| GSAP | Plan graph edges, console card rise and figure count-ups, landing-page scroll scenes | Helpers set the end state directly |
 
-- **`prefers-reduced-motion` is honoured in JavaScript**, and again in CSS as a backstop
+- **`prefers-reduced-motion` is honoured in JavaScript**, and again in CSS as a backstop. An in-app reduce-motion preference (in `ui-prefs`) turns it on too; either one wins
+- **The console scrolls inside its own container, natively.** Lenis was removed from the app shell because it cached the first page's height, so a taller page stopped short
+  - a navigation starts at the top: the scroller resets when the outgoing page's exit animation completes ([`AppShell.tsx`](../../frontend/src/components/layout/AppShell.tsx))
+- **Console motion is deliberately small** ([`hooks/useConsoleMotion.ts`](../../frontend/src/hooks/useConsoleMotion.ts)): `[data-card]` children rise on mount, not on scroll, and `[data-figure]` numbers count up, with the final value always in the DOM
+  - on mount because ScrollTrigger watches the window, and the console scrolls an inner container: cards below the fold never triggered and stayed invisible
 
 ## Icons
 
@@ -94,13 +115,14 @@ executing required steps
 
 ## Permissions
 
-- **The session store mirrors the server-resolved permission set**, so the UI hides what the caller cannot do instead of offering an action that returns 403
-- **The server remains the authority.** This is a usability layer, not a security one
+- **The session store mirrors the server-resolved permission set** ([roles](../security/api-keys.md#roles)), so the UI hides what the caller cannot do instead of offering an action that returns 403
+- **The server remains the authority** ([checks are centralised](../security/api-keys.md#checks-are-centralised)). This is a usability layer, not a security one
 
 ## Data fetching
 
-- **TanStack Query**, with **4xx responses never retried**: the answer will not change, and retrying only delays a clear error
-- **Mutations that touch a run invalidate together:** runs, dashboard, savings, cache, budgets, guard rejections, cross-project, audit and alerts
+- **TanStack Query**, with **4xx responses never retried**: the answer will not change, and retrying only delays a clear error ([`App.tsx`](../../frontend/src/App.tsx))
+  - other failures are retried up to twice; no refetch on window focus; 30 s stale time
+- **Mutations that touch a run invalidate together:** runs, dashboard, savings, cache dashboard and entries, budgets, guard rejections, cross-project, audit and alerts ([`hooks/useQueries.ts`](../../frontend/src/hooks/useQueries.ts))
 
 ## Routes
 
@@ -110,30 +132,43 @@ executing required steps
 /api                       API reference, from OpenAPI      public
 
 /login  /register  /verify-email  /forgot-password  /reset-password
-
-/app                       overview
-/app/search                the central interaction
-/app/runs                  run history
-/app/runs/:id              Run Inspector
-/app/plans  /app/plans/:id Plan Inspector
-/app/catalog               Catalog Explorer
-/app/cache                 cache dashboard
-/app/budgets               budgets and project policy
-/app/analytics             savings, engine reach, routing quality, volatility
-/app/benchmarks            routing accuracy and failure analysis
-/app/audit                 the hash-chained log
-/app/settings/*            organization, members, projects, api-keys,
-                           credentials, security, notifications
 ```
 
-- **Everything under `/app` is protected**
-- The public pages are covered in [web surface](web.md)
+- **Everything under `/app` is protected.** Each console page reads a backend documented elsewhere:
+
+| Route | Page | Backend side |
+| --- | --- | --- |
+| `/app` | overview: recent runs, layer distribution, budget and quota, cross-project benefit, alerts | [Instrumentation](marginal-replanning.md#instrumentation), [organization-level sharing](caching.md#organization-level-sharing) |
+| `/app/search` | the central interaction | [Streaming](../api/streaming.md), [executor](executor.md) |
+| `/app/runs` | run history | [API: runs](../api/overview.md#runs) |
+| `/app/runs/:id` | Run Inspector: executed plan, provenance, stage trace, false-hit report | [Per-step record](executor.md#per-step-record), [rejections are evidence](caching.md#rejections-are-evidence) |
+| `/app/plans`, `/app/plans/:id` | Plan Inspector: cold against marginal choice, every candidate, rejected engines, budget reduction | [What the Plan stores](planner.md#what-the-plan-stores), [ranking](marginal-replanning.md#ranking), [`changed_selection`](marginal-replanning.md#what-changed_selection-means) |
+| `/app/catalog` | Catalog Explorer | [Catalog Explorer](catalog.md#catalog-explorer) |
+| `/app/cache` | cache dashboard: layers, entries, guard rejections, partitions, storage | [Caching](caching.md), [the guard](caching.md#the-entity-and-numeral-guard), [invalidation](caching.md#invalidation) |
+| `/app/budgets` | budgets, upstream quota, and project policy: semantic threshold, engine denylist, retention, shared cache | [Budget-aware reduction](marginal-replanning.md#budget-aware-reduction-happens-before-ranking), [budget enforcement](executor.md#budget-enforcement), [engine policy](executor.md#engine-policy), [retention](executor.md#retention) |
+| `/app/analytics` | savings decomposition, engine reach, routing signal, measured volatility | [Spend and savings](../operations/observability.md#spend-and-savings), [adaptive TTL](caching.md#adaptive-ttl) |
+| `/app/benchmarks` | routing accuracy and failure analysis | [Routing benchmark](../product/benchmark.md) |
+| `/app/audit` | the hash-chained log | [The audit log](../database/rls.md#the-audit-log), [ADR 0012](../adr/0012-append-only-audit-log.md) |
+| `/app/settings/*` | organization, members, roles, projects, api-keys, credentials, security, notifications | see below |
+
+- **Settings:**
+  - **roles** ([`settings/RolesSettings.tsx`](../../frontend/src/pages/settings/RolesSettings.tsx)): built-in and [custom roles](../security/api-keys.md#custom-roles)
+  - **projects:** the project list, and each [project's execution mode](../product/execution-modes.md#setting-it)
+  - **api-keys:** live and [test keys](../security/api-keys.md#test-keys), shown once
+  - **credentials:** [upstream credentials](../security/credentials.md), encrypted on arrival and never returned ([BYOK](../security/byok.md))
+  - **security:** active sessions, and signing out everywhere
+  - **notifications:** email and webhook channels ([email](../operations/email.md))
+- **The retention fields on the budgets page are stored but not yet applied:** the executor uses the instance values ([executor: retention](executor.md#retention))
 
 ## Related
 
-- [Web surface](web.md): landing page, docs browser, theme and motion
+- [The public web surface](web.md): landing page, docs browser, theme and motion
 - [Streaming](../api/streaming.md): the SSE contract the pipeline consumes
-- [Backend](backend.md)
+- [Executor](executor.md): what a run records, which is what the Run Inspector shows
+- [Backend](backend.md): the API behind every page
+- [API keys](../security/api-keys.md): the roles and permissions the session store mirrors
+- [Troubleshooting: the pipeline animation does not move](../operations/troubleshooting.md#the-pipeline-animation-does-not-move): when the stream is not delivering
+- [ADR 0014](../adr/0014-persist-every-candidate.md): why the Plan Inspector can show every candidate
 
 ---
 
