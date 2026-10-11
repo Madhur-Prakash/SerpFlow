@@ -9,13 +9,14 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../product/README.md) › **Execution modes** · page 4 of 50
+[Docs](../README.md) › [Product](../product/README.md) › **Execution modes** · page 4 of 57
 
 An execution mode answers one question: **where does this result come from, and does it cost anything?**
 
 - **It used to be** a server-wide environment variable: every project in every organization on an instance executed the same way
 - **It is now chosen where the decision belongs:** by the project, or by a single search. The project column arrived in migration [`0004_project_mode`](../database/migrations.md#0004_project_mode)
 - The environment variable, [`SERPFLOW_MODE`](../security/secrets.md#inventory), survives as the **floor**
+- The decision, and the one rule nothing overrides, is [ADR 0005](../adr/0005-test-key-mode-precedence.md)
 
 **On this page:** [the four modes](#the-four-modes) · [who chooses, and precedence](#who-chooses-and-precedence) · [permission](#permission) · [setting it](#setting-it) · [why `mock` is not selectable](#why-mock-is-not-selectable)
 

@@ -3,10 +3,10 @@
 <p>
   <a href="../README.md#deployment"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
   <img alt="pages: 5" src="https://img.shields.io/badge/pages-5-2496ED">
-  <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
+  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../README.md#deployment) › **Deployment** · page 7 of 50
+[Docs](../README.md) › [Deployment](../README.md#deployment) › **Deployment** · page 7 of 57
 
 **Getting SerpFlow running: on a laptop, entirely in Docker, or on a server you control.**
 
@@ -58,7 +58,14 @@
 | [Database](../database/README.md) | `make upgrade` applies [the revision chain](../database/migrations.md#the-revision-chain); [step 8](deployment-guide.md#8-make-row-level-security-bind) and [production](production.md#before-anything-else) make [row-level security](../database/rls.md#verifying-it) bind, which the bundled superuser connection defeats |
 | [Security](../security/README.md) | [step 3](deployment-guide.md#3-generate-secrets) generates what [secrets](../security/secrets.md#generating-real-ones) inventories, checked against [the production checklist](../security/secrets.md#production-checklist); upstream keys are [brought per organization](../security/byok.md), and a `GROQ_API_KEY` in `.env` is [the self-hosting exception](../security/byok.md#the-self-hosting-exception) |
 | [Operations](../operations/README.md) | the API [migrates and seeds itself on start](../operations/bootstrap.md), and [refuses to seed in production](../operations/bootstrap.md#3-an-environment-refusal); [health](../operations/observability.md#health) backs the probes; [Kafka: listeners](../operations/kafka.md#listeners) explains the two advertised addresses; [troubleshooting: deployment](../operations/troubleshooting.md#deployment) lists the failures these pages prevent |
-| [Decisions](../adr/README.md) | [ADR 0013](../adr/0013-explicit-event-loop-factory.md) is why every start goes through `app.server`; [ADR 0006](../adr/0006-rls-plus-application-guards.md) is why the application's role must not own the tables; [ADR 0003](../adr/0003-envelope-encryption.md) is why losing `CREDENTIAL_KEK` loses every stored credential |
+| [Decisions](../adr/README.md) | [ADR 0006](../adr/0006-rls-plus-application-guards.md) is why the application's role must neither own the tables nor be a superuser, and [ADR 0003](../adr/0003-envelope-encryption.md) why the KEK lives outside the database; listed [below](#decisions-behind-it) |
+
+## Decisions behind it
+
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): a deterministic guard independent of the cosine score. Why a rising `serpflow_semantic_false_hit_reports_total` is a correctness page ([production: observability](production.md#observability))
+- [ADR 0003](../adr/0003-envelope-encryption.md): envelope encryption for upstream credentials. `CREDENTIAL_KEK` unlocks all of them, so it is held outside the database and rotated only by rewrapping
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): a test key overrides the execution mode, absolutely. Why the production smoke test spends zero credits ([step 11](deployment-guide.md#11-verify-the-deployment))
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): tenant isolation enforced twice. Why the application connects as a role that neither owns the tables nor is a superuser ([step 8](deployment-guide.md#8-make-row-level-security-bind))
 
 ## Related
 

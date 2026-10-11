@@ -10,7 +10,7 @@
   <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../operations/README.md) › **Observability** · page 47 of 50
+[Docs](../README.md) › [Operations](../operations/README.md) › **Observability** · page 47 of 57
 
 **Structured logs, Prometheus metrics and OpenTelemetry traces.** A request id ties the logs to the response and the error body the caller sees, and with tracing on a trace id ties both to the trace ([correlating one request](#correlating-one-request)).
 

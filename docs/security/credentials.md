@@ -7,7 +7,7 @@
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../security/README.md) › **Upstream credentials** · page 41 of 50
+[Docs](../README.md) › [Security](../security/README.md) › **Upstream credentials** · page 41 of 57
 
 **A SerpFlow organization attaches its own SerpApi key**, and optionally a Groq key ([bring your own key](byok.md)). That key is what an attacker actually wants, and the design treats it that way:
 

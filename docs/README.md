@@ -8,7 +8,8 @@
 </p>
 
 <p align="center">
-  <a href="#read-it-end-to-end"><img alt="pages: 55" src="https://img.shields.io/badge/pages-55-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="#read-it-end-to-end"><img alt="pages: 62" src="https://img.shields.io/badge/pages-62-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="adr/README.md"><img alt="decision records: 6" src="https://img.shields.io/badge/decision%20records-6-555555"></a>
   <a href="api/overview.md"><img alt="API: 85 operations" src="https://img.shields.io/badge/API-85%20operations-009688?logo=fastapi&logoColor=white"></a>
   <a href="sdks/overview.md"><img alt="clients: Python · TypeScript · CLI · MCP" src="https://img.shields.io/badge/clients-Python%20%C2%B7%20TypeScript%20%C2%B7%20CLI%20%C2%B7%20MCP-8250DF"></a>
   <a href="architecture/catalog.md"><img alt="catalog: 54 engines" src="https://img.shields.io/badge/catalog-54%20engines-2F6BFF"></a>
@@ -38,6 +39,7 @@
   <a href="#database">Database</a> &middot;
   <a href="#security">Security</a> &middot;
   <a href="#operations">Operations</a> &middot;
+  <a href="#decisions">Decisions</a> &middot;
   <a href="product/glossary.md">Glossary</a>
 </p>
 
@@ -59,6 +61,7 @@
 | Call it from Python, TypeScript, a terminal or an agent | [SDKs overview](sdks/overview.md) |
 | Understand the design | [Architecture overview](architecture/overview.md) |
 | Know why something is the way it is | [Decision records](adr/README.md) |
+| Know why something is the way it is | [Decision records](adr/README.md) |
 | Look up a term | [Glossary](product/glossary.md) |
 | Use a hosted SerpFlow | there is none yet, by the author's decision; ask for one: [Hosting](../README.md#hosting) |
 | Fix something | [Troubleshooting](operations/troubleshooting.md) |
@@ -75,6 +78,7 @@
 6. **Database:** [index](database/README.md) → [schema](database/schema.md) → [migrations](database/migrations.md) → [RLS](database/rls.md)
 7. **Security:** [index](security/README.md) → [threat model](security/threat-model.md) → [BYOK](security/byok.md) → [credentials](security/credentials.md) → [API keys](security/api-keys.md) → [secrets](security/secrets.md)
 8. **Operations:** [index](operations/README.md) → [bootstrap](operations/bootstrap.md) → [email](operations/email.md) → [observability](operations/observability.md) → [kafka](operations/kafka.md) → [redis](operations/redis.md) → [troubleshooting](operations/troubleshooting.md)
+9. **Decisions:** [index](adr/README.md) → ADR [0001](adr/0001-marginal-cost-replanning.md) to [0006](adr/0006-rls-plus-application-guards.md)
 
 ## How the pages connect
 
@@ -83,7 +87,7 @@
 | Link | Where | What it does |
 | --- | --- | --- |
 | **Section index** | the `README.md` in every folder | every page in the section in reading order, the questions it answers with links to the exact sections, and how it meets every other section |
-| **Inline** | the first mention of a concept on a page | goes to the one page that owns it: a table to the [schema](database/schema.md), a metric to [observability](operations/observability.md), an environment variable to [secrets](security/secrets.md) |
+| **Inline** | the first mention of a concept on a page | goes to the one page that owns it: a table to the [schema](database/schema.md), a metric to [observability](operations/observability.md), an environment variable to [secrets](security/secrets.md), a decision to its [ADR](adr/README.md) |
 | **Related** | the end of every page | four to eight pages worth reading next, each with the reason, across sections |
 | **Glossary** | [one page](product/glossary.md) | every term, defined in a sentence, linked to the page that explains it |
 | **Source** | the badge header, and inline | the file that implements what the page describes |
@@ -196,6 +200,12 @@
 | [Redis](operations/redis.md) | what is in it, why none of it is authoritative |
 | [Troubleshooting](operations/troubleshooting.md) | the failures you will actually hit |
 
+## Decisions
+
+**[Decisions index](adr/README.md)**: why the core choices were made.
+
+- [Architecture decision records](adr/README.md): the six choices that were not obvious, each with the alternative rejected and the cost accepted
+
 ## Repository
 
 | File | What it is |
@@ -227,6 +237,7 @@
   <a href="architecture/overview.md">Architecture</a> &middot;
   <a href="api/overview.md">API</a> &middot;
   <a href="sdks/overview.md">SDKs</a> &middot;
+  <a href="adr/README.md">Decisions</a> &middot;
   <a href="product/glossary.md">Glossary</a> &middot;
   <a href="operations/troubleshooting.md">Troubleshooting</a>
 </p>

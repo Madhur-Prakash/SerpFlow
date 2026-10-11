@@ -8,7 +8,7 @@
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../product/README.md) › **Product overview** · page 2 of 50
+[Docs](../README.md) › [Product](../product/README.md) › **Product overview** · page 2 of 57
 
 **SerpFlow is a search control plane for SerpApi.** Given a natural-language intent, it:
 
@@ -41,7 +41,7 @@ A team using SerpApi at any scale ends up building four things, badly, in the ap
 
 > **Cache state should change which plan is selected, not just make the selected plan faster.**
 
-- That is the one claim this system makes, and it is **deliberately falsifiable**: [the demo](demo.md) fails if it stops being true
+- That is the one claim this system makes, and it is **deliberately falsifiable**: [the demo](demo.md) fails if it stops being true ([ADR 0001](../adr/0001-marginal-cost-replanning.md))
 - **Conventional caching:** rank plans on cold cost, pick a winner, then check the cache. Savings only happen if the winner is cached
 - **SerpFlow:** rank on **marginal** cost, the cost of the steps that still need a live call
   - a plan costing 101 credits cold but fully warm costs **0**

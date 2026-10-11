@@ -10,7 +10,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **Frontend** · page 21 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Frontend** · page 21 of 57
 
 **React 19, TypeScript, Vite, Tailwind CSS v4**, plus Radix primitives, TanStack Query, Zustand, Framer Motion, GSAP, Lenis, Recharts and Lucide.
 

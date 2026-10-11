@@ -9,7 +9,7 @@
   <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Database](../database/README.md) › **Database schema** · page 35 of 50
+[Docs](../README.md) › [Database](../database/README.md) › **Database schema** · page 35 of 57
 
 - **PostgreSQL 17** with the `vector`, `pg_trgm` and `btree_gin` extensions
   - `vector` and `pg_trgm` are created by migration [`0001_initial`](migrations.md#0001_initial) and by the container's init script

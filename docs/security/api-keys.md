@@ -6,10 +6,10 @@
   <img alt="HMAC: SHA-256" src="https://img.shields.io/badge/HMAC-SHA--256-6E40C9">
   <img alt="Argon2id: passwords" src="https://img.shields.io/badge/Argon2id-passwords-6E40C9">
   <a href="../../backend/app/core/security.py"><img alt="source: core/security.py" src="https://img.shields.io/badge/source-core%2Fsecurity.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 10 min" src="https://img.shields.io/badge/read-10%20min-555555">
+  <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../security/README.md) › **API keys** · page 42 of 50
+[Docs](../README.md) › [Security](../security/README.md) › **API keys** · page 42 of 57
 
 **A SerpFlow API key authenticates a caller to SerpFlow.**
 

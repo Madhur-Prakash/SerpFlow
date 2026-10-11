@@ -11,7 +11,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../sdks/README.md) › **MCP server** · page 32 of 50
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **MCP server** · page 32 of 57
 
 - **`serpflow-mcp` gives an LLM agent four tools:** `plan`, `search`, `explain` and `catalog`: [`app/mcp/server.py`](../../backend/app/mcp/server.py)
 - **Stdio transport**, on the official [`mcp`](https://pypi.org/project/mcp/) Python package. It works with 1.x (`FastMCP`) and 2.x (`MCPServer`)

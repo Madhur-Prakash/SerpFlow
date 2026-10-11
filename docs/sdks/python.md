@@ -8,7 +8,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../sdks/README.md) › **Python SDK** · page 29 of 50
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **Python SDK** · page 29 of 57
 
 - **A sync client, an async client and a SerpApi drop-in**, in one module: [`app/sdk/__init__.py`](../../backend/app/sdk/__init__.py)
 - **One runtime dependency, `httpx`.** The module imports nothing else from the backend, so it can be lifted out into its own distribution unchanged

@@ -8,10 +8,10 @@
   <img alt="Node: 22" src="https://img.shields.io/badge/Node-22-5FA04E?logo=nodedotjs&logoColor=white">
   <img alt="Docker: Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
   <a href="../../backend/app/integrations/llm/mock.py"><img alt="source: llm/mock.py" src="https://img.shields.io/badge/source-llm%2Fmock.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
+  <img alt="read: 14 min" src="https://img.shields.io/badge/read-14%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../deployment/README.md) › **Local development** · page 9 of 50
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Local development** · page 9 of 57
 
 **The target: a working system with no API keys at all.** `make dev` and `make seed` must both succeed on a machine that has never seen a SerpApi key, and they do:
 
@@ -267,7 +267,7 @@ Three phases, all inside the SerpApi free tier:
 ```
 
 - **Run it again with `make demo ARGS=--reset-cache`:** without it, phase 1 may find entries an earlier run left warm ([phase 1 says "3 of 3 steps warm"](../operations/troubleshooting.md#phase-1-says-3-of-3-steps-warm))
-- Walkthrough: [the reference demo](../product/demo.md) · why it ranks on marginal cost: [marginal-cost replanning](../architecture/marginal-replanning.md)
+- Walkthrough: [the reference demo](../product/demo.md) · why it ranks on marginal cost: [marginal-cost replanning](../architecture/marginal-replanning.md), [ADR 0001](../adr/0001-marginal-cost-replanning.md)
 
 ## Resetting
 

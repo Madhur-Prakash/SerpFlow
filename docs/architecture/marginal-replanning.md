@@ -8,14 +8,14 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **Marginal-cost replanning** · page 17 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Marginal-cost replanning** · page 17 of 57
 
 **This is the thesis.** Everything else in SerpFlow exists to make it possible.
 
 > SerpFlow does not merely cache search results. It re-plans execution based on
 > what is already warm, optimizing **marginal** cost rather than cold cost.
 
-Code: [`app/services/planner/cost.py`](../../backend/app/services/planner/cost.py) · [`budget.py`](../../backend/app/services/planner/budget.py)
+Code: [`app/services/planner/cost.py`](../../backend/app/services/planner/cost.py) · [`budget.py`](../../backend/app/services/planner/budget.py) · decision: [ADR 0001](../adr/0001-marginal-cost-replanning.md)
 
 - `replan_on_marginal_cost` runs after [stage D](planner.md#stage-d-path-find-and-generate-candidates) of the planner, over every candidate it emitted
 - It is the `inspecting_cache`, `calculating_marginal_cost`, `reranking_plans` and `checking_budget` part of the [stage sequence](../api/streaming.md#the-stage-sequence)
@@ -118,7 +118,7 @@ full = 0    partial = 1    narrow = 2
 - A narrow substitute is cheaper **precisely because it answers a smaller question**
   - `yelp_reviews` costs a ninth of the Google Maps contributor chain, and cannot establish reviewer identity at all
 - Letting price outrank coverage makes the planner optimise a question nobody asked
-- **Cost only breaks ties within a coverage band.**
+- **Cost only breaks ties within a coverage band.** See [ADR 0004](../adr/0004-coverage-before-price.md)
 
 ### What `changed_selection` means
 

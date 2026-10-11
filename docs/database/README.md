@@ -3,10 +3,10 @@
 <p>
   <a href="../README.md#database"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
   <img alt="pages: 3" src="https://img.shields.io/badge/pages-3-4169E1">
-  <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
+  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Database](../README.md#database) › **Database** · page 34 of 50
+[Docs](../README.md) › [Database](../README.md#database) › **Database** · page 34 of 57
 
 **What SerpFlow keeps in PostgreSQL, how that schema changes, and how tenants are kept apart inside it.**
 
@@ -55,7 +55,15 @@
 | [SDKs](../sdks/README.md) | the MCP server connects to this database directly, not to the API, and needs it migrated and seeded ([MCP: how it runs](../sdks/mcp.md#how-it-runs)); each agent session it opens is a [`service_sessions`](schema.md#service_sessions) row ([sessions and budgets](../sdks/mcp.md#sessions-and-budgets)) |
 | [Security](../security/README.md) | [threat model: assets](../security/threat-model.md#assets) maps each asset to its table, and [cross-tenant data access](../security/threat-model.md#cross-tenant-data-access) is the threat RLS answers; [envelope encryption](../security/credentials.md#envelope-encryption) and [key resolution](../security/api-keys.md#resolution) are the behaviour behind `upstream_credentials` and `api_keys` |
 | [Operations](../operations/README.md) | the [startup bootstrap](../operations/bootstrap.md#1-an-advisory-lock) can migrate on start, under an advisory lock; [troubleshooting: database](../operations/troubleshooting.md#database) covers `type "vector" does not exist` and the append-only error; [Redis](../operations/redis.md#why-none-of-it-is-authoritative) sits in front of PostgreSQL, not instead of it: lose Redis, and the durable cache index and key resolution still answer from here |
-| [Decisions](../adr/README.md) | ADR 0006 and 0012 are implemented in [row-level security](rls.md); ten more bear on single tables, a revision or the driver, listed below |
+| [Decisions](../adr/README.md) | [ADR 0006](../adr/0006-rls-plus-application-guards.md) is implemented in [row-level security](rls.md); four more bear on single tables or a revision, listed [below](#decisions-behind-it) |
+
+## Decisions behind it
+
+- [ADR 0001](../adr/0001-marginal-cost-replanning.md): [`plans`](schema.md#plans) records the marginal winner and the cold winner side by side; when they differ, cache state changed the answer
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): the guard's material is extracted into [`cache_entries`](schema.md#cache_entries) at write time, and every refusal is kept in [`semantic_guard_rejections`](schema.md#semantic_guard_rejections)
+- [ADR 0003](../adr/0003-envelope-encryption.md): [`upstream_credentials`](schema.md#upstream_credentials) holds `ciphertext` and `encrypted_dek`, the two halves of an envelope, and no recoverable plaintext key
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): its update made the mode per project, through [`0004_project_mode`](migrations.md#0004_project_mode): `NULL` inherits the server default, and a check constraint keeps `mock` out
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): tenant isolation is enforced twice, application guards first and [policies on 24 tables](rls.md#covered-tables) as the backstop
 
 ## Related
 

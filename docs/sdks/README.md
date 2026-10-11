@@ -7,7 +7,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../README.md#sdks) › **SDKs** · page 27 of 50
+[Docs](../README.md) › [SDKs](../README.md#sdks) › **SDKs** · page 27 of 57
 
 **The four ways to drive SerpFlow from code besides calling the REST API yourself: a Python SDK, a TypeScript SDK, the `serpflow` CLI and the `serpflow-mcp` server.**
 
@@ -59,7 +59,13 @@
 | [Database](../database/README.md) | the MCP server needs the API's migrated, seeded database rather than its URL, and sets the tenant for [row-level security](../database/rls.md#how-it-works) once its key resolves; `SERPFLOW_MCP_SESSION` names a [`service_sessions`](../database/schema.md#service_sessions) row |
 | [Security](../security/README.md) | [test keys](../security/api-keys.md#test-keys) and [service principal sessions](../security/api-keys.md#service-principal-sessions) are what the clients authenticate as; [secrets](../security/secrets.md#cli-sdk-and-mcp-read-from-the-shell) lists the variables they read from the shell; the [threat model](../security/threat-model.md#trust-boundaries) puts the MCP server inside the service boundary |
 | [Operations](../operations/README.md) | [seeding by hand](../operations/bootstrap.md#seeding-by-hand) prints the keys and says which goes to which client; troubleshooting covers [a missing key](../operations/troubleshooting.md#the-cli-or-an-sdk-says-no-api-key) in each client and [an MCP agent's session budget](../operations/troubleshooting.md#an-mcp-agents-session-budget-does-not-carry-across-calls) |
-| [Decisions](../adr/README.md) | no record is implemented in these pages, but six shape what the clients send and get back, listed below |
+| [Decisions](../adr/README.md) | no record is implemented in these pages, but three shape what the clients send and get back, listed [below](#decisions-behind-it) |
+
+## Decisions behind it
+
+- [ADR 0001](../adr/0001-marginal-cost-replanning.md): plans are ranked on marginal cost, so every plan a client receives carries naive and marginal cost, and the flag saying whether cache state changed the winner (`marginal_replan_changed_selection` in Python, `changedSelection` in TypeScript)
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): a `sf_test_...` key routes to the deterministic mock whatever the mode, which is why every client example uses one and spends nothing ([test keys](overview.md#test-keys))
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): tenant isolation is enforced twice, so a project in another organization is `NOT_FOUND` to every client ([Python SDK: recipes](python.md#recipes)), and the MCP server sets the tenant like the API
 
 ## Related
 

@@ -9,7 +9,7 @@
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../sdks/README.md) › **Releasing the SDKs** · page 33 of 50
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **Releasing the SDKs** · page 33 of 57
 
 - **Two artifacts, two registries:** the TypeScript SDK goes to **npm** as `@serpflow/sdk`, and the Python SDK goes to **PyPI** as `serpflow`
 - **Neither is released, by the author's decision, and neither will be until the author decides to host SerpFlow** ([who runs the server](#first-who-runs-the-server)). On 2026-10-11 both names were unclaimed: `registry.npmjs.org/@serpflow%2fsdk` and `pypi.org/pypi/serpflow/json` both answered 404

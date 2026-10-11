@@ -6,10 +6,10 @@
   <img alt="tasks: 120" src="https://img.shields.io/badge/tasks-120-2F6BFF">
   <img alt="Groq: BYOK" src="https://img.shields.io/badge/Groq-BYOK-F55036">
   <a href="../../backend/app/services/benchmark/service.py"><img alt="source: benchmark/service.py" src="https://img.shields.io/badge/source-benchmark%2Fservice.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 10 min" src="https://img.shields.io/badge/read-10%20min-555555">
+  <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../product/README.md) › **Routing benchmark** · page 5 of 50
+[Docs](../README.md) › [Product](../product/README.md) › **Routing benchmark** · page 5 of 57
 
 ```bash
 make benchmark

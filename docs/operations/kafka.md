@@ -7,7 +7,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../operations/README.md) › **Kafka** · page 48 of 50
+[Docs](../README.md) › [Operations](../operations/README.md) › **Kafka** · page 48 of 57
 
 - **Kafka 4.x in KRaft mode**: the compose service runs `apache/kafka:4.0.0` as a single combined broker and controller ([Docker: Kafka](../deployment/docker.md#kafka))
 - **No ZooKeeper, and there will not be one:** ZooKeeper is removed in Kafka 4

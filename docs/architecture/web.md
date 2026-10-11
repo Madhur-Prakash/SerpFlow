@@ -9,7 +9,7 @@
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **The public web surface** · page 22 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **The public web surface** · page 22 of 57
 
 **Three pages share one shell:** the landing page, the documentation browser and the API reference. The signed-in console is the [frontend](frontend.md).
 

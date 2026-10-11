@@ -1,5 +1,15 @@
 # Architecture decision records
 
+<p>
+  <a href="../README.md#decisions"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
+  <img alt="records: 6" src="https://img.shields.io/badge/records-6-555555">
+  <img alt="status: all accepted" src="https://img.shields.io/badge/status-all%20accepted-3fcf8e">
+  <a href="../../backend/app/services/planner/cost.py"><img alt="source: planner/cost.py" src="https://img.shields.io/badge/source-planner%2Fcost.py-3fcf8e?logo=github&logoColor=white"></a>
+  <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
+</p>
+
+[Docs](../README.md) › [Decisions](../README.md#decisions) › **Architecture decision records** · page 51 of 57
+
 **The six decisions that were not obvious**, with the reasoning that produced them and the thing that was given up.
 
 - **An ADR is here when the alternative was genuinely defensible**
@@ -12,12 +22,10 @@
 | --- | --- | --- | --- | --- |
 | [0001](0001-marginal-cost-replanning.md) | Rank candidate plans on marginal cost, not cold cost | planner | [ranking](../architecture/marginal-replanning.md#ranking) · [`cost.py`](../../backend/app/services/planner/cost.py) | Accepted |
 | [0002](0002-deterministic-semantic-guard.md) | A deterministic guard independent of the cosine score | cache | [the guard](../architecture/caching.md#the-entity-and-numeral-guard) · [`guard.py`](../../backend/app/services/cache/guard.py) | Accepted |
-| [0003](0002-envelope-encryption.md) | Envelope encryption for upstream credentials | security | [envelope encryption](../security/credentials.md#envelope-encryption) · [`security.py`](../../backend/app/core/security.py) | Accepted |
+| [0003](0003-envelope-encryption.md) | Envelope encryption for upstream credentials | security | [envelope encryption](../security/credentials.md#envelope-encryption) · [`security.py`](../../backend/app/core/security.py) | Accepted |
 | [0004](0004-coverage-before-price.md) | Rank on coverage before price | planner | [coverage before price](../architecture/marginal-replanning.md#coverage-before-price) · [`cost.py`](../../backend/app/services/planner/cost.py) | Accepted |
-| [0005](0003-test-key-mode-precedence.md) | A test key overrides the execution mode, absolutely | execution | [mode precedence](../product/execution-modes.md#who-chooses-and-precedence) · [`serpapi/__init__.py`](../../backend/app/integrations/serpapi/__init__.py) | Accepted |
+| [0005](0005-test-key-mode-precedence.md) | A test key overrides the execution mode, absolutely | execution | [mode precedence](../product/execution-modes.md#who-chooses-and-precedence) · [`serpapi/__init__.py`](../../backend/app/integrations/serpapi/__init__.py) | Accepted |
 | [0006](0006-rls-plus-application-guards.md) | Tenant isolation enforced twice | tenancy | [row-level security](../database/rls.md#how-it-works) · [`deps.py`](../../backend/app/api/deps.py) | Accepted |
-
-- **Numbers are permanent identifiers**, so the sequence has gaps: a record keeps its number for as long as it is kept
 
 ## How they fit together
 
@@ -32,8 +40,8 @@ decision   0004 coverage before price     the key sorted first: a cheaper plan t
 ```
 
 - **Security (0003):** the one secret that must be recoverable, encrypted so a database dump alone reveals nothing. Read with the [threat model](../security/threat-model.md#threats-and-responses)
-- **Tenancy (0006):** isolation enforced in the application and again in PostgreSQL. Read with [row-level security](../database/rls.md), including why a superuser connection defeats the second half
 - **Execution (0005):** a test key always means mock data, whatever else is configured. Read with [execution modes](../product/execution-modes.md)
+- **Tenancy (0006):** isolation enforced in the application and again in PostgreSQL. Read with [row-level security](../database/rls.md), including why a superuser connection defeats the second half
 
 ## Format
 
@@ -52,7 +60,7 @@ Every record has the same five parts:
 
 ## Writing a new one
 
-- **Only for a decision whose alternative was genuinely defensible.** Copy the shape above, number it after the highest number used, and add it to the table with the page and the code that implement it
+- **Only for a decision whose alternative was genuinely defensible.** Copy the shape above, number it next in sequence (0007), and add it to the table with the page and the code that implement it
 - Add it to `ORDER` in [`scripts/build_docs_nav.py`](../../scripts/build_docs_nav.py), then run [`make docs-nav`](../deployment/local.md#everyday-targets), which regenerates every page's header and previous/next links, and `make docs-check`
 - **Link it both ways:** from the page that implements the decision, from the "Decisions behind it" list of each section index it bears on, and from the Related list of every related record
 
@@ -65,3 +73,9 @@ Every record has the same five parts:
 - [Glossary](../product/glossary.md): one-line definitions of the terms these records use
 - [Troubleshooting](../operations/troubleshooting.md): the failures some of these decisions choose deliberately, such as `REPLAY_CASSETTE_MISS`
 - [Documentation index](../README.md): every page, in reading order
+
+---
+
+| ← Previous | Index | Next → |
+| :--- | :---: | ---: |
+| [Troubleshooting](../operations/troubleshooting.md) | [Docs index](../README.md) | [ADR 0001: Rank candidate plans on marginal cost, n…](../adr/0001-marginal-cost-replanning.md) |

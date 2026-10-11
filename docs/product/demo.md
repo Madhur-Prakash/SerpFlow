@@ -9,7 +9,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../product/README.md) › **The reference demo** · page 3 of 50
+[Docs](../README.md) › [Product](../product/README.md) › **The reference demo** · page 3 of 57
 
 ```bash
 make seed ARGS=--reset
@@ -27,7 +27,7 @@ make demo ARGS=--reset-cache
 - **Not** "a cache hit happened"
 - **Not** "the second run was faster"
 - The same intent, against the same catalog version, produced a **different execution plan**, because the cache state between the two runs differed
-- That is the claim the [product overview](product-overview.md#the-thesis) calls falsifiable
+- That is the claim [ADR 0001](../adr/0001-marginal-cost-replanning.md) makes, and the one the [product overview](product-overview.md#the-thesis) calls falsifiable
 - **The pass condition is the warm run's own counterfactual:** its cold-cost ranking and its marginal-cost ranking disagreed, and the marginal one executed. The script checks the persisted `marginal_replan_changed_selection` flag on that plan, not a cache hit
 
 ## The question

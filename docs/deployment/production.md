@@ -10,7 +10,7 @@
   <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../deployment/README.md) › **Production** · page 12 of 50
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Production** · page 12 of 57
 
 **The bundled compose stack is honest about what it is:** a complete, working deployment for a single host. The step-by-step version of that host is the [deployment guide](deployment-guide.md). This page covers:
 

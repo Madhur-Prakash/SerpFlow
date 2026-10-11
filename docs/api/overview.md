@@ -11,7 +11,7 @@
   <img alt="read: 14 min" src="https://img.shields.io/badge/read-14%20min-555555">
 </p>
 
-[Docs](../README.md) › [API](../api/README.md) › **API overview** · page 24 of 50
+[Docs](../README.md) › [API](../api/README.md) › **API overview** · page 24 of 57
 
 - **Base URL:** `http://localhost:8000`; every product route sits under `/v1` ([`app/api/v1/__init__.py`](../../backend/app/api/v1/__init__.py))
 - **Interactive OpenAPI:** `/docs` (Swagger UI) and `/redoc` · **schema:** `/openapi.json` (OpenAPI 3.1)

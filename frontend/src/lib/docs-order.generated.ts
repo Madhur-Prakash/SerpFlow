@@ -57,4 +57,11 @@ export const DOC_READING_ORDER: readonly string[] = [
   "operations/kafka",
   "operations/redis",
   "operations/troubleshooting",
+  "adr",
+  "adr/0001-marginal-cost-replanning",
+  "adr/0002-deterministic-semantic-guard",
+  "adr/0003-envelope-encryption",
+  "adr/0004-coverage-before-price",
+  "adr/0005-test-key-mode-precedence",
+  "adr/0006-rls-plus-application-guards",
 ];

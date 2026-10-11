@@ -9,7 +9,7 @@
   <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
 </p>
 
-[Docs](../README.md) › [Database](../database/README.md) › **Migrations** · page 36 of 50
+[Docs](../README.md) › [Database](../database/README.md) › **Migrations** · page 36 of 57
 
 - **Every schema change goes through Alembic.** Nothing is created by hand
 - `make seed` runs only **after** `make upgrade` has brought the database to head ([everyday targets](../deployment/local.md#everyday-targets))

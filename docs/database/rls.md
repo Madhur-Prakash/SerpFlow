@@ -8,7 +8,7 @@
   <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
 </p>
 
-[Docs](../README.md) › [Database](../database/README.md) › **Row-level security** · page 37 of 50
+[Docs](../README.md) › [Database](../database/README.md) › **Row-level security** · page 37 of 57
 
 **Tenant isolation is enforced twice** ([ADR 0006](../adr/0006-rls-plus-application-guards.md)):
 

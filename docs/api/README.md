@@ -6,7 +6,7 @@
   <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
 </p>
 
-[Docs](../README.md) › [API](../README.md#api) › **API** · page 23 of 50
+[Docs](../README.md) › [API](../README.md#api) › **API** · page 23 of 57
 
 **The HTTP and SSE contract every client is built on: authentication, all 85 operations, the stream of stage frames, and worked requests.**
 
@@ -54,7 +54,13 @@
 | [Database](../database/README.md) | the Plan that `POST /v1/plan` returns is persisted as [`plans` and `plan_candidates`](../database/schema.md#planning-and-execution) rows; the savings waterfall sums [`budget_ledger`](../database/schema.md#budget_ledger); a cross-tenant id is `NOT_FOUND` because of [the application guards](../database/rls.md#the-application-guards); `/v1/audit/verify` walks [the audit log](../database/rls.md#the-audit-log) |
 | [Security](../security/README.md) | [roles](../security/api-keys.md#roles) are the permissions printed next to every operation; the [key format](../security/api-keys.md#format) and [test keys](../security/api-keys.md#test-keys) are what `X-API-Key` carries; the credential routes manage [upstream credentials](../security/credentials.md#validation-and-revocation), which no response ever returns |
 | [Operations](../operations/README.md) | [troubleshooting](../operations/troubleshooting.md#authentication) fixes the error codes; [correlating one request](../operations/observability.md#correlating-one-request) follows a `request_id`; [what goes through Kafka](../operations/kafka.md#what-goes-through-it-and-what-does-not) explains why an interactive search never does; [Redis](../operations/redis.md#what-lives-in-it) holds the rate-limit counters and the stream mirror |
-| [Decisions](../adr/README.md) | the records these routes enforce, listed below |
+| [Decisions](../adr/README.md) | the records these routes enforce, listed [below](#decisions-behind-it) |
+
+## Decisions behind it
+
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): the guard behind `GET /v1/cache/guard-rejections`, and why a [false-hit report](examples.md#report-a-bad-semantic-hit) is evidence
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): a test key always routes to the deterministic mock, which is why every [worked example](examples.md) spends nothing
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): a cross-tenant id returns `NOT_FOUND`, so its existence is never confirmed ([errors](overview.md#errors))
 
 ## Related
 

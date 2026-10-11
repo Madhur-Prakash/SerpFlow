@@ -8,7 +8,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../operations/README.md) › **Redis** · page 49 of 50
+[Docs](../README.md) › [Operations](../operations/README.md) › **Redis** · page 49 of 57
 
 **Redis holds four things, and none of them is a source of truth.** That single fact decides every operational choice on this page.
 

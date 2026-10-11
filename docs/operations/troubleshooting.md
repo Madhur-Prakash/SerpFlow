@@ -10,7 +10,7 @@
   <img alt="read: 24 min" src="https://img.shields.io/badge/read-24%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../operations/README.md) › **Troubleshooting** · page 50 of 50
+[Docs](../README.md) › [Operations](../operations/README.md) › **Troubleshooting** · page 50 of 57
 
 **Start here:**
 
@@ -483,4 +483,4 @@ grep '"request_id": "8a9e9172' logs/serpflow.log | python -m json.tool
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Redis](../operations/redis.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Back to the start](../README.md) |
+| [Redis](../operations/redis.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Decisions index](../adr/README.md) |

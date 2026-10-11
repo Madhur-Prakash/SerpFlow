@@ -154,9 +154,10 @@ More: [migrations: writing a new revision](docs/database/migrations.md#writing-a
 ## Changing the docs
 
 - **Write short bullets, not paragraphs**, and link every claim to the code it describes
-- **Link the first mention of a concept to its canonical page**, with a `#anchor` where a section covers it
+- **Link the first mention of a concept to its canonical page**, with a `#anchor` where a section covers it, and an ADR wherever the page describes a decision that has one
 - **Every page ends with `## Related`**: at least three links, each with a reason, including pages from other sections
 - **A new term goes in the [glossary](docs/product/glossary.md)**, with a link to the page that explains it
+- **A decision whose alternative was genuinely defensible gets an ADR:** numbered next in sequence, with the five parts (context, decision, alternatives rejected, cost, related), added to the table in the ADR index and to `ORDER`. See [writing a new one](docs/adr/README.md#writing-a-new-one)
 - **Navigation is generated.** Never edit a page's badge header, breadcrumb or previous/next footer by hand. After adding or renaming a page:
 
 ```bash

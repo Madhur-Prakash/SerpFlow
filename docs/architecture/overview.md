@@ -11,7 +11,7 @@
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **Architecture overview** · page 14 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Architecture overview** · page 14 of 57
 
 **SerpFlow sits between an application and SerpApi.** For each natural-language intent it:
 

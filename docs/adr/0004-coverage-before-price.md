@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0004. Rank on coverage before price** · page 59 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0004. Rank on coverage before price** · page 55 of 57
 
 **Status** Accepted
 
@@ -95,4 +95,4 @@ def marginal_rank_key(self) -> tuple:
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [ADR 0007: Interactive search does not go through K…](../adr/0007-interactive-search-bypasses-kafka.md) | [Docs index](../README.md) · [Architecture decision records](../adr/README.md) | [ADR 0009: Available is not acceptable: freshness g…](../adr/0009-freshness-gates-warmth.md) |
+| [ADR 0003: Envelope encryption for upstream credent…](../adr/0003-envelope-encryption.md) | [Docs index](../README.md) · [Decisions index](../adr/README.md) | [ADR 0005: A test key overrides the execution mode,…](../adr/0005-test-key-mode-precedence.md) |

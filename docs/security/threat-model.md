@@ -6,10 +6,10 @@
   <img alt="HMAC: SHA-256" src="https://img.shields.io/badge/HMAC-SHA--256-6E40C9">
   <img alt="AES: 256-GCM" src="https://img.shields.io/badge/AES-256--GCM-6E40C9">
   <a href="../../backend/app/api/middleware.py"><img alt="source: api/middleware.py" src="https://img.shields.io/badge/source-api%2Fmiddleware.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 14 min" src="https://img.shields.io/badge/read-14%20min-555555">
+  <img alt="read: 15 min" src="https://img.shields.io/badge/read-15%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../security/README.md) › **Threat model** · page 39 of 50
+[Docs](../README.md) › [Security](../security/README.md) › **Threat model** · page 39 of 57
 
 What SerpFlow is trying to prevent, what it does about each threat, and what it **deliberately does not** defend against.
 

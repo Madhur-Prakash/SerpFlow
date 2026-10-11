@@ -9,7 +9,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [API](../api/README.md) › **Worked examples** · page 26 of 50
+[Docs](../README.md) › [API](../api/README.md) › **Worked examples** · page 26 of 57
 
 - **Every example runs against the deterministic mock** with a `test` API key ([test keys](../security/api-keys.md#test-keys))
 - **Each one spends zero SerpApi credits.** [A search that found nothing](#a-search-that-found-nothing) also shows what a live key gets back

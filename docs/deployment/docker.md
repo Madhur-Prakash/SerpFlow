@@ -12,7 +12,7 @@
   <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../deployment/README.md) › **Docker** · page 10 of 50
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Docker** · page 10 of 57
 
 The whole stack runs in containers, from one compose file:
 

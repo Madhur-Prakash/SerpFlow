@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0002. A deterministic guard independent of the cosine score** · page 54 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0002. A deterministic guard independent of the cosine score** · page 53 of 57
 
 **Status** Accepted
 
@@ -87,4 +87,4 @@ entities     Nvidia, Koramangala, Ichiran
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [ADR 0002: Two separate edge sets: dependency and s…](../adr/0002-typed-catalog-edges.md) | [Docs index](../README.md) · [Architecture decision records](../adr/README.md) | [ADR 0004: HMAC-SHA256 for API keys, Argon2id for p…](../adr/0004-hmac-for-api-keys.md) |
+| [ADR 0001: Rank candidate plans on marginal cost, n…](../adr/0001-marginal-cost-replanning.md) | [Docs index](../README.md) · [Decisions index](../adr/README.md) | [ADR 0003: Envelope encryption for upstream credent…](../adr/0003-envelope-encryption.md) |

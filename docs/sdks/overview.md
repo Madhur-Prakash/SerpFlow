@@ -10,7 +10,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../sdks/README.md) › **SDKs and tools** · page 28 of 50
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **SDKs and tools** · page 28 of 57
 
 - **Four ways to drive SerpFlow from code**, besides calling the [REST API](../api/overview.md) yourself
 - **Two of them speak HTTP to a running API.** The CLI mostly does. **The MCP server does not:** it runs the service layer in its own process, against the database

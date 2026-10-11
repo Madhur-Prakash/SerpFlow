@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0005. A test key overrides the execution mode, absolutely** · page 61 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0005. A test key overrides the execution mode, absolutely** · page 56 of 57
 
 **Status** Accepted
 
@@ -85,4 +85,4 @@ def is_test(self) -> bool:
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [ADR 0009: Available is not acceptable: freshness g…](../adr/0009-freshness-gates-warmth.md) | [Docs index](../README.md) · [Architecture decision records](../adr/README.md) | [ADR 0006: Tenant isolation enforced twice](../adr/0006-rls-plus-application-guards.md) |
+| [ADR 0004: Rank on coverage before price](../adr/0004-coverage-before-price.md) | [Docs index](../README.md) · [Decisions index](../adr/README.md) | [ADR 0006: Tenant isolation enforced twice](../adr/0006-rls-plus-application-guards.md) |

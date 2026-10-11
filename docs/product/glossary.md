@@ -7,15 +7,16 @@
   <img alt="read: 30 min" src="https://img.shields.io/badge/read-30%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../product/README.md) › **Glossary** · page 6 of 50
+[Docs](../README.md) › [Product](../product/README.md) › **Glossary** · page 6 of 57
 
-**Every term these docs use, defined once, in the sense SerpFlow uses it.** Each entry is a sentence or two, then a link to the page that covers it in depth. Codes, tables, headers and metrics keep their exact spelling, so a term found here can be searched for in the code.
+**Every term these docs use, defined once, in the sense SerpFlow uses it.** Each entry is a sentence or two, then a link to the page that covers it in depth, and to the [decision record](../adr/README.md) where one explains why it works that way. Codes, tables, headers and metrics keep their exact spelling, so a term found here can be searched for in the code.
 
 ## A
 
 - **Absent, not excluded**: The rule that no Pydantic response model in `app/schemas` has a field that could carry an upstream credential, rather than having one marked `exclude=True`. A test walks every response model to enforce it. [Upstream credentials: never in a response](../security/credentials.md#never-in-a-response)
 - **Access token**: A 15-minute JWT issued by `POST /v1/auth/login` and sent as `Authorization: Bearer`; a 14-day refresh token renews it. It is the only credential the SSE stream accepts as an `?access_token=` query parameter. [API overview: authentication](../api/overview.md#authentication)
 - **Adaptive TTL**: How long a cache entry lives. It starts at the engine's volatility prior, is multiplied by 1.5 when a refresh finds the top 10 results unchanged and by 0.5 when 3 or more of them moved, and is clamped between 5 minutes and 90 days. It is learned per engine and query class, and never outlives the step's freshness requirement. [Caching: adaptive TTL](../architecture/caching.md#adaptive-ttl)
+- **ADR**: An architecture decision record: one page per decision that was not obvious, stating the context, the decision, the alternatives rejected and the cost accepted. There are six, all accepted. [Architecture decision records](../adr/README.md)
 - **Advisory lock**: The PostgreSQL lock the startup bootstrap takes before migrating or seeding, so replicas that start together wait for one another instead of racing. Migration and seeding use distinct keys. [Startup bootstrap: an advisory lock](../operations/bootstrap.md#1-an-advisory-lock)
 - **Alert**: An in-application record raised for budget thresholds, exhaustion, upstream quota and false hits. It travels on the `serpflow.alerts` topic, is deduplicated by `dedupe_key`, and is delivered to the organization's notification channels (email, webhook or Slack). [Observability: alerting](../operations/observability.md#alerting)
 - **API key**: The credential a caller presents to SerpFlow, shaped `sf_<env>_<project_prefix>_<secret>`. The project prefix is stored in plaintext for an indexed lookup; the secret is stored only as an HMAC-SHA256 under the pepper, and is shown once, at creation. [API keys: format](../security/api-keys.md#format)

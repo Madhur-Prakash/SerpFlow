@@ -10,7 +10,7 @@
   <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **Backend** · page 20 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Backend** · page 20 of 57
 
 **Python 3.13, FastAPI, SQLAlchemy 2 with async psycopg, Pydantic v2.** How the pieces fit at the system level is in the [architecture overview](overview.md#layers); this page is the package itself. The console that calls it is the [frontend](frontend.md).
 

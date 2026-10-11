@@ -7,7 +7,7 @@
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../operations/README.md) › **Email** · page 46 of 50
+[Docs](../README.md) › [Operations](../operations/README.md) › **Email** · page 46 of 57
 
 **Three [environment variables](../security/secrets.md#inventory) are all it takes to send for real.** With none set, mail goes to the log instead, which keeps [`make dev`](../deployment/local.md#everyday-targets) working with no keys at all.
 

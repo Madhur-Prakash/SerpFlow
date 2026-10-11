@@ -12,7 +12,7 @@
   <img alt="read: 10 min" src="https://img.shields.io/badge/read-10%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../deployment/README.md) › **Installation** · page 8 of 50
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Installation** · page 8 of 57
 
 **From a blank machine to a running, verified SerpFlow**, with every command. No API keys are needed at any step.
 
@@ -229,7 +229,7 @@ Not needed for anything above. When you want live SerpApi results:
 2. Optionally add a **Groq** key the same way, for model-driven planning
 3. Set the project's execution mode to `live` (**Settings → Projects**): [setting it](../product/execution-modes.md#setting-it)
 4. Use the `sf_live_...` key that `make seed` printed
-   - an `sf_test_...` key **always** returns mock results, whatever the mode ([execution modes](../product/execution-modes.md))
+   - an `sf_test_...` key **always** returns mock results, whatever the mode ([execution modes](../product/execution-modes.md), [ADR 0005](../adr/0005-test-key-mode-precedence.md))
 
 - Details: [bring your own key](../security/byok.md) · [execution modes](../product/execution-modes.md) · [using real keys locally](local.md#using-real-keys)
 

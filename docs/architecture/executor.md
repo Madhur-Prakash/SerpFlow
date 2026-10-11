@@ -6,10 +6,10 @@
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="SerpApi: 54 engines" src="https://img.shields.io/badge/SerpApi-54%20engines-2F6BFF">
   <a href="../../backend/app/services/executor/service.py"><img alt="source: executor/service.py" src="https://img.shields.io/badge/source-executor%2Fservice.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
+  <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **The executor** · page 19 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **The executor** · page 19 of 57
 
 Code: [`app/services/executor/service.py`](../../backend/app/services/executor/service.py) · [`app/integrations/serpapi/`](../../backend/app/integrations/serpapi) · [`app/services/runs.py`](../../backend/app/services/runs.py)
 

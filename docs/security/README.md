@@ -3,10 +3,10 @@
 <p>
   <a href="../README.md#security"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
   <img alt="pages: 5" src="https://img.shields.io/badge/pages-5-6E40C9">
-  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
+  <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../README.md#security) › **Security** · page 38 of 50
+[Docs](../README.md) › [Security](../README.md#security) › **Security** · page 38 of 57
 
 **What SerpFlow holds that is worth stealing, how each of those secrets is protected, and what is deliberately left undefended.**
 
@@ -69,7 +69,14 @@
 | [SDKs](../sdks/README.md) | the MCP server runs inside the trust boundary and needs the deployment's secrets: [MCP: how it runs](../sdks/mcp.md#how-it-runs), [configuration](../sdks/mcp.md#configuration); its session cap: [sessions and budgets](../sdks/mcp.md#sessions-and-budgets) |
 | [Database](../database/README.md) | the database half of tenant isolation and the append-only audit log: [row-level security](../database/rls.md#how-it-works), [the audit log](../database/rls.md#the-audit-log); the rows these pages protect: [`upstream_credentials`](../database/schema.md#upstream_credentials), [`api_keys`](../database/schema.md#api_keys) |
 | [Operations](../operations/README.md) | the redaction filter on every log handler: [observability: logging](../operations/observability.md#logging); why the demo seed is refused in production: [bootstrap: an environment refusal](../operations/bootstrap.md#3-an-environment-refusal); rate limiting failing open: [Redis: why none of it is authoritative](../operations/redis.md#why-none-of-it-is-authoritative); key and credential failures: [troubleshooting: authentication](../operations/troubleshooting.md#authentication) |
-| [Decisions](../adr/README.md) | three records are this section's own (0004, 0005, 0006), and the threat model leans on five more: [how they fit together](../adr/README.md#how-they-fit-together) |
+| [Decisions](../adr/README.md) | [ADR 0003](../adr/0003-envelope-encryption.md) and [ADR 0006](../adr/0006-rls-plus-application-guards.md) are this section's own, and the threat model leans on [ADR 0002](../adr/0002-deterministic-semantic-guard.md) and [ADR 0005](../adr/0005-test-key-mode-precedence.md): [how they fit together](../adr/README.md#how-they-fit-together) |
+
+## Decisions behind it
+
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): a deterministic entity and numeral guard, independent of the cosine score, so a near neighbour is not served as the answer
+- [ADR 0003](../adr/0003-envelope-encryption.md): a per-credential AES-256-GCM data key wrapped by a KEK, so rotating the KEK re-wraps keys, not data
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): a `test` key always means mock data, whatever the configuration says
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): tenant isolation enforced twice, in the application and in PostgreSQL
 
 ## Related
 

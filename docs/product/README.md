@@ -3,10 +3,10 @@
 <p>
   <a href="../README.md#product"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="pages: 5" src="https://img.shields.io/badge/pages-5-2F6BFF">
-  <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
+  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../README.md#product) › **Product** · page 1 of 50
+[Docs](../README.md) › [Product](../README.md#product) › **Product** · page 1 of 57
 
 **What SerpFlow is, the one claim it makes, and the measurements that prove it or bound it.**
 
@@ -24,7 +24,7 @@
 | 2 | [The reference demo](demo.md) | see that claim proved in three phases, with an exit code and zero SerpApi credits |
 | 3 | [Execution modes](execution-modes.md) | know where a result comes from, whether it costs anything, and who decides |
 | 4 | [Routing benchmark](benchmark.md) | know how accurate routing really is (38.3%), and why it fails where it does |
-| 5 | [Glossary](glossary.md) | look up any term these docs use, with the page that owns it |
+| 5 | [Glossary](glossary.md) | look up any term these docs use, with the page that owns it and, where one exists, its ADR |
 
 ## Questions this section answers
 
@@ -58,7 +58,15 @@
 | [Database](../database/README.md) | a project's own mode arrived in [migration `0004_project_mode`](../database/migrations.md#0004_project_mode); benchmark runs triggered from the UI land in [the benchmark tables](../database/schema.md#benchmark); savings by mechanism are computed from [`budget_ledger`](../database/schema.md#governance) |
 | [Security](../security/README.md) | a [test key](../security/api-keys.md#test-keys) always reaches the mock, which is why the demo spends nothing; `live` needs [your own SerpApi key](../security/byok.md), as does the Groq key behind a model-backed benchmark; [replay or mock data mistaken for live](../security/threat-model.md#replay-or-mock-data-mistaken-for-live) is the threat the mode system answers, with its residual risk |
 | [Operations](../operations/README.md) | the demo increments [the thesis metric](../operations/observability.md#the-thesis-metric); [troubleshooting: the demo](../operations/troubleshooting.md#the-demo) covers a non-zero exit, and [`REPLAY_CASSETTE_MISS`](../operations/troubleshooting.md#replay_cassette_miss) is `replay` failing loudly |
-| [Decisions](../adr/README.md) | the demo exists to prove [ADR 0001](../adr/0001-marginal-cost-replanning.md); [ADR 0005](../adr/0005-test-key-mode-precedence.md) is implemented on [execution modes](execution-modes.md#who-chooses-and-precedence); every [glossary](glossary.md) entry links its ADR where one exists |
+| [Decisions](../adr/README.md) | the demo exists to prove [ADR 0001](../adr/0001-marginal-cost-replanning.md), and [ADR 0005](../adr/0005-test-key-mode-precedence.md) is why it spends nothing; all five that bear on these pages are listed [below](#decisions-behind-it) |
+
+## Decisions behind it
+
+- [ADR 0001](../adr/0001-marginal-cost-replanning.md): rank candidate plans on marginal cost, not cold cost. The thesis: `make demo` exits non-zero if it stops holding
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): a deterministic entity and numeral guard, independent of the cosine score. Why a Q3 answer is never served for a Q4 question
+- [ADR 0004](../adr/0004-coverage-before-price.md): coverage before price. Why the narrow Yelp route never wins, and the order the benchmark ranks in
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): a test key overrides the execution mode, absolutely. Why the demo and the tests spend zero, and the per-project and per-request update
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): tenant isolation enforced twice. Part of what a platform team gets ([who it is for](product-overview.md#who-it-is-for))
 
 ## Related
 

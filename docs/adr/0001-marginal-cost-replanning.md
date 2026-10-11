@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0001. Rank candidate plans on marginal cost, not cold cost** · page 52 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0001. Rank candidate plans on marginal cost, not cold cost** · page 52 of 57
 
 **Status** Accepted
 
@@ -80,4 +80,4 @@ plans.replan_explanation
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Architecture decision records](../adr/README.md) | [Docs index](../README.md) · [Architecture decision records](../adr/README.md) | [ADR 0002: Two separate edge sets: dependency and s…](../adr/0002-typed-catalog-edges.md) |
+| [Decisions index](../adr/README.md) | [Docs index](../README.md) · [Decisions index](../adr/README.md) | [ADR 0002: A deterministic guard independent of the…](../adr/0002-deterministic-semantic-guard.md) |

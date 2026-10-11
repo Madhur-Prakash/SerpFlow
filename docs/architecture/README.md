@@ -3,10 +3,10 @@
 <p>
   <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="pages: 9" src="https://img.shields.io/badge/pages-9-2F6BFF">
-  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
+  <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **Architecture** · page 13 of 50
+[Docs](../README.md) › [Architecture](../README.md#architecture) › **Architecture** · page 13 of 57
 
 **How an intent becomes a plan, why cache state can change which plan that is, and how the chosen plan runs.**
 
@@ -75,7 +75,16 @@ intent            REST, SDKs, CLI, MCP -> plan_and_execute         overview.md
 | [Database](../database/README.md) | the planner writes [`plans` and `plan_candidates`](../database/schema.md#planning-and-execution), caching reads and writes the [cache tables](../database/schema.md#cache), and the [request lifecycle](backend.md#request-lifecycle) binds [row-level security](../database/rls.md#how-it-works) per transaction |
 | [Security](../security/README.md) | the [credential boundary](executor.md#the-credential-boundary) is [where a credential is decrypted](../security/credentials.md#where-it-is-decrypted); [tenancy](overview.md#tenancy) maps to the [trust boundaries](../security/threat-model.md#trust-boundaries); the [frontend](frontend.md#permissions) mirrors the [roles](../security/api-keys.md#roles) the server enforces |
 | [Operations](../operations/README.md) | [the thesis metric](../operations/observability.md#the-thesis-metric) counts [changed selections](marginal-replanning.md#what-changed_selection-means); [Redis](../operations/redis.md#why-none-of-it-is-authoritative) is the hot layer behind [the Redis boundary](caching.md#the-redis-boundary); [Kafka](../operations/kafka.md#topics) carries background work only, and [degradation](backend.md#degradation) says what happens when either is down |
-| [Decisions](../adr/README.md) | [six of the fourteen records](../adr/README.md#how-they-fit-together) are one argument for the thesis these pages implement; each is listed below |
+| [Decisions](../adr/README.md) | [three of the six records](../adr/README.md#how-they-fit-together) are one argument for the thesis these pages implement; all six are listed [below](#decisions-behind-it) |
+
+## Decisions behind it
+
+- [ADR 0001](../adr/0001-marginal-cost-replanning.md): rank candidate plans on marginal cost, not cold cost, the core of [marginal-cost replanning](marginal-replanning.md#ranking)
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): a deterministic guard that never reads the cosine score, in [caching](caching.md#the-entity-and-numeral-guard)
+- [ADR 0003](../adr/0003-envelope-encryption.md): envelope encryption for upstream credentials, decrypted to run a search only at the [executor's credential boundary](executor.md#the-credential-boundary)
+- [ADR 0004](../adr/0004-coverage-before-price.md): coverage is the primary ranking key, and cost only breaks ties ([coverage before price](marginal-replanning.md#coverage-before-price))
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): a test key routes to the mock whatever else is configured ([execution modes](overview.md#execution-modes), [where LIVE goes](executor.md#where-live-goes))
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): tenant isolation enforced twice, in the application and in PostgreSQL ([tenancy](overview.md#tenancy))
 
 ## Related
 

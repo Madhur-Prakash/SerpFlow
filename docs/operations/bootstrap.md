@@ -9,7 +9,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../operations/README.md) › **Startup bootstrap** · page 45 of 50
+[Docs](../README.md) › [Operations](../operations/README.md) › **Startup bootstrap** · page 45 of 57
 
 **Two [environment variables](../security/secrets.md#inventory) turn a container plus an empty database into a working instance**, with no orchestration step in between:
 

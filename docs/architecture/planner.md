@@ -9,7 +9,7 @@
   <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **The planner** · page 16 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **The planner** · page 16 of 57
 
 **Four stages, then costing, then budget.**
 

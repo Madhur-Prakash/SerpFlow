@@ -9,7 +9,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../sdks/README.md) › **TypeScript SDK** · page 30 of 50
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **TypeScript SDK** · page 30 of 57
 
 - **`@serpflow/sdk`: one file, no runtime dependencies**: [`src/index.ts`](../../sdk/typescript/src/index.ts)
 - **Uses only `fetch`, `ReadableStream` and `TextDecoder`**, so it runs in Node 18+, Deno, Bun and the browser

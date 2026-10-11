@@ -39,7 +39,7 @@
 
 ### Documentation
 
-- **Removed: the architecture decision records** (docs/adr), at the author's decision. The pages that cited one now make their point in place, and the docs browser, the reading order and the site footer no longer list them
+- **The architecture decision records are trimmed from fourteen to six**, at the author's decision, and renumbered 0001 to 0006: [marginal cost](docs/adr/0001-marginal-cost-replanning.md), [the cache guard](docs/adr/0002-deterministic-semantic-guard.md), [envelope encryption](docs/adr/0003-envelope-encryption.md), [coverage before price](docs/adr/0004-coverage-before-price.md), [test-key precedence](docs/adr/0005-test-key-mode-precedence.md) and [tenant isolation](docs/adr/0006-rls-plus-application-guards.md). The eight retired records' points are made on the pages that implement them. The numbers in the 1.0.0 entry below are the old ones
 - **Every page re-checked against the code at HEAD**, section by section, and corrected where the code had moved on or the page had been wrong from the start. Among the corrections:
   - 236 tests (was 216); the in-app API reference and every count re-verified: 85 operations over 74 paths, 33 tables, 24 RLS tables, 22 metrics, 8 topics, 54 engines
   - **the SerpApi drop-in re-routes:** only `q` becomes the intent; `engine` is echoed, not honoured
@@ -49,7 +49,7 @@
   - **the demo's Phase 1** ranks two 19-credit chains under its 20-credit budget, not 51 against 101
   - the OTLP exporter is HTTP on port 4318; the Kafka consumer group is one per topic; neither SDK is published yet; `git clone` creates `SerpFlow`, not `serpflow`
   - [deployment guide, step 8](docs/deployment/deployment-guide.md#8-make-row-level-security-bind): the bundled stack connects as a superuser, which bypasses row-level security even when forced
-- **The docs are interlinked.** The first mention of a concept links to the one page that owns it: a table to the [schema](docs/database/schema.md), a metric to [observability](docs/operations/observability.md), an environment variable to [secrets](docs/security/secrets.md). Every page ends with a Related section, each link with its reason. Links between pages went from 274 to over a thousand
+- **The docs are interlinked.** The first mention of a concept links to the one page that owns it: a table to the [schema](docs/database/schema.md), a metric to [observability](docs/operations/observability.md), an environment variable to [secrets](docs/security/secrets.md), a decision to its [ADR](docs/adr/README.md). Every page ends with a Related section, each link with its reason. Links between pages went from 274 to over a thousand
 - **New: a section index in every docs folder.** Each folder's `README.md` lists its pages in reading order, routes common questions to the exact section, and says how it meets every other section. Breadcrumbs, section badges and footers point up to it
 - **New: [glossary](docs/product/glossary.md)**, 110 terms, each defined in a sentence and linked to the page that explains it
 - **New: [SDKs section](docs/sdks/README.md):** Python, TypeScript, CLI, MCP and releasing them
@@ -442,7 +442,7 @@ only the searches that still need a live call.
 - A documentation tree under `docs/`, indexed by `docs/README.md`, covering
   architecture, the API, the database, security, deployment, operations and
   the product. Every page links to the implementation path it describes.
-- Fourteen architecture decision records under docs/adr (since removed), each stating the
+- Fourteen architecture decision records under `docs/adr/` (trimmed to six, and renumbered, after 1.0.0), each stating the
   alternative that was rejected and the cost that was accepted.
 
 [Unreleased]: https://github.com/Madhur-Prakash/SerpFlow/compare/v1.0.0...HEAD

@@ -8,7 +8,7 @@
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../security/README.md) › **Secrets** · page 43 of 50
+[Docs](../README.md) › [Security](../security/README.md) › **Secrets** · page 43 of 57
 
 **Every secret the service holds, where it lives, and what happens if it leaks.**
 

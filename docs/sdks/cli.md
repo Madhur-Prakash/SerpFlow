@@ -8,7 +8,7 @@
   <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../sdks/README.md) › **CLI** · page 31 of 50
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **CLI** · page 31 of 57
 
 - **`serpflow`: fourteen commands** for planning, searching, inspecting runs, exploring the catalog, the cache and the benchmark: [`app/cli/main.py`](../../backend/app/cli/main.py)
 - **Built on [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/)**, so plans render as tables and errors as panels

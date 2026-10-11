@@ -6,7 +6,7 @@
   <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../README.md#operations) › **Operations** · page 44 of 50
+[Docs](../README.md) › [Operations](../README.md#operations) › **Operations** · page 44 of 57
 
 **Running a SerpFlow instance: how it boots, what it sends, how to watch it, how it degrades when Kafka or Redis is down, and what to do when something fails.**
 
@@ -58,7 +58,12 @@
 | [SDKs](../sdks/README.md) | the CLI, the Python SDK and the MCP server read `SERPFLOW_API_KEY` from the shell: [SDKs: configuration](../sdks/overview.md#configuration); `make seed` prints the `test` key the [CLI](../sdks/cli.md) uses and the `service` key the [MCP server](../sdks/mcp.md#connect-a-client) uses |
 | [Database](../database/README.md) | the bootstrap applies the [Alembic revision chain](../database/migrations.md#the-revision-chain); `make seed ARGS=--reset` is the one sanctioned way past [the append-only audit log](../database/rls.md#the-audit-log); alerts and deliveries are rows in the [governance tables](../database/schema.md#governance) |
 | [Security](../security/README.md) | every variable on these pages is in the [secrets inventory](../security/secrets.md#inventory); the log redaction filter is specified in [credentials: never in a log](../security/credentials.md#never-in-a-log); the Redis principal cache sits in [API key resolution](../security/api-keys.md#resolution) |
-| [Decisions](../adr/README.md) | the [Kafka page](kafka.md#what-goes-through-it-and-what-does-not) implements ADR 0007; several troubleshooting entries are a decision working as designed, listed [below](#decisions-behind-it) |
+| [Decisions](../adr/README.md) | several troubleshooting entries are a decision working as designed, [ADR 0002](../adr/0002-deterministic-semantic-guard.md) and [ADR 0005](../adr/0005-test-key-mode-precedence.md) among them, listed [below](#decisions-behind-it) |
+
+## Decisions behind it
+
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): the deterministic guard catches numerals, versions and named entities; a wrong semantic hit with none of those to differ on calls for a higher threshold instead
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): a `test` key always gets mock data, the first thing to check when results look wrong
 
 ## Related
 

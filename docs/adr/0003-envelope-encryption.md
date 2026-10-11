@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0003. Envelope encryption for upstream credentials** · page 56 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0003. Envelope encryption for upstream credentials** · page 54 of 57
 
 **Status** Accepted
 
@@ -72,4 +72,4 @@ wrapped    = AESGCM(kek).encrypt(os.urandom(12), dek, None)
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [ADR 0004: HMAC-SHA256 for API keys, Argon2id for p…](../adr/0004-hmac-for-api-keys.md) | [Docs index](../README.md) · [Architecture decision records](../adr/README.md) | [ADR 0006: The credential field is absent from sche…](../adr/0006-no-credential-field-in-schemas.md) |
+| [ADR 0002: A deterministic guard independent of the…](../adr/0002-deterministic-semantic-guard.md) | [Docs index](../README.md) · [Decisions index](../adr/README.md) | [ADR 0004: Rank on coverage before price](../adr/0004-coverage-before-price.md) |

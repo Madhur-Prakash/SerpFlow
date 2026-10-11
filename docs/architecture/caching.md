@@ -9,7 +9,7 @@
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../architecture/README.md) › **Caching** · page 18 of 50
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Caching** · page 18 of 57
 
 **Four layers, in order. Only the last one spends.**
 

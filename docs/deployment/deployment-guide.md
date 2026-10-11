@@ -9,10 +9,10 @@
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
   <img alt="Prometheus: metrics" src="https://img.shields.io/badge/Prometheus-metrics-E6522C?logo=prometheus&logoColor=white">
   <a href="../../backend/app/api/deps.py"><img alt="source: api/deps.py" src="https://img.shields.io/badge/source-api%2Fdeps.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
+  <img alt="read: 14 min" src="https://img.shields.io/badge/read-14%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../deployment/README.md) › **Deployment guide** · page 11 of 50
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Deployment guide** · page 11 of 57
 
 **A runbook: from a blank server to a verified production instance**, with every command. It deploys the bundled Docker Compose stack on **one host**, behind a TLS proxy.
 
