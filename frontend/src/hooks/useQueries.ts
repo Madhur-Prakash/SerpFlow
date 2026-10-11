@@ -1,6 +1,7 @@
 /** React Query bindings. One hook per server resource. */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as React from "react";
 
 import { api } from "@/lib/api";
 import { useSession } from "@/stores/session";
@@ -232,7 +233,10 @@ export function useCrossProject() {
 /** Invalidate everything a run touches, after an execution or a replay. */
 export function useInvalidateRunData() {
   const client = useQueryClient();
-  return () => {
+  // Stable identity: SearchPage lists this in an effect's dependencies, and a
+  // fresh function per render re-ran that effect forever once a run finished,
+  // refetching the run and restarting the plan graph's reveal each time.
+  return React.useCallback(() => {
     for (const key of [
       "runs",
       "dashboard",
@@ -247,7 +251,7 @@ export function useInvalidateRunData() {
     ]) {
       client.invalidateQueries({ queryKey: [key] });
     }
-  };
+  }, [client]);
 }
 
 export function useReplayRun() {

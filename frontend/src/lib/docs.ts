@@ -178,12 +178,12 @@ export function resolveDocLink(href: string, fromSlug: string): string | null {
 
   // Links that leave docs/ and point at source files stay external.
   if (target.startsWith("backend/") || target.startsWith("frontend/")) {
-    return `https://github.com/serpflow/serpflow/blob/main/${target}`;
+    return `https://github.com/madhur-prakash/serpflow/blob/main/${target}`;
   }
 
   target = target.replace(/\.md$/, "");
   if (target === "LICENSE" || target.endsWith("/LICENSE")) {
-    return "https://github.com/serpflow/serpflow/blob/main/LICENSE";
+    return "https://github.com/madhur-prakash/serpflow/blob/main/LICENSE";
   }
 
   for (const name of ["README", "CONTRIBUTING", "SECURITY", "CHANGELOG"]) {

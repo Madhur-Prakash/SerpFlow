@@ -76,7 +76,7 @@ winget install Git.Git Docker.DockerDesktop astral-sh.uv OpenJS.NodeJS.LTS GnuWi
 ## 2. Get the code
 
 ```bash
-git clone https://github.com/serpflow/serpflow.git
+git clone https://github.com/madhur-prakash/serpflow.git
 cd serpflow
 ```
 

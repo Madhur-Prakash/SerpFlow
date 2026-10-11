@@ -813,7 +813,7 @@ export function CallToAction() {
             </CtaLink>
           </span>
           <span data-reveal>
-            <CtaLink href="https://github.com/serpflow/serpflow" variant="ghost">
+            <CtaLink href="https://github.com/madhur-prakash/serpflow" variant="ghost">
               View the source
             </CtaLink>
           </span>
