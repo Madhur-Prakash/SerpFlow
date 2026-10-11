@@ -54,6 +54,7 @@ export function CatalogPage() {
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = React.useState("");
   const [showSubstitutes, setShowSubstitutes] = React.useState(true);
+  const [tab, setTab] = React.useState("explore");
   const selected = params.get("engine");
 
   const catalog = useCatalog();
@@ -105,6 +106,12 @@ export function CatalogPage() {
     setParams(next);
   }
 
+  function clearSelection() {
+    const next = new URLSearchParams(params);
+    next.delete("engine");
+    setParams(next);
+  }
+
   if (catalog.isError) {
     return <ErrorMessage error={catalog.error} onRetry={() => catalog.refetch()} />;
   }
@@ -142,7 +149,7 @@ export function CatalogPage() {
         </div>
       </PageHeader>
 
-      <Tabs defaultValue="explore">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="explore">
             <Search />
@@ -242,14 +249,19 @@ export function CatalogPage() {
               </label>
             </div>
             {graph.isLoading ? (
-              <Skeleton className="h-[620px]" />
+              <Skeleton className="h-[min(72vh,720px)] min-h-[520px]" />
             ) : graph.data ? (
               <CatalogGraph
                 data={graph.data}
                 focus={selected}
                 onSelect={select}
+                onClear={clearSelection}
+                onOpen={(name) => {
+                  select(name);
+                  setTab("explore");
+                }}
                 showSubstitutes={showSubstitutes}
-                className="h-[620px]"
+                className="h-[min(72vh,720px)] min-h-[520px]"
               />
             ) : null}
           </div>
