@@ -264,9 +264,15 @@ export function CatalogGraph({
       }
       const reserve = panelOpen && size.width > 760 ? PANEL_WIDTH + 24 : 0;
       const width = size.width - reserve;
-      const pad = 56;
+      // Labels hang below nodes and run wide (up to ~30 mono characters),
+      // so the horizontal margin is generous enough to keep them on screen.
+      const padX = 150;
+      const padY = 64;
       const k = clamp(
-        Math.min((width - pad * 2) / (x1 - x0 || 1), (size.height - pad * 2) / (y1 - y0 || 1)),
+        Math.min(
+          Math.max(width - padX * 2, 120) / (x1 - x0 || 1),
+          Math.max(size.height - padY * 2, 120) / (y1 - y0 || 1),
+        ),
         MIN_ZOOM,
         maxZoom,
       );
@@ -469,6 +475,8 @@ export function CatalogGraph({
     <div
       ref={containerRef}
       tabIndex={0}
+      role="group"
+      aria-label="Catalog graph. Plus and minus zoom, 0 fits everything, arrow keys pan, Escape clears the selection."
       onKeyDown={onKeyDown}
       className={cn(
         "relative w-full overflow-hidden rounded-[var(--radius-md)] border border-line bg-surface-sunken outline-none focus-visible:ring-2 focus-visible:ring-accent-ghost",
@@ -873,8 +881,15 @@ function DetailsPanel({
 }) {
   const needs = data.dependency_edges.filter((edge) => edge.target === node.id);
   const feeds = data.dependency_edges.filter((edge) => edge.source === node.id);
+  // A substitute pair can be listed in both directions; show each rival once.
   const competes = showSubstitutes
-    ? data.substitute_edges.filter((edge) => edge.source === node.id || edge.target === node.id)
+    ? [
+        ...new Map(
+          data.substitute_edges
+            .filter((edge) => edge.source === node.id || edge.target === node.id)
+            .map((edge) => [edge.source === node.id ? edge.target : edge.source, edge] as const),
+        ).values(),
+      ]
     : [];
 
   return (

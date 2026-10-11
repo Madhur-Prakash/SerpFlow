@@ -151,45 +151,58 @@ export function sectionOf(slug: string): DocSection | undefined {
   return DOC_SECTIONS.find((section) => section.entries.some((entry) => entry.slug === slug));
 }
 
+const REPO_BLOB = "https://github.com/Madhur-Prakash/SerpFlow/blob/main/";
+const ROOT_DOCS = ["README", "CONTRIBUTING", "SECURITY", "CHANGELOG"];
+
+/** The file a slug was loaded from, relative to the repository root. */
+function sourceOf(slug: string): string {
+  if (slug.startsWith("readme:")) return `${slug.slice("readme:".length)}.md`;
+  return findDoc(slug)?.source ?? `docs/${slug || "README"}.md`;
+}
+
 /**
  * Rewrite a link from a markdown file into something the router can follow.
  *
  * The docs link each other with relative paths like `../database/rls.md`, which
  * are correct on GitHub and meaningless to a single-page app. This resolves
- * them against the current document and maps them onto `/docs/...`, so the same
- * markdown works in both places.
+ * them against the file the link is written in, in repository coordinates, and
+ * maps pages under docs/ onto `/docs/...`, so the same markdown works in both
+ * places. The file matters, not the slug: "adr" is `docs/adr/README.md`, so its
+ * links resolve from `docs/adr/`, and `../README.md` from a section page is the
+ * docs index, not the project README.
  */
 export function resolveDocLink(href: string, fromSlug: string): string | null {
   if (/^[a-z]+:/i.test(href) || href.startsWith("//")) return null;
   if (href.startsWith("#")) return href;
 
-  const base = fromSlug ? fromSlug.split("/").slice(0, -1) : [];
   const [pathPart, hash] = href.split("#");
-  const segments = pathPart.split("/");
-  const stack = [...base];
+  const fragment = hash ? `#${hash}` : "";
+  const stack = sourceOf(fromSlug).split("/").slice(0, -1);
 
-  for (const segment of segments) {
+  for (const segment of pathPart.split("/")) {
     if (!segment || segment === ".") continue;
     if (segment === "..") stack.pop();
     else stack.push(segment);
   }
 
-  let target = stack.join("/");
+  const target = stack.join("/");
 
-  // Links that leave docs/ and point at source files stay external.
-  if (target.startsWith("backend/") || target.startsWith("frontend/")) {
-    return `https://github.com/Madhur-Prakash/SerpFlow/blob/main/${target}`;
+  // A page (or a section folder) under docs/ opens in the docs browser.
+  const last = stack[stack.length - 1] ?? "";
+  if (stack[0] === "docs" && (last.endsWith(".md") || !last.includes("."))) {
+    const slug = target
+      .replace(/^docs\/?/, "")
+      .replace(/\.md$/, "")
+      .replace(/(^|\/)README$/, "");
+    return `/docs${slug ? `/${slug}` : ""}${fragment}`;
   }
 
-  target = target.replace(/\.md$/, "");
-  if (target === "LICENSE" || target.endsWith("/LICENSE")) {
-    return "https://github.com/Madhur-Prakash/SerpFlow/blob/main/LICENSE";
+  // The project's root markdown files are in the sidebar too.
+  for (const name of ROOT_DOCS) {
+    if (target === `${name}.md`) return `/docs/readme:${name}${fragment}`;
   }
 
-  for (const name of ["README", "CONTRIBUTING", "SECURITY", "CHANGELOG"]) {
-    if (target === name) return `/docs/readme:${name}${hash ? `#${hash}` : ""}`;
-  }
-
-  target = target.replace(/\/README$/, "").replace(/^docs\//, "");
-  return `/docs/${target}${hash ? `#${hash}` : ""}`.replace("/docs//", "/docs/");
+  // Everything else is source: backend/, frontend/, sdk/, scripts/, docker/,
+  // .env.example, the Makefile, the licence. Those open on GitHub.
+  return `${REPO_BLOB}${target}${fragment}`;
 }
