@@ -16,6 +16,8 @@
 
 **From a blank machine to a running, verified SerpFlow**, with every command. No API keys are needed at any step.
 
+> **Looking for a hosted version? There isn't one yet.** SerpFlow is self-hosted by the author's decision; the author will host it once enough people ask. To ask, open a GitHub issue: [hosting](../../README.md#hosting).
+
 | Path | Pick it when | Time |
 | --- | --- | --- |
 | [**A. Developer install**](#path-a-developer-install) | you will change the code | ~10 min |

@@ -193,7 +193,7 @@ make docs-check     # every link, cited path and #anchor resolves; every page ha
 
 ## Reporting a security issue
 
-- **Please do not open a public issue.** See [SECURITY.md](SECURITY.md), and the [threat model](docs/security/threat-model.md) for what is in and out of scope
+- **Open a public GitHub issue**, following [SECURITY.md](SECURITY.md#reporting-a-vulnerability): describe the problem without real keys, secrets or personal data. The [threat model](docs/security/threat-model.md) says what is in and out of scope
 
 ---
 

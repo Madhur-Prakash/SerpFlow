@@ -21,7 +21,8 @@ normally misses.
 
 With `--interlinks`, every page under docs/ must also end with a `## Related`
 (or, for a decision record, `## See also`) section of at least three links,
-and must be linked from the body of at least one other page. The generated
+and must be linked from the body of at least one other page. Every folder must
+have a README.md section index that links every page in the folder. The generated
 badge header, breadcrumb and previous / next footer do not count: a page that
 is reachable only by pressing Next is an orphan. Related links that are not
 returned are listed, as a prompt rather than a failure.
@@ -127,6 +128,19 @@ def check_interlinks() -> tuple[list[str], list[str], int]:
             if target in inbound:
                 inbound[target] += 1
     problems += [f"{p.relative_to(ROOT)}  orphan: no other page links to it" for p, n in inbound.items() if not n]
+
+    # A folder's README.md is its section index: it must list every page beside it.
+    for folder in sorted(d for d in DOCS.iterdir() if d.is_dir()):
+        section_index = (folder / "README.md").resolve()
+        if section_index not in bodies:
+            problems.append(f"{folder.relative_to(ROOT)}  has no README.md section index")
+            continue
+        listed = doc_links(bodies[section_index], section_index)
+        problems += [
+            f"{section_index.relative_to(ROOT)}  does not link {p.name}, a page in its folder"
+            for p in sorted(folder.glob("*.md"))
+            if p.resolve() != section_index and p.resolve() not in listed
+        ]
 
     one_way = sorted(
         f"{a.relative_to(DOCS).as_posix()} -> {b.relative_to(DOCS).as_posix()}"

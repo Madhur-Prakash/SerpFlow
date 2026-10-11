@@ -466,7 +466,7 @@ grep '"request_id": "8a9e9172' logs/serpflow.log | python -m json.tool
 - **Mind the space after the colon:** the JSON log writes `"request_id": "..."`
 - The log path is `LOG_FILE` (default `logs/serpflow.log`), relative to where the backend runs: `backend/logs/` under `make backend`
 - **The run id opens the Run Inspector**, which shows the plan, each step's cache layer and the error ([`GET /v1/runs/{id}`](../api/overview.md#runs))
-- **Report security problems privately**, not in an issue: [SECURITY.md](../../SECURITY.md)
+- **Report security problems in a public GitHub issue**, without real keys or secrets: [SECURITY.md](../../SECURITY.md#reporting-a-vulnerability)
 
 ## Related
 

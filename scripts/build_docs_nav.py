@@ -35,18 +35,22 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 ORDER_TS = ROOT / "frontend" / "src" / "lib" / "docs-order.generated.ts"
 
-# Reading order, start to finish. Every page in docs/ except the index.
+# Reading order, start to finish. Every page in docs/ except the index; each
+# section opens with its own README.md, the section index.
 ORDER = [
+    "product/README.md",
     "product/product-overview.md",
     "product/demo.md",
     "product/execution-modes.md",
     "product/benchmark.md",
     "product/glossary.md",
+    "deployment/README.md",
     "deployment/installation.md",
     "deployment/local.md",
     "deployment/docker.md",
     "deployment/deployment-guide.md",
     "deployment/production.md",
+    "architecture/README.md",
     "architecture/overview.md",
     "architecture/catalog.md",
     "architecture/planner.md",
@@ -56,23 +60,28 @@ ORDER = [
     "architecture/backend.md",
     "architecture/frontend.md",
     "architecture/web.md",
+    "api/README.md",
     "api/overview.md",
     "api/streaming.md",
     "api/examples.md",
+    "sdks/README.md",
     "sdks/overview.md",
     "sdks/python.md",
     "sdks/typescript.md",
     "sdks/cli.md",
     "sdks/mcp.md",
     "sdks/releasing.md",
+    "database/README.md",
     "database/schema.md",
     "database/migrations.md",
     "database/rls.md",
+    "security/README.md",
     "security/threat-model.md",
     "security/byok.md",
     "security/credentials.md",
     "security/api-keys.md",
     "security/secrets.md",
+    "operations/README.md",
     "operations/bootstrap.md",
     "operations/email.md",
     "operations/observability.md",
@@ -140,7 +149,7 @@ PAGES: dict[str, dict] = {
     "product/demo.md": {"facts": [("make demo", "PROVEN", "3fcf8e"), ("naive", "101 to 0 credits", "3fcf8e")], "tech": ["python"]},
     "product/execution-modes.md": {"facts": [("modes", "live · record · replay", "2F6BFF"), ("test keys", "always mock", "3fcf8e")], "tech": ["serpapi"]},
     "product/benchmark.md": {"facts": [("routing accuracy", "38.3%", "3fcf8e"), ("tasks", "120", "2F6BFF")], "tech": ["groq"]},
-    "product/glossary.md": {"facts": [("terms", "109", "2F6BFF")], "tech": []},
+    "product/glossary.md": {"facts": [("terms", "110", "2F6BFF")], "tech": []},
     "deployment/installation.md": {"facts": [("API keys", "not required", "3fcf8e"), ("paths", "dev · docker", "2496ED")], "tech": ["python", "uv", "node", "docker"]},
     "deployment/local.md": {"facts": [("API keys", "not required", "3fcf8e")], "tech": ["python", "uv", "node", "docker"]},
     "deployment/docker.md": {"facts": [("services", "8", "2496ED")], "tech": ["docker", "nginx", "postgres", "redis", "kafka"]},
@@ -214,8 +223,16 @@ def title_of(text: str) -> str:
     raise ValueError("page has no H1")
 
 
+def is_section_index(rel_docs: str) -> bool:
+    """A folder's own README.md, such as architecture/README.md."""
+    return rel_docs.count("/") == 1 and rel_docs.endswith("/README.md")
+
+
 def short_title(rel_docs: str) -> str:
     title = title_of((DOCS / rel_docs).read_text(encoding="utf-8"))
+    if is_section_index(rel_docs) and rel_docs != "adr/README.md":
+        # "Product" alone reads like a page about the product, not a contents page.
+        return f"{SECTIONS[rel_docs.split('/')[0]][0]} index"
     if rel_docs.startswith("adr/") and rel_docs != "adr/README.md":
         number, _, rest = title.partition(". ")
         title = f"ADR {number}: {rest}"
@@ -279,7 +296,16 @@ def render(rel_docs: str, index: int) -> str:
     meta = PAGES.get(rel_docs, {"facts": [("status", "accepted", "3fcf8e")], "tech": []})
     index_link = link_to("README.md", rel_docs)
 
-    rows = [badge("docs", label, color, "readthedocs", "white", href=f"{index_link}#{anchor}")]
+    # Every page points up to its section index; the section index points up to
+    # its own row on the docs index.
+    section_index = f"{section}/README.md"
+    up_to_section = rel_docs != section_index and (DOCS / section_index).exists()
+    section_link = link_to(section_index, rel_docs) if up_to_section else f"{index_link}#{anchor}"
+    if is_section_index(rel_docs) and rel_docs not in PAGES:
+        count = sum(1 for p in ORDER if p.startswith(section + "/") and p != rel_docs)
+        meta = {"facts": [("pages", str(count), color)], "tech": []}
+
+    rows = [badge("docs", label, color, "readthedocs", "white", href=section_link)]
     rows += [badge(lab, msg, col) for lab, msg, col in meta["facts"]]
     rows += [badge(*TECH[key]) for key in meta["tech"]]
     src = source_badge(body, page)
@@ -288,8 +314,11 @@ def render(rel_docs: str, index: int) -> str:
     rows.append(badge("read", f"{reading_minutes(body)} min", "555555"))
 
     total = len(ORDER)
-    crumb = (f"[Docs]({index_link}) › [{label}]({index_link}#{anchor}) › **{title_of(head)}**"
+    crumb = (f"[Docs]({index_link}) › [{label}]({section_link}) › **{title_of(head)}**"
              f" · page {index + 1} of {total}")
+    index_cell = f"[Docs index]({index_link})"
+    if up_to_section:
+        index_cell += f" · [{short_title(section_index)}]({section_link})"
 
     prev_rel = ORDER[index - 1] if index > 0 else None
     next_rel = ORDER[index + 1] if index + 1 < total else None
@@ -300,7 +329,7 @@ def render(rel_docs: str, index: int) -> str:
         "",
         FOOTER_HEAD,
         "| :--- | :---: | ---: |",
-        f"| {prev_cell} | [Docs index]({index_link}) | {next_cell} |",
+        f"| {prev_cell} | {index_cell} | {next_cell} |",
     ])
 
     return "\n".join([head, "", "<p>", *rows, "</p>", "", crumb, "", body, "", footer, ""])

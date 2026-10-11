@@ -217,7 +217,7 @@ Stated plainly, because an unstated boundary reads as an oversight:
 
 ## Reporting
 
-- Report privately: [SECURITY.md](../../SECURITY.md)
+- Report security problems in a public GitHub issue, without real keys or secrets: [SECURITY.md](../../SECURITY.md#reporting-a-vulnerability)
 - **Maintained by one person in their own time.** Response is best-effort: see [maintenance and support](../../SECURITY.md#maintenance-and-support)
 
 ## Related

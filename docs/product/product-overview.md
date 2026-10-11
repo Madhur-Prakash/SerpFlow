@@ -19,6 +19,8 @@
 
 > This page is the **why**. The [architecture docs](../architecture/overview.md) are the **how**. Every term used here is defined in the [glossary](glossary.md).
 
+- **You run it yourself, for now.** SerpFlow is self-hosted by the author's decision: there is no public hosted instance yet, and the author will host one once enough people ask ([hosting](../../README.md#hosting))
+
 ## The problem
 
 A team using SerpApi at any scale ends up building four things, badly, in the application layer:

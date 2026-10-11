@@ -18,6 +18,7 @@
 
 - **Going multi-host?** Do this first, then read [production](production.md) for scaling, pooling and Kafka topology
 - **Just trying it locally?** You want [installation](installation.md) instead
+- **Hoping for a hosted instance instead?** There is none yet: SerpFlow is self-hosted by the author's decision, and will be hosted once enough people ask ([hosting](../../README.md#hosting))
 
 **Steps:** [1 server](#1-prepare-the-server) · [2 code](#2-get-the-code) · [3 secrets](#3-generate-secrets) · [4 configure](#4-configure-the-environment) · [5 lock down ports](#5-lock-down-the-ports) · [6 known issue](#6-fix-the-docs-proxy-rule) · [7 build and start](#7-build-and-start) · [8 RLS backstop](#8-make-row-level-security-bind) · [9 TLS](#9-put-tls-in-front) · [10 first admin](#10-create-the-first-admin) · [11 verify](#11-verify-the-deployment) · [12 observability](#12-observability) · [13 backups](#13-backups) · [14 upgrades](#14-upgrades-and-rollback) · [15 cheat sheet](#15-operations-cheat-sheet)
 
