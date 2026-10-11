@@ -52,7 +52,7 @@ sf_live_pm8kd3_v1a7Qx9mNc2PfLz4Rt6WbYs8KdJh3Gn5
 - **`env` is `live` or `test`**, the prefix is six lowercase letters or digits, the secret 32 letters or digits ([`app/core/security.py`](../../backend/app/core/security.py))
 - **Stored as HMAC-SHA256 under a server-side pepper**, shown in plaintext exactly once. See [API keys](../security/api-keys.md#format)
 - **A `test` key always routes to the deterministic mock** and spends zero SerpApi credits, whatever [`SERPFLOW_MODE`](../security/secrets.md#inventory) says
-- That precedence is **absolute**. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence)
+- That precedence is **absolute**. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence) and [ADR 0005](../adr/0005-test-key-mode-precedence.md)
 
 ### Who can call what
 
@@ -325,7 +325,7 @@ X-SerpFlow-Run-Id
 | `INTERNAL_ERROR` | 500 | Quote the `request_id` |
 
 - **`BUDGET_EXHAUSTED` and `UPSTREAM_QUOTA_EXHAUSTED` are never conflated:** different causes, different fixes ([which one you have](../operations/troubleshooting.md#budget_exhausted-against-upstream_quota_exhausted))
-- **`TENANT_ISOLATION_VIOLATION` (403) is defined but not raised:** a cross-tenant id is `NOT_FOUND`, so an id's existence in another organization is never confirmed
+- **`TENANT_ISOLATION_VIOLATION` (403) is defined but not raised:** a cross-tenant id is `NOT_FOUND`, so an id's existence in another organization is never confirmed ([ADR 0006](../adr/0006-rls-plus-application-guards.md))
 
 ## Pagination
 
@@ -365,6 +365,7 @@ make api-check ARGS=--verbose  # print every call
 - [SDKs and tools](../sdks/overview.md): the Python, TypeScript, CLI and MCP clients over this API
 - [API keys](../security/api-keys.md#roles): the roles, custom roles and service sessions behind every permission above
 - [Backend](../architecture/backend.md#error-model): where the error envelope and request lifecycle are implemented
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): why a test key overrides every execution mode
 - [Troubleshooting](../operations/troubleshooting.md#authentication): fixes for the authentication and execution error codes
 - [Glossary](../product/glossary.md): every term used on this page, with its canonical page
 - [Architecture overview](../architecture/overview.md): where the API sits in the request lifecycle

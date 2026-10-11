@@ -59,6 +59,7 @@
 | [Database](../database/README.md) | the MCP server needs the API's migrated, seeded database rather than its URL, and sets the tenant for [row-level security](../database/rls.md#how-it-works) once its key resolves; `SERPFLOW_MCP_SESSION` names a [`service_sessions`](../database/schema.md#service_sessions) row |
 | [Security](../security/README.md) | [test keys](../security/api-keys.md#test-keys) and [service principal sessions](../security/api-keys.md#service-principal-sessions) are what the clients authenticate as; [secrets](../security/secrets.md#cli-sdk-and-mcp-read-from-the-shell) lists the variables they read from the shell; the [threat model](../security/threat-model.md#trust-boundaries) puts the MCP server inside the service boundary |
 | [Operations](../operations/README.md) | [seeding by hand](../operations/bootstrap.md#seeding-by-hand) prints the keys and says which goes to which client; troubleshooting covers [a missing key](../operations/troubleshooting.md#the-cli-or-an-sdk-says-no-api-key) in each client and [an MCP agent's session budget](../operations/troubleshooting.md#an-mcp-agents-session-budget-does-not-carry-across-calls) |
+| [Decisions](../adr/README.md) | no record is implemented in these pages, but six shape what the clients send and get back, listed below |
 
 ## Related
 

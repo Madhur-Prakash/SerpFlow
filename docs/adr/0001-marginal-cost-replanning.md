@@ -36,7 +36,7 @@ plans.marginal_replan_changed_selection
 plans.replan_explanation
 ```
 
-- **Both rankings live in [`app/services/planner/cost.py`](../../backend/app/services/planner/cost.py)** (`cold_rank_key`, `marginal_rank_key`), and coverage is the first key of each: see [ADR 0008](0008-coverage-before-price.md)
+- **Both rankings live in [`app/services/planner/cost.py`](../../backend/app/services/planner/cost.py)** (`cold_rank_key`, `marginal_rank_key`), and coverage is the first key of each: see [ADR 0004](0004-coverage-before-price.md)
 - **Disagreement is the product:**
   - [`serpflow_marginal_replan_changed_selection_total`](../operations/observability.md#the-thesis-metric) counts it
   - the [e2e suite](../../backend/tests/e2e/test_marginal_replanning.py) asserts that it increments and that the selected chain differs from the cold one
@@ -74,7 +74,7 @@ plans.replan_explanation
 - [The reference demo](../product/demo.md#what-it-is-proving): the scenario built to make the rankings disagree, and the PROVEN check
 - [`test_marginal_replanning.py`](../../backend/tests/e2e/test_marginal_replanning.py): the end-to-end assertion that warm cache state changes the selected plan
 - [Troubleshooting: `make demo` exits non-zero](../operations/troubleshooting.md#make-demo-exits-non-zero): what to check when the disagreement stops happening
-- [ADR 0008: coverage before price](0008-coverage-before-price.md): the key that sorts ahead of marginal cost in both rankings
+- [ADR 0004: coverage before price](0004-coverage-before-price.md): the key that sorts ahead of marginal cost in both rankings
 
 ---
 

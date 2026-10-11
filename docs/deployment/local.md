@@ -208,7 +208,7 @@ replay   serve from cassettes only, fail loudly on a miss
 ```
 
 - **No cassettes are committed**, so on a fresh checkout every live-key search in `replay` misses until you have recorded it
-- **A `test` API key routes to the deterministic mock regardless of this setting**
+- **A `test` API key routes to the deterministic mock regardless of this setting** ([ADR 0005](../adr/0005-test-key-mode-precedence.md))
   - that precedence is absolute and cannot be overridden
   - it is what makes it safe to develop against a repository with a live key in its `.env`
 - `SERPFLOW_MODE` is only the **instance default**. A project can set its own mode, and a single search can override it: see [execution modes](../product/execution-modes.md#who-chooses-and-precedence)
@@ -303,6 +303,7 @@ A dedicated page covers the common failures: [operations/troubleshooting](../ope
 - [Startup bootstrap](../operations/bootstrap.md): why `make dev` migrates and seeds on its own
 - [SDKs and tools](../sdks/overview.md): the CLI, Python SDK, TypeScript SDK and MCP server, and how they are configured
 - [Execution modes](../product/execution-modes.md): live, record, replay and mock, and who chooses
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): why a test key is always mock
 - [Troubleshooting](../operations/troubleshooting.md): every failure above, with its fix
 
 ---

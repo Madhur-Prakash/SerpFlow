@@ -95,7 +95,7 @@ SerpFlow is a control plane for a paid upstream API, so it holds sensitive mater
   - present as a field in any Pydantic response schema
 - **A test enforces the schema rule:** it walks every model in `app/schemas` and fails if `api_key`, `secret`, `ciphertext` or `encrypted_dek` appears on a response model
 - The field is **absent, not excluded**: excluded fields leak through serialisation bugs
-- More: [`docs/security/credentials.md`](docs/security/credentials.md#where-it-is-decrypted)
+- More: [`docs/security/credentials.md`](docs/security/credentials.md#where-it-is-decrypted) · [ADR 0003: envelope encryption](docs/adr/0003-envelope-encryption.md)
 
 ### Log redaction
 
@@ -123,7 +123,7 @@ Every tenant-scoped table carries an indexed `org_id`, and isolation is enforced
    - **an unset value matches every row, deliberately:** migrations, the seed and cross-organization workers run without a tenant. Every request path sets it, because the principal cannot resolve without doing so
    - want the strict posture? Drop that clause and give those paths a role with `BYPASSRLS`: [the empty-value clause](docs/database/rls.md#the-empty-value-clause)
 
-More: [`docs/database/rls.md`](docs/database/rls.md)
+More: [`docs/database/rls.md`](docs/database/rls.md) · [ADR 0006](docs/adr/0006-rls-plus-application-guards.md)
 
 ## Audit log
 

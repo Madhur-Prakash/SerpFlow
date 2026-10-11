@@ -1,4 +1,4 @@
-# 0008. Rank on coverage before price
+# 0004. Rank on coverage before price
 
 <p>
   <a href="../adr/README.md"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0008. Rank on coverage before price** · page 59 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0004. Rank on coverage before price** · page 59 of 65
 
 **Status** Accepted
 

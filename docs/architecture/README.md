@@ -75,6 +75,7 @@ intent            REST, SDKs, CLI, MCP -> plan_and_execute         overview.md
 | [Database](../database/README.md) | the planner writes [`plans` and `plan_candidates`](../database/schema.md#planning-and-execution), caching reads and writes the [cache tables](../database/schema.md#cache), and the [request lifecycle](backend.md#request-lifecycle) binds [row-level security](../database/rls.md#how-it-works) per transaction |
 | [Security](../security/README.md) | the [credential boundary](executor.md#the-credential-boundary) is [where a credential is decrypted](../security/credentials.md#where-it-is-decrypted); [tenancy](overview.md#tenancy) maps to the [trust boundaries](../security/threat-model.md#trust-boundaries); the [frontend](frontend.md#permissions) mirrors the [roles](../security/api-keys.md#roles) the server enforces |
 | [Operations](../operations/README.md) | [the thesis metric](../operations/observability.md#the-thesis-metric) counts [changed selections](marginal-replanning.md#what-changed_selection-means); [Redis](../operations/redis.md#why-none-of-it-is-authoritative) is the hot layer behind [the Redis boundary](caching.md#the-redis-boundary); [Kafka](../operations/kafka.md#topics) carries background work only, and [degradation](backend.md#degradation) says what happens when either is down |
+| [Decisions](../adr/README.md) | [six of the fourteen records](../adr/README.md#how-they-fit-together) are one argument for the thesis these pages implement; each is listed below |
 
 ## Related
 

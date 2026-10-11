@@ -58,6 +58,7 @@
 | Call the API | [API overview](api/overview.md) |
 | Call it from Python, TypeScript, a terminal or an agent | [SDKs overview](sdks/overview.md) |
 | Understand the design | [Architecture overview](architecture/overview.md) |
+| Know why something is the way it is | [Decision records](adr/README.md) |
 | Look up a term | [Glossary](product/glossary.md) |
 | Use a hosted SerpFlow | there is none yet, by the author's decision; ask for one: [Hosting](../README.md#hosting) |
 | Fix something | [Troubleshooting](operations/troubleshooting.md) |

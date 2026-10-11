@@ -226,7 +226,7 @@ Two rules decide what competes:
 - **Role assignment**
   - stage B ranks its choices; the top choice defines the capability the intent asks for
   - a plan ending anywhere else answers a different question, and becomes a **fallback**
-  - without this, a one-credit place lookup outranks a review-ring investigation on price, and the planner optimises a question nobody asked. The same reasoning ranks [coverage before price](marginal-replanning.md#coverage-before-price)
+  - without this, a one-credit place lookup outranks a review-ring investigation on price, and the planner optimises a question nobody asked. The same reasoning ranks [coverage before price](marginal-replanning.md#coverage-before-price) ([ADR 0004](../adr/0004-coverage-before-price.md))
 - **Truncation demotion**
   - a plan whose engine list is a strict prefix of another's is a truncation, not a peer: it is cheaper **because it does less**
   - fallbacks stay in the set, persisted and visible in the Plan Inspector, but only win when nothing else fits a budget
@@ -276,6 +276,7 @@ stage_trace[]                     every stage transition with timings
 - [Streaming](../api/streaming.md#the-stage-sequence): the frames each stage emits
 - [Database schema](../database/schema.md#planning-and-execution): the `plans` and `plan_candidates` rows
 - [Benchmark](../product/benchmark.md#failure-analysis): how well this routes, honestly, and where it misroutes
+- [ADR 0004](../adr/0004-coverage-before-price.md): coverage before price, and why every candidate is kept
 - [Troubleshooting `NO_VIABLE_PLAN`](../operations/troubleshooting.md#no_viable_plan): when no path survives stage D
 
 ---

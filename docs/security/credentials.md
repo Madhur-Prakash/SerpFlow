@@ -11,7 +11,7 @@
 
 **A SerpFlow organization attaches its own SerpApi key**, and optionally a Groq key ([bring your own key](byok.md)). That key is what an attacker actually wants, and the design treats it that way:
 
-- it is encrypted with a **per-credential data key**
+- it is encrypted with a **per-credential data key** ([ADR 0003](../adr/0003-envelope-encryption.md))
 - it is decrypted only **at the point of use**, for the call about to be made
 - **no response schema** in the codebase has a field that could carry it
 
@@ -199,6 +199,7 @@ POST /v1/credentials/reconcile-quota    serpflow.quota.reconcile: refresh upstre
 - [Bring your own key](byok.md): which keys you supply, and what happens without them
 - [API keys](api-keys.md): the other half of the credential story
 - [Secrets](secrets.md#kek): the KEK, and what rotating it involves
+- [ADR 0003: envelope encryption](../adr/0003-envelope-encryption.md): why a per-credential DEK under a KEK
 - [Executor: the credential boundary](../architecture/executor.md#the-credential-boundary): where a run decrypts, and when
 - [Threat model](threat-model.md#credential-theft-from-the-database): the threats this page answers
 - [Troubleshooting: `NO_UPSTREAM_CREDENTIAL`](../operations/troubleshooting.md#no_upstream_credential): a live key with nothing attached

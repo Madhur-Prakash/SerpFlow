@@ -58,6 +58,7 @@
 | [Database](../database/README.md) | a project's own mode arrived in [migration `0004_project_mode`](../database/migrations.md#0004_project_mode); benchmark runs triggered from the UI land in [the benchmark tables](../database/schema.md#benchmark); savings by mechanism are computed from [`budget_ledger`](../database/schema.md#governance) |
 | [Security](../security/README.md) | a [test key](../security/api-keys.md#test-keys) always reaches the mock, which is why the demo spends nothing; `live` needs [your own SerpApi key](../security/byok.md), as does the Groq key behind a model-backed benchmark; [replay or mock data mistaken for live](../security/threat-model.md#replay-or-mock-data-mistaken-for-live) is the threat the mode system answers, with its residual risk |
 | [Operations](../operations/README.md) | the demo increments [the thesis metric](../operations/observability.md#the-thesis-metric); [troubleshooting: the demo](../operations/troubleshooting.md#the-demo) covers a non-zero exit, and [`REPLAY_CASSETTE_MISS`](../operations/troubleshooting.md#replay_cassette_miss) is `replay` failing loudly |
+| [Decisions](../adr/README.md) | the demo exists to prove [ADR 0001](../adr/0001-marginal-cost-replanning.md); [ADR 0005](../adr/0005-test-key-mode-precedence.md) is implemented on [execution modes](execution-modes.md#who-chooses-and-precedence); every [glossary](glossary.md) entry links its ADR where one exists |
 
 ## Related
 

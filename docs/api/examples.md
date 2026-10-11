@@ -201,7 +201,7 @@ curl -s -X POST http://localhost:8000/v1/runs/$RUN/report-false-hit \
 - **Records the report**, against `step_id` if given, else the run's first semantic step (or its first step)
 - **Increments** [`serpflow_semantic_false_hit_reports_total`](../operations/observability.md#metrics)
 - **Invalidates the offending entry**, so it cannot be served again. The message says `Report filed.` alone when no matching entry was found
-- Why a wrong hit is evidence, not noise: [rejections are evidence](../architecture/caching.md#rejections-are-evidence)
+- Why a wrong hit is evidence, not noise: [rejections are evidence](../architecture/caching.md#rejections-are-evidence) and [ADR 0002](../adr/0002-deterministic-semantic-guard.md)
 
 ## Explore the catalog
 

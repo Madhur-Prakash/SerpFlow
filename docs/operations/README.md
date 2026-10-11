@@ -58,12 +58,14 @@
 | [SDKs](../sdks/README.md) | the CLI, the Python SDK and the MCP server read `SERPFLOW_API_KEY` from the shell: [SDKs: configuration](../sdks/overview.md#configuration); `make seed` prints the `test` key the [CLI](../sdks/cli.md) uses and the `service` key the [MCP server](../sdks/mcp.md#connect-a-client) uses |
 | [Database](../database/README.md) | the bootstrap applies the [Alembic revision chain](../database/migrations.md#the-revision-chain); `make seed ARGS=--reset` is the one sanctioned way past [the append-only audit log](../database/rls.md#the-audit-log); alerts and deliveries are rows in the [governance tables](../database/schema.md#governance) |
 | [Security](../security/README.md) | every variable on these pages is in the [secrets inventory](../security/secrets.md#inventory); the log redaction filter is specified in [credentials: never in a log](../security/credentials.md#never-in-a-log); the Redis principal cache sits in [API key resolution](../security/api-keys.md#resolution) |
+| [Decisions](../adr/README.md) | the [Kafka page](kafka.md#what-goes-through-it-and-what-does-not) implements ADR 0007; several troubleshooting entries are a decision working as designed, listed [below](#decisions-behind-it) |
 
 ## Related
 
 - [Docs index](../README.md): every section, and the end-to-end reading order
 - [Glossary](../product/glossary.md): every term in these pages, defined
 - [Security](../security/README.md): the previous section, the secrets and keys these pages configure
+- [Decisions](../adr/README.md): the next section, the choices behind several of the failures above
 - [Local development: troubleshooting](../deployment/local.md#troubleshooting): the problems specific to a laptop setup
 - [Deployment guide: operations cheat sheet](../deployment/deployment-guide.md#15-operations-cheat-sheet): status, logs, shells and health on a server
 

@@ -11,11 +11,11 @@
 | # | Decision | Area | Implemented in | Status |
 | --- | --- | --- | --- | --- |
 | [0001](0001-marginal-cost-replanning.md) | Rank candidate plans on marginal cost, not cold cost | planner | [ranking](../architecture/marginal-replanning.md#ranking) · [`cost.py`](../../backend/app/services/planner/cost.py) | Accepted |
-| [0003](0003-deterministic-semantic-guard.md) | A deterministic guard independent of the cosine score | cache | [the guard](../architecture/caching.md#the-entity-and-numeral-guard) · [`guard.py`](../../backend/app/services/cache/guard.py) | Accepted |
-| [0005](0005-envelope-encryption.md) | Envelope encryption for upstream credentials | security | [envelope encryption](../security/credentials.md#envelope-encryption) · [`security.py`](../../backend/app/core/security.py) | Accepted |
-| [0008](0008-coverage-before-price.md) | Rank on coverage before price | planner | [coverage before price](../architecture/marginal-replanning.md#coverage-before-price) · [`cost.py`](../../backend/app/services/planner/cost.py) | Accepted |
-| [0010](0010-test-key-mode-precedence.md) | A test key overrides the execution mode, absolutely | execution | [mode precedence](../product/execution-modes.md#who-chooses-and-precedence) · [`serpapi/__init__.py`](../../backend/app/integrations/serpapi/__init__.py) | Accepted |
-| [0011](0011-rls-plus-application-guards.md) | Tenant isolation enforced twice | tenancy | [row-level security](../database/rls.md#how-it-works) · [`deps.py`](../../backend/app/api/deps.py) | Accepted |
+| [0002](0002-deterministic-semantic-guard.md) | A deterministic guard independent of the cosine score | cache | [the guard](../architecture/caching.md#the-entity-and-numeral-guard) · [`guard.py`](../../backend/app/services/cache/guard.py) | Accepted |
+| [0003](0002-envelope-encryption.md) | Envelope encryption for upstream credentials | security | [envelope encryption](../security/credentials.md#envelope-encryption) · [`security.py`](../../backend/app/core/security.py) | Accepted |
+| [0004](0004-coverage-before-price.md) | Rank on coverage before price | planner | [coverage before price](../architecture/marginal-replanning.md#coverage-before-price) · [`cost.py`](../../backend/app/services/planner/cost.py) | Accepted |
+| [0005](0003-test-key-mode-precedence.md) | A test key overrides the execution mode, absolutely | execution | [mode precedence](../product/execution-modes.md#who-chooses-and-precedence) · [`serpapi/__init__.py`](../../backend/app/integrations/serpapi/__init__.py) | Accepted |
+| [0006](0006-rls-plus-application-guards.md) | Tenant isolation enforced twice | tenancy | [row-level security](../database/rls.md#how-it-works) · [`deps.py`](../../backend/app/api/deps.py) | Accepted |
 
 - **Numbers are permanent identifiers**, so the sequence has gaps: a record keeps its number for as long as it is kept
 
@@ -24,16 +24,16 @@
 **Three of the six are one argument**, the thesis that warm cache state should change which plan runs:
 
 ```
-input      0003 deterministic guard       which cache hits are safe to count as warm
+input      0002 deterministic guard       which cache hits are safe to count as warm
                         │
                         ▼
-decision   0008 coverage before price     the key sorted first: a cheaper plan that covers less loses
+decision   0004 coverage before price     the key sorted first: a cheaper plan that covers less loses
            0001 rank on marginal cost     then price only the steps that are still cold
 ```
 
-- **Security (0005):** the one secret that must be recoverable, encrypted so a database dump alone reveals nothing. Read with the [threat model](../security/threat-model.md#threats-and-responses)
-- **Tenancy (0011):** isolation enforced in the application and again in PostgreSQL. Read with [row-level security](../database/rls.md), including why a superuser connection defeats the second half
-- **Execution (0010):** a test key always means mock data, whatever else is configured. Read with [execution modes](../product/execution-modes.md)
+- **Security (0003):** the one secret that must be recoverable, encrypted so a database dump alone reveals nothing. Read with the [threat model](../security/threat-model.md#threats-and-responses)
+- **Tenancy (0006):** isolation enforced in the application and again in PostgreSQL. Read with [row-level security](../database/rls.md), including why a superuser connection defeats the second half
+- **Execution (0005):** a test key always means mock data, whatever else is configured. Read with [execution modes](../product/execution-modes.md)
 
 ## Format
 
@@ -59,9 +59,9 @@ Every record has the same five parts:
 ## Related
 
 - [Architecture overview](../architecture/overview.md): the system the decisions shape, with links into each layer
-- [Product overview](../product/product-overview.md): the thesis records 0001, 0003 and 0008 exist to defend
-- [Marginal-cost replanning](../architecture/marginal-replanning.md): where 0001 and 0008 are implemented, with the worked example
-- [Threat model](../security/threat-model.md#threats-and-responses): where 0005 and 0011 meet the threats they answer, and their stated limits
+- [Product overview](../product/product-overview.md): the thesis records 0001, 0002 and 0004 exist to defend
+- [Marginal-cost replanning](../architecture/marginal-replanning.md): where 0001 and 0004 are implemented, with the worked example
+- [Threat model](../security/threat-model.md#threats-and-responses): where 0003 and 0006 meet the threats they answer, and their stated limits
 - [Glossary](../product/glossary.md): one-line definitions of the terms these records use
 - [Troubleshooting](../operations/troubleshooting.md): the failures some of these decisions choose deliberately, such as `REPLAY_CASSETTE_MISS`
 - [Documentation index](../README.md): every page, in reading order

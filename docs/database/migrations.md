@@ -61,7 +61,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;    -- query_text and search_text trigram
 - Then the three indexes autogenerate cannot express:
   - `ix_cache_entries_embedding_hnsw`: HNSW over cosine distance, `m = 16`, `ef_construction = 64`
   - `ix_cache_entries_query_trgm` and `ix_catalog_engines_search_trgm`: GIN trigram
-- Then row-level security on 23 tables (the 22 in `RLS_TABLES`, plus `organizations`): see [row-level security](rls.md#covered-tables)
+- Then row-level security on 23 tables (the 22 in `RLS_TABLES`, plus `organizations`): see [row-level security](rls.md#covered-tables) and [ADR 0006](../adr/0006-rls-plus-application-guards.md)
 - Then the audit trigger
 
 Two details are not obvious:
@@ -121,7 +121,7 @@ Code: [`0004_project_execution_mode.py`](../../backend/alembic/versions/0004_pro
 - **The mode used to be server-wide**, so a project that only ever wanted recorded traffic could not say so while another ran live
 - **`NULL` means "inherit the server default"**, deliberately distinct from writing today's default into every row
   - an operator who later changes `SERPFLOW_MODE` moves the projects that never expressed a preference, and leaves the rest alone
-- **A check constraint** admits only `live`, `record` and `replay`. `mock` stays reachable only through a test key ([execution modes](../product/execution-modes.md#why-mock-is-not-selectable))
+- **A check constraint** admits only `live`, `record` and `replay`. `mock` stays reachable only through a test key ([execution modes](../product/execution-modes.md#why-mock-is-not-selectable), [ADR 0005](../adr/0005-test-key-mode-precedence.md#update-per-project-and-per-request-modes))
 
 ## Writing a new revision
 
@@ -184,6 +184,7 @@ docker compose down -v && make up   # drop the volume and start from nothing
 - [Row-level security](rls.md): the policies `0001_initial` and `0003_custom_roles` create
 - [Startup bootstrap](../operations/bootstrap.md): running `alembic upgrade head` on API start, under an advisory lock
 - [Deployment guide: upgrades and rollback](../deployment/deployment-guide.md#14-upgrades-and-rollback): migrating a running server
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): why every new tenant table needs a policy
 - [Troubleshooting: `type "vector" does not exist`](../operations/troubleshooting.md#type-vector-does-not-exist): a database provisioned without the extension
 
 ---

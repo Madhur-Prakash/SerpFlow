@@ -209,7 +209,7 @@ export SERPFLOW_API_KEY=sf_test_...     # PowerShell: $env:SERPFLOW_API_KEY = "s
 ### Results look wrong, but the request succeeded
 
 - **Check `X-SerpFlow-Mode` on the response** ([provenance headers](../api/overview.md#provenance-headers)). `MOCK` or `REPLAY` means you are not looking at live data
-- A `test` API key routes to the mock regardless of `SERPFLOW_MODE`, and that precedence is absolute
+- A `test` API key routes to the mock regardless of `SERPFLOW_MODE`, and that precedence is absolute ([ADR 0005](../adr/0005-test-key-mode-precedence.md))
 - **Then check what was sent:** each step's `parameters` in the Plan Inspector are the values that went upstream. The next three entries are the known ways they went wrong
 
 ### Google Finance returned no results, or the ledger shows 0 credits for a search SerpApi charged
@@ -311,7 +311,7 @@ curl -X POST localhost:8000/v1/runs/$RUN/report-false-hit \
 ```
 
 - **Then invalidate the engine too** (`POST /v1/cache/invalidate` with `{"engine": "..."}`). The report marks the PostgreSQL entry invalidated but leaves Redis alone, and the semantic hit wrote its pointer under the requesting query's key, so that exact query keeps getting the bad payload until the hot key expires ([Redis: invalidation](redis.md#invalidation))
-- Then look at `GET /v1/cache/guard-rejections` to see what the deterministic guard is catching ([the entity and numeral guard](../architecture/caching.md#the-entity-and-numeral-guard))
+- Then look at `GET /v1/cache/guard-rejections` to see what the deterministic guard is catching ([the entity and numeral guard](../architecture/caching.md#the-entity-and-numeral-guard), [ADR 0002](../adr/0002-deterministic-semantic-guard.md))
 - **If the wrong hit had no numerals, versions or named entities to differ on**, raising `SEMANTIC_SIMILARITY_THRESHOLD` (default 0.95) is the lever. The guard cannot catch what it cannot see ([threshold](../architecture/caching.md#threshold-and-what-the-local-embedder-means-for-it))
 - Reports are counted in [`serpflow_semantic_false_hit_reports_total`](observability.md#cache), which should page someone
 
@@ -476,6 +476,7 @@ grep '"request_id": "8a9e9172' logs/serpflow.log | python -m json.tool
 - [API overview](../api/overview.md#errors): every error code, with its status
 - [Executor](../architecture/executor.md#when-a-run-fails): what a failed run keeps, and what is rolled back
 - [Planner](../architecture/planner.md#stage-c-synthesize): how parameters such as `location` and Google Finance's `q` are bound
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): why a test key always means mock data
 - [Kafka](kafka.md#degradation) and [Redis](redis.md#degradation): why neither outage takes the API down
 
 ---

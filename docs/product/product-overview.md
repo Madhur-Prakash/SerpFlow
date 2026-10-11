@@ -83,7 +83,7 @@ D  generate      multiple competing plans, via substitutes and path-finding
 
 - **[Stage D](../architecture/planner.md#stage-d-path-find-and-generate-candidates) matters most for the thesis:** it produces a candidate **set**, not a winner
 - **Every candidate is persisted**, so the [Plan Inspector](../architecture/frontend.md#routes) can show why the winner won instead of asserting it
-- **Coverage is ranked before price**: a cheap plan that only partly answers the intent does not beat one that answers it
+- **Coverage is ranked before price** ([ADR 0004](../adr/0004-coverage-before-price.md)): a cheap plan that only partly answers the intent does not beat one that answers it
 - More: [planner architecture](../architecture/planner.md)
 
 ### 3. Four cache layers, with a deterministic guard
@@ -99,7 +99,7 @@ LIVE       SerpApi                                       the only layer that spe
 - **The semantic layer is the interesting one, and the dangerous one**
   - "Nvidia Q3 2024 revenue" and "Nvidia Q4 2024 revenue" embed close together
   - a cosine threshold alone serves one for the other, confidently: a correctness failure dressed as a saving
-- **[The entity, numeral and version guard](../architecture/caching.md#the-entity-and-numeral-guard)** runs **independently of the similarity score**, on exact set equality
+- **[The entity, numeral and version guard](../architecture/caching.md#the-entity-and-numeral-guard)** runs **independently of the similarity score**, on exact set equality ([ADR 0002](../adr/0002-deterministic-semantic-guard.md))
   - both queries mention a quarter, the sets differ, so it is rejected whatever the cosine says
 - **[Availability is not acceptability](../architecture/marginal-replanning.md#available-is-not-acceptable):** an entry only counts as warm if it meets the step's [inferred freshness bound](../architecture/planner.md#freshness-inference)
 
@@ -136,7 +136,7 @@ results = search.get_dict()   # routed by the planner; "engine" is echoed, not e
   - **with [`SERPFLOW_MCP_SESSION`](../security/secrets.md#inventory) set**, every call resumes that named session, so an agent stuck in a loop hits `SESSION_CAP_EXCEEDED`, not the organization's monthly budget
   - **without it**, each tool call opens a fresh session, so the cap does not accumulate across calls; the key's own budget, created alongside a service key's cap, is the cumulative limit ([`open_service_session`](../../backend/app/services/auth/service.py), [`organizations.py`](../../backend/app/api/v1/organizations.py), [sessions and budgets](../sdks/mcp.md#sessions-and-budgets))
 - **A platform team**
-  - multi-tenant with [row-level security](../database/rls.md), enforced in the database and again in the application
+  - multi-tenant with [row-level security](../database/rls.md), enforced in the database and again in the application ([ADR 0006](../adr/0006-rls-plus-application-guards.md))
   - per-project [engine policy](../architecture/executor.md#engine-policy)
   - an [append-only, hash-chained audit log](../database/rls.md#the-audit-log)
   - shorter [retention](../architecture/executor.md#retention) for high-PII payloads
@@ -189,6 +189,7 @@ make test-e2e    # asserts the replan actually changed the selection
 - [Architecture overview](../architecture/overview.md): the system map behind the four pieces
 - [Marginal-cost replanning](../architecture/marginal-replanning.md): the mechanism the thesis rests on
 - [SDKs and tools](../sdks/overview.md): the SDK, CLI and MCP surfaces side by side
+- [Decision records](../adr/README.md): why each piece is built the way it is
 
 ---
 

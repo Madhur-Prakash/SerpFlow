@@ -140,6 +140,7 @@ python 3.12 release notes     never matches   python 3.13 release notes
 - "Most of the time" means serving Indiranagar restaurants to someone who asked about Koramangala, once every few dozen queries
   - a silent correctness failure that a high hit rate makes look like a win, and nobody reports as a bug
 - **Deterministic extraction is** auditable, reproducible, free, and has no failure mode that depends on prompt phrasing
+- More: [ADR 0002](../adr/0002-deterministic-semantic-guard.md)
 
 ### Rejections are evidence
 
@@ -292,6 +293,7 @@ serpflow_adaptive_ttl_seconds{engine, direction}              extended | shorten
 - [Redis](../operations/redis.md#why-none-of-it-is-authoritative): the hot layer, and why losing it costs no credits
 - [Database schema](../database/schema.md#cache): `cache_entries`, `archive_refs`, `ttl_observations`, `semantic_guard_rejections`, `false_hit_reports`
 - [Observability](../operations/observability.md#cache): the cache series, and what a falling rejection count means
+- [ADR 0002](../adr/0002-deterministic-semantic-guard.md): the guard that ignores the score, and why a warm entry can still be refused
 - [Troubleshooting](../operations/troubleshooting.md#nothing-is-ever-warm): nothing is ever warm, a wrong semantic hit, Redis evicting too much
 
 ---

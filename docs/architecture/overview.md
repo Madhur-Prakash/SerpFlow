@@ -161,7 +161,7 @@ Most specific wins:
 ```
 
 - **Rules 2-4 resolve in one function:** [`resolve_execution_mode`](../../backend/app/services/runs.py)
-- **The gateway applies the result:** [`resolve_mode`](../../backend/app/integrations/serpapi/__init__.py), where rule 1 is enforced
+- **The gateway applies the result:** [`resolve_mode`](../../backend/app/integrations/serpapi/__init__.py), where rule 1 is enforced ([ADR 0005](../adr/0005-test-key-mode-precedence.md))
 - **A caller cannot ask for `mock`**, and asking for a billable mode needs `run:mode_override`: see [permission](../product/execution-modes.md#permission)
 - **The resolved mode travels on every response** as `X-SerpFlow-Mode` ([provenance headers](../api/overview.md#provenance-headers)), and is always shown in the UI
 - **Replay never reaches the network:** a miss raises `REPLAY_CASSETTE_MISS`, naming the exact file that is absent ([the fix](../operations/troubleshooting.md#replay_cassette_miss))
@@ -183,7 +183,7 @@ Organization
   - small organizations configure one credential
   - organizations with several SerpApi accounts override per project or cost centre
   - stored under envelope encryption, decrypted only in the executor: [upstream credentials](../security/credentials.md)
-- **Every tenant-scoped query is guarded twice**:
+- **Every tenant-scoped query is guarded twice** ([ADR 0006](../adr/0006-rls-plus-application-guards.md)):
   - application checks in [`deps.py`](../../backend/app/api/deps.py)
   - PostgreSQL row-level security keyed on `app.current_org`, as a backstop. See [RLS](../database/rls.md)
 - What each boundary defends against: [threat model](../security/threat-model.md#trust-boundaries)
@@ -201,7 +201,7 @@ Plan B    cold 8 credits    marginal 1 credit     <- selected
 ```
 
 - A planner comparing only cold costs picks A, and **pays four credits to avoid paying one**
-- More: [marginal replanning](marginal-replanning.md), and [the reference demo](../product/demo.md) that proves it with `make demo`
+- More: [marginal replanning](marginal-replanning.md) ([ADR 0001](../adr/0001-marginal-cost-replanning.md)), and [the reference demo](../product/demo.md) that proves it with `make demo`
 
 ## Reading further
 
@@ -223,6 +223,7 @@ Plan B    cold 8 credits    marginal 1 credit     <- selected
 - [SDKs and tools](../sdks/overview.md#how-they-connect): how the SDKs, CLI and MCP server reach `plan_and_execute`
 - [Threat model](../security/threat-model.md#trust-boundaries): the boundaries in this diagram, and what crosses them
 - [Observability](../operations/observability.md#correlating-one-request): following one request through logs, metrics and traces
+- [Architecture decision records](../adr/README.md): why each part is the way it is
 
 ---
 

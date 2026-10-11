@@ -37,7 +37,7 @@ sf_live_pm8kd3_v1a7Qx9mNc2PfLz4Rt6WbYs8KdJh3Gn5
 - **The environment segment matters more than it looks**
   - a `test` key routes to the deterministic mock **regardless** of `SERPFLOW_MODE` ([execution modes](../product/execution-modes.md#who-chooses-and-precedence))
   - `parse_api_key(...).is_test` is readable **before** a database round trip
-  - the precedence is absolute, and no configuration overrides it
+  - the precedence is absolute, and no configuration overrides it ([ADR 0005](../adr/0005-test-key-mode-precedence.md))
 - **The project prefix is plaintext**, and unique per project (`projects.key_prefix`)
   - lookup filters on `project_prefix`, `environment` and `key_hash`, all indexed, so authentication is an **index lookup**, not a scan that HMACs every key in the system to find a match
 
@@ -201,13 +201,14 @@ make seed    # prints a usable sf_test_... key
 - **Returns deterministic mock data**, with `X-SerpFlow-Mode: MOCK` ([provenance headers](../api/overview.md#provenance-headers))
 - **Budgets are still checked**, so a test key against an exhausted budget is refused like any other ([executor: budget enforcement](../architecture/executor.md#budget-enforcement))
 - Every example in [the API docs](../api/examples.md) uses one, and so should the [SDKs and the CLI](../sdks/overview.md#test-keys) while you integrate
-- Why no configuration can override it: [execution modes](../product/execution-modes.md)
+- Why no configuration can override it: [ADR 0005](../adr/0005-test-key-mode-precedence.md), [execution modes](../product/execution-modes.md)
 
 ## Related
 
 - [Upstream credentials](credentials.md): the other half of the credential story, the key SerpFlow spends on your behalf
 - [Secrets](secrets.md#pepper): the pepper every key hash depends on, and what rotating it costs
 - [Threat model](threat-model.md#spend-abuse): where keys, roles and session caps sit among the spend limits
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): why a `test` key always means mock
 - [MCP server](../sdks/mcp.md#sessions-and-budgets): the main user of service sessions and `SERPFLOW_MCP_SESSION`
 - [API overview: identity and access](../api/overview.md#identity-and-access): the key, member and role endpoints
 - [Troubleshooting: `INVALID_API_KEY` on a key that looks right](../operations/troubleshooting.md#invalid_api_key-on-a-key-that-looks-right): environment segment, rotation, pepper

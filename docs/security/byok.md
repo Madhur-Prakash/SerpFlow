@@ -66,7 +66,7 @@ One envelope per credential:
                  wrapped by KEK (CREDENTIAL_KEK)
 ```
 
-- **Stored columns:** `ciphertext`, `encrypted_dek`, `kek_id`, `algo`, `fingerprint`
+- **Stored columns:** `ciphertext`, `encrypted_dek`, `kek_id`, `algo`, `fingerprint` ([ADR 0003](../adr/0003-envelope-encryption.md))
 - **There is no column holding a recoverable plaintext key**
 - **The stronger guarantee is structural:** no Pydantic response model in `app/schemas` has a field that could carry the secret
   - not excluded: **absent**. An excluded field leaks through serialisation bugs; a field that does not exist cannot

@@ -1,4 +1,4 @@
-# 0005. Envelope encryption for upstream credentials
+# 0003. Envelope encryption for upstream credentials
 
 <p>
   <a href="../adr/README.md"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0005. Envelope encryption for upstream credentials** · page 56 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0003. Envelope encryption for upstream credentials** · page 56 of 65
 
 **Status** Accepted
 

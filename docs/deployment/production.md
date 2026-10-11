@@ -23,7 +23,7 @@
 | --- | --- |
 | `ENVIRONMENT=production`, `DEBUG=false` | turns off development behaviour, and makes startup refuse to seed demo data ([bootstrap](../operations/bootstrap.md#3-an-environment-refusal)) |
 | `JWT_SECRET`, `API_KEY_PEPPER`, `CREDENTIAL_KEK` replaced, distinct, none still `change-me` | the defaults are public ([generating real ones](../security/secrets.md#generating-real-ones)) |
-| `CREDENTIAL_KEK` held in a secret manager or KMS and injected at deploy time; on a single host, at least a `chmod 600` `.env` ([step 4](deployment-guide.md#4-configure-the-environment)) | the KEK unlocks every upstream credential. The code reads it from the environment (`_load_kek` in [`app/core/security.py`](../../backend/app/core/security.py)); there is no KMS client yet, see [credentials](../security/credentials.md#envelope-encryption) |
+| `CREDENTIAL_KEK` held in a secret manager or KMS and injected at deploy time; on a single host, at least a `chmod 600` `.env` ([step 4](deployment-guide.md#4-configure-the-environment)) | the KEK unlocks every upstream credential ([ADR 0003](../adr/0003-envelope-encryption.md)). The code reads it from the environment (`_load_kek` in [`app/core/security.py`](../../backend/app/core/security.py)); there is no KMS client yet, see [credentials](../security/credentials.md#envelope-encryption) |
 | `CORS_ORIGINS` set to real origins, never `*` | credentials travel on these requests |
 | TLS terminated in front of the service | tokens and keys travel in headers ([deployment guide: TLS](deployment-guide.md#9-put-tls-in-front)) |
 | PostgreSQL password rotated away from the compose default | the default is in the repository |
@@ -32,7 +32,7 @@
 | `LOG_JSON=true`, log shipping configured | logs are the incident record ([logging](../operations/observability.md#logging)) |
 | **The application's database role does not own the tables** | see below: easiest to miss |
 
-**That last one matters most.** A table owner bypasses row-level security by default, so running the application as the owner **silently disables the backstop**:
+**That last one matters most.** A table owner bypasses row-level security by default, so running the application as the owner **silently disables the backstop** ([ADR 0006](../adr/0006-rls-plus-application-guards.md)):
 
 ```sql
 CREATE ROLE serpflow_app LOGIN PASSWORD '...';
@@ -137,7 +137,7 @@ METRICS_ENABLED=true
 - **Scrape `/metrics`** from inside the network; it is unauthenticated, so do not expose it publicly ([deployment guide: TLS](deployment-guide.md#9-put-tls-in-front)). The alerting rules that matter are in [observability: alerting](../operations/observability.md#alerting)
 - **The one specific to this system:** [`serpflow_semantic_false_hit_reports_total`](../operations/observability.md#cache) rising
   - it means the semantic layer is serving wrong data
-  - it is a **correctness** page, not a performance one
+  - it is a **correctness** page, not a performance one ([ADR 0002](../adr/0002-deterministic-semantic-guard.md))
 
 ## Zero-downtime deploys
 

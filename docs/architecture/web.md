@@ -94,7 +94,7 @@ ScrollTrigger  44 kB    SplitText  7.4 kB    DrawSVGPlugin  4 kB
 ### The pinned story
 
 - **The thesis section is the one piece of real scroll choreography:** four beats, pinned, **scrubbed rather than played** ([`ThesisStory.tsx`](../../frontend/src/pages/landing/ThesisStory.tsx))
-- It tells [the thesis](../product/product-overview.md#the-thesis): ranking on [marginal cost instead of cold cost](marginal-replanning.md#the-distinction) changes which plan is selected
+- It tells [the thesis](../product/product-overview.md#the-thesis): ranking on [marginal cost instead of cold cost](marginal-replanning.md#the-distinction) changes which plan is selected ([ADR 0001](../adr/0001-marginal-cost-replanning.md))
 - Scrolling back runs it in reverse, and a reader can hold the moment the selection changes
 
 ```

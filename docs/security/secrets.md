@@ -120,7 +120,7 @@ openssl rand -hex 32
 
 ### KEK
 
-**Envelope encryption is what makes this cheap:** only the wrapped DEKs change; the ciphertext does not move.
+**Envelope encryption is what makes this cheap:** only the wrapped DEKs change; the ciphertext does not move ([ADR 0003](../adr/0003-envelope-encryption.md)).
 
 - **The process holds one KEK at a time.** `kek_id` is written on every row, but `_load_kek` reads only `CREDENTIAL_KEK`, and `decrypt_credential` does not consult `kek_id` ([`app/core/security.py`](../../backend/app/core/security.py)). So a rotation is an offline re-wrap, and no tool for it ships yet:
 

@@ -1,4 +1,4 @@
-# 0011. Tenant isolation enforced twice
+# 0006. Tenant isolation enforced twice
 
 <p>
   <a href="../adr/README.md"><img alt="docs: Decisions" src="https://img.shields.io/badge/docs-Decisions-555555?logo=readthedocs&logoColor=white"></a>
@@ -7,7 +7,7 @@
   <img alt="read: 4 min" src="https://img.shields.io/badge/read-4%20min-555555">
 </p>
 
-[Docs](../README.md) › [Decisions](../adr/README.md) › **0011. Tenant isolation enforced twice** · page 62 of 65
+[Docs](../README.md) › [Decisions](../adr/README.md) › **0006. Tenant isolation enforced twice** · page 62 of 65
 
 **Status** Accepted
 
@@ -38,7 +38,7 @@ if project is None or project.org_id != principal.org_id:
 ```
 
 - **RLS is the backstop.** [24 tables](../database/rls.md#covered-tables) carry a policy reading `current_setting('app.current_org')`, which the session sets per transaction with `SET LOCAL` right after the principal resolves
-  - 23 from the [initial migration](../database/migrations.md#0001_initial), plus `custom_roles` from [`0003`](../database/migrations.md#0003_custom_roles)
+  - 23 from the [initial migration](../database/migrations.md#0001_initial), plus `custom_roles` from [`0002`](../database/migrations.md#0003_custom_roles)
   - the call is `set_config('app.current_org', :org, true)`, the function form of `SET LOCAL` that takes a bound parameter ([`set_tenant`](../../backend/app/db/session.py))
 - **Three supporting rules:**
   - cross-tenant access returns `404`, never `403`
@@ -78,4 +78,4 @@ if project is None or project.org_id != principal.org_id:
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [ADR 0010: A test key overrides the execution mode,…](../adr/0010-test-key-mode-precedence.md) | [Docs index](../README.md) · [Architecture decision records](../adr/README.md) | [ADR 0012: The audit log is append-only in the data…](../adr/0012-append-only-audit-log.md) |
+| [ADR 0003: A test key overrides the execution mode,…](../adr/0005-test-key-mode-precedence.md) | [Docs index](../README.md) · [Architecture decision records](../adr/README.md) | [ADR 0012: The audit log is append-only in the data…](../adr/0012-append-only-audit-log.md) |

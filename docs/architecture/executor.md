@@ -42,7 +42,7 @@ finally:
 ```
 
 - It is **never** returned, logged, attached to a model, or present as a field in any response schema
-- More: [credentials](../security/credentials.md)
+- More: [credentials](../security/credentials.md), [envelope encryption](../adr/0003-envelope-encryption.md)
 
 ### Revocation mid-run
 
@@ -57,7 +57,7 @@ finally:
 
 Code: [`SerpApiGateway`](../../backend/app/integrations/serpapi/__init__.py)
 
-- **Every upstream search leaves through one `SerpApiGateway`**, built once per run with the mode `resolve_execution_mode` resolved ([precedence](../product/execution-modes.md#who-chooses-and-precedence))
+- **Every upstream search leaves through one `SerpApiGateway`**, built once per run with the mode `resolve_execution_mode` resolved ([precedence](../product/execution-modes.md#who-chooses-and-precedence), [ADR 0005](../adr/0005-test-key-mode-precedence.md))
 - **The archive is tried first, in `live` and `record` only:** an archived re-read is free. In `replay` and `mock` there is no archive to read
 
 | Mode | What the LIVE layer does | Credited | Step `cache_layer` |

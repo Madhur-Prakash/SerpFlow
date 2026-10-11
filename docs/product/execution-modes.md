@@ -51,7 +51,7 @@ Most specific wins:
 4.  SERPFLOW_MODE                            (instance default)
 ```
 
-- **Rule 1 is checked first**, and nothing below it is consulted
+- **Rule 1 is checked first**, and nothing below it is consulted ([ADR 0005](../adr/0005-test-key-mode-precedence.md))
   - a [`test` key](../security/api-keys.md#test-keys) **always** routes to the deterministic mock and **always** costs zero
   - no setting at any level overrides that. It is the one guarantee the whole mode system exists to protect
   - [`resolve_mode`](../../backend/app/integrations/serpapi/__init__.py) applies it, and states the reason on the result
@@ -130,6 +130,7 @@ SERPFLOW_MODE=replay
 
 ## Related
 
+- [ADR 0005](../adr/0005-test-key-mode-precedence.md): why a test key overrides every other setting, and the per-project update
 - [API keys](../security/api-keys.md#test-keys): what a test key is and how one is minted
 - [Bring your own key](../security/byok.md): the SerpApi credential `live` and `record` need
 - [The executor](../architecture/executor.md): the gateway that reads and writes cassettes, and the credential boundary

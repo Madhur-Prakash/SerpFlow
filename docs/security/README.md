@@ -69,6 +69,7 @@
 | [SDKs](../sdks/README.md) | the MCP server runs inside the trust boundary and needs the deployment's secrets: [MCP: how it runs](../sdks/mcp.md#how-it-runs), [configuration](../sdks/mcp.md#configuration); its session cap: [sessions and budgets](../sdks/mcp.md#sessions-and-budgets) |
 | [Database](../database/README.md) | the database half of tenant isolation and the append-only audit log: [row-level security](../database/rls.md#how-it-works), [the audit log](../database/rls.md#the-audit-log); the rows these pages protect: [`upstream_credentials`](../database/schema.md#upstream_credentials), [`api_keys`](../database/schema.md#api_keys) |
 | [Operations](../operations/README.md) | the redaction filter on every log handler: [observability: logging](../operations/observability.md#logging); why the demo seed is refused in production: [bootstrap: an environment refusal](../operations/bootstrap.md#3-an-environment-refusal); rate limiting failing open: [Redis: why none of it is authoritative](../operations/redis.md#why-none-of-it-is-authoritative); key and credential failures: [troubleshooting: authentication](../operations/troubleshooting.md#authentication) |
+| [Decisions](../adr/README.md) | three records are this section's own (0004, 0005, 0006), and the threat model leans on five more: [how they fit together](../adr/README.md#how-they-fit-together) |
 
 ## Related
 

@@ -99,7 +99,7 @@ const TITLE_OVERRIDES: Record<string, string> = {
 function titleFromSlug(slug: string): string {
   if (TITLE_OVERRIDES[slug]) return TITLE_OVERRIDES[slug];
   const last = slug.split("/").pop() ?? slug;
-  // ADR filenames carry a number: "0008-coverage-before-price".
+  // ADR filenames carry a number: "0004-coverage-before-price".
   const adr = last.match(/^(\d{4})-(.+)$/);
   const words = (adr ? adr[2] : last).replace(/-/g, " ");
   const cased = words.charAt(0).toUpperCase() + words.slice(1);

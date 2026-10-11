@@ -10,7 +10,7 @@
 
 [Docs](../README.md) › [Database](../database/README.md) › **Row-level security** · page 37 of 50
 
-**Tenant isolation is enforced twice**:
+**Tenant isolation is enforced twice** ([ADR 0006](../adr/0006-rls-plus-application-guards.md)):
 
 - **Application guards** are the primary check
 - **PostgreSQL row-level security** is the backstop, for the query somebody forgets to scope
@@ -157,6 +157,7 @@ CREATE TRIGGER serpflow_audit_no_update
 
 ## Related
 
+- [ADR 0006: tenant isolation enforced twice](../adr/0006-rls-plus-application-guards.md): why RLS is the backstop, not the only check
 - [Database schema](schema.md): every table, with the 24 covered ones marked
 - [Migrations](migrations.md#0001_initial): where the policies and the trigger are created
 - [Threat model: cross-tenant data access](../security/threat-model.md#cross-tenant-data-access): the threat this answers

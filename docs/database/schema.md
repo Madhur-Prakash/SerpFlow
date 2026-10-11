@@ -67,7 +67,7 @@ service_sessions     machine identity: api_key_id, external_session_ref,
 
 - **`key_prefix` is 6 plaintext characters, uniquely indexed** (`ix_projects_key_prefix`). Every API key issued for the project embeds it ([API keys: format](../security/api-keys.md#format))
 - **`credential_id` is the project's own SerpApi credential**, first in the resolution order. `PATCH /v1/projects/{id}` refuses to point it at a non-SerpApi key ([bring your own key](../security/byok.md#how-a-key-is-chosen-for-a-request))
-- **`projects.execution_mode`** (migration `0004`): the project's own mode. `NULL` inherits `SERPFLOW_MODE`; a check constraint admits only `live`, `record` and `replay`. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence)
+- **`projects.execution_mode`** (migration `0004`): the project's own mode. `NULL` inherits `SERPFLOW_MODE`; a check constraint admits only `live`, `record` and `replay`. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence) and [ADR 0005](../adr/0005-test-key-mode-precedence.md#update-per-project-and-per-request-modes)
 - **`engine_allowlist` / `engine_denylist`** are checked by the planner and again by the executor at each step ([executor: engine policy](../architecture/executor.md#engine-policy))
 - **`retention_days` and `retention_high_pii_days` are stored, not applied:** the executor's retention deadline reads the instance settings ([executor: retention](../architecture/executor.md#retention))
 
@@ -117,7 +117,7 @@ upstream_quota_snapshots  periodic reconciliation, with divergence
 
 ### `upstream_credentials`
 
-- **No column holds a recoverable plaintext key:** `ciphertext` and `encrypted_dek` are the two halves of the envelope ([envelope encryption](../security/credentials.md#envelope-encryption))
+- **No column holds a recoverable plaintext key:** `ciphertext` and `encrypted_dek` are the two halves of the envelope ([ADR 0003](../adr/0003-envelope-encryption.md), [envelope encryption](../security/credentials.md#envelope-encryption))
 - **No response schema** in `app/schemas` has a field that could carry one
 - **`provider` is `serpapi` or `groq`.** `project_id` NULL means an organization-wide credential; it is a plain column, not a foreign key
 - **`fingerprint` is indexed**, so attaching a key the organization already holds is refused with `CONFLICT`. `ix_upstream_credentials_org_active` covers `(org_id, revoked_at)`
@@ -165,7 +165,7 @@ steps             engine, parameters, depends_on, fan_out, cache_layer,
 ### `plans`
 
 - **`plans.marginal_replan_changed_selection` is indexed** (`ix_plans_replan_changed`), so "show me the runs where replanning changed the answer" is a cheap query. `ix_plans_project_created` serves the per-project history
-- **`selected_candidate_id` and `cold_winner_candidate_id`** point into `plan_candidates`; when they differ, marginal re-ranking changed the answer ([what `changed_selection` means](../architecture/marginal-replanning.md#what-changed_selection-means))
+- **`selected_candidate_id` and `cold_winner_candidate_id`** point into `plan_candidates`; when they differ, marginal re-ranking changed the answer ([what `changed_selection` means](../architecture/marginal-replanning.md#what-changed_selection-means), [ADR 0001](../adr/0001-marginal-cost-replanning.md))
 - **`single_candidate_reason` is required when `candidate_count` is 1** ([candidate plurality](../architecture/planner.md#candidate-plurality-is-a-hard-requirement))
 - **`budget_reduction`** records what [budget-aware reduction](../architecture/marginal-replanning.md#budget-aware-reduction-happens-before-ranking) dropped, with its impact note
 - **`stage_trace`** records each planner stage, including the provider and model that chose the engines ([what the Plan stores](../architecture/planner.md#what-the-plan-stores))
@@ -192,7 +192,7 @@ steps             engine, parameters, depends_on, fan_out, cache_layer,
 
 ## Cache
 
-Behaviour: [caching](../architecture/caching.md)
+Behaviour: [caching](../architecture/caching.md) ([ADR 0002](../adr/0002-deterministic-semantic-guard.md))
 
 ```
 cache_entries              partition_key, engine, gl, hl, location,

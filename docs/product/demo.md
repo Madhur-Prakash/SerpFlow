@@ -80,7 +80,7 @@ changed            no
 - **The 11-credit Yelp route does not win.** It is a narrow-coverage substitute:
   - Yelp exposes reviewer display names, but no stable contributor identity
   - cross-venue linkage degrades to name matching
-  - coverage is ranked **before** price ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price))
+  - coverage is ranked **before** price ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price), [ADR 0004](../adr/0004-coverage-before-price.md))
 
 ### Phase 2: a different project warms the Maps chain
 
@@ -211,6 +211,7 @@ assert _replan_counter_total() > before
 - [The engine catalog](../architecture/catalog.md#the-reference-demo-chain): the dependency edges the chain walks
 - [Execution modes](execution-modes.md): why a test key means zero credits, and why `replay` still serves a warm intent
 - [Product overview](product-overview.md#the-thesis): the claim being proven
+- [ADR 0001](../adr/0001-marginal-cost-replanning.md): the decision the demo exists to prove
 - [Observability](../operations/observability.md#the-thesis-metric): the counter the demo increments
 - [Troubleshooting](../operations/troubleshooting.md#the-demo): when `make demo` exits non-zero
 - [Architecture overview](../architecture/overview.md): the components the demo exercises

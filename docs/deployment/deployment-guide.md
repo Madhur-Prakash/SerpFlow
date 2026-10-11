@@ -75,7 +75,7 @@ openssl rand -hex 16                 # GRAFANA_PASSWORD
 
 | Secret | If you lose it or change it carelessly |
 | --- | --- |
-| `CREDENTIAL_KEK` | every stored SerpApi/Groq credential becomes **undecryptable**. Rotate only with the [rewrap procedure](../security/secrets.md#kek) |
+| `CREDENTIAL_KEK` | every stored SerpApi/Groq credential becomes **undecryptable**. Rotate only with the [rewrap procedure](../security/secrets.md#kek); why it wraps per-credential keys: [ADR 0003](../adr/0003-envelope-encryption.md) |
 | `API_KEY_PEPPER` | **every API key stops working**. Rotation means re-issuing all keys: [pepper rotation](../security/secrets.md#pepper) |
 | `JWT_SECRET` | every user is signed out. Recoverable ([JWT secret rotation](../security/secrets.md#jwt-secret)) |
 | `POSTGRES_PASSWORD` | only set at first initialisation of the volume; changing it later needs `ALTER ROLE` too |
@@ -214,7 +214,7 @@ dc exec backend python -m app.workers.topics
 - **The table owner bypasses [row-level security](../database/rls.md) by default**, and the backend connects as the owner (`POSTGRES_USER`)
 - **Worse, the official postgres image creates `POSTGRES_USER` as a superuser, and a superuser bypasses RLS always, `FORCE` included.** On the bundled compose stack, forcing alone changes nothing
   - **So first connect the backend as a separate role that is not a superuser**: the [`serpflow_app` recipe in production](production.md#before-anything-else). Until then the [application guards](../database/rls.md#the-application-guards) are the only tenant boundary
-- Then force the policies onto the owner too, for any path that still connects as it. With the policy's [empty-setting clause](../database/rls.md#the-empty-value-clause), migrations and workers keep working
+- Then force the policies onto the owner too, for any path that still connects as it. With the policy's [empty-setting clause](../database/rls.md#the-empty-value-clause), migrations and workers keep working. Why both RLS and application guards: [ADR 0006](../adr/0006-rls-plus-application-guards.md)
 
 ```bash
 dc exec -T postgres psql -U serpflow -d serpflow <<'SQL'
@@ -298,7 +298,7 @@ curl -s https://serpflow.example.com/readyz           # every check "ok"
 dc exec backend python -m app.cli.main health        # the same, from inside
 ```
 
-Smoke-test with the **test key**. It routes to the deterministic mock and **spends zero credits** ([test keys](../security/api-keys.md#test-keys)):
+Smoke-test with the **test key**. It routes to the deterministic mock and **spends zero credits** ([test keys](../security/api-keys.md#test-keys) · [ADR 0005](../adr/0005-test-key-mode-precedence.md)):
 
 ```bash
 export KEY=sf_test_...

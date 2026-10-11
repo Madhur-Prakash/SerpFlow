@@ -227,7 +227,7 @@ make catalog-validate            # lint the committed catalog; exits 1 on any pr
 ## Related
 
 - [The planner](planner.md): how stages A to D use the catalog, and how a free-text query becomes a ticker
-- [Marginal replanning](marginal-replanning.md): why substitutes give the cost model something to re-rank, and why their `coverage` outranks their price
+- [Marginal replanning](marginal-replanning.md) and [ADR 0004](../adr/0004-coverage-before-price.md): why substitutes give the cost model something to re-rank, and why their `coverage` outranks their price
 - [Caching](caching.md#adaptive-ttl): how `volatility_prior` seeds each entry's TTL
 - [Database schema](../database/schema.md#catalog-projection): the tables `make seed` projects the catalog into
 - [Benchmark](../product/benchmark.md#if-you-change-the-catalog): routing accuracy per catalog version, and what to run after an edit

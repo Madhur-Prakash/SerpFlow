@@ -254,6 +254,7 @@ Phase 3  same intent, same catalog version, same 20-credit budget, warm cache
 
 ## Related
 
+- [ADR 0001](../adr/0001-marginal-cost-replanning.md): why candidates are ranked on marginal cost, not cold cost
 - [The planner](planner.md#stage-d-path-find-and-generate-candidates): where the candidates and their freshness requirements come from
 - [Caching](caching.md#two-entry-points): what `inspect()` reads, and the layers behind it
 - [The executor](executor.md#budget-enforcement): the per-call budget check, and the spend and saving rows it writes

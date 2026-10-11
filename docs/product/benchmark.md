@@ -207,7 +207,7 @@ freshness_correct reported separately, not part of `correct`
 
 - Freshness is scored, but **kept out of the headline** so the number stays comparable with a routing-only baseline
 - **A match on an acceptable alternative counts as correct**, and is counted separately as `matched_alternative_count` (23 in the committed SerpFlow report)
-- **The SerpFlow system is scored on the plan the planner would rank first on a cold cache:** coverage, then cold cost, then selector confidence, the same order the planner uses ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price))
+- **The SerpFlow system is scored on the plan the planner would rank first on a cold cache:** coverage, then cold cost, then selector confidence, the same order the planner uses ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price), [ADR 0004](../adr/0004-coverage-before-price.md))
 
 ## Running it
 
@@ -241,6 +241,7 @@ serpflow benchmark run --system serpflow --limit 20 --no-write   # a subset, whi
 - [Bring your own key](../security/byok.md): the Groq key that swaps in a model-backed selector
 - [CLI](../sdks/cli.md#serpflow-benchmark): every `serpflow benchmark` flag, including `--no-write`
 - [Database schema](../database/schema.md#benchmark): `benchmark_tasks`, `benchmark_runs` and `routing_evals`
+- [ADR 0004](../adr/0004-coverage-before-price.md): coverage before price, the order the harness ranks in
 
 ---
 

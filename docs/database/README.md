@@ -55,6 +55,7 @@
 | [SDKs](../sdks/README.md) | the MCP server connects to this database directly, not to the API, and needs it migrated and seeded ([MCP: how it runs](../sdks/mcp.md#how-it-runs)); each agent session it opens is a [`service_sessions`](schema.md#service_sessions) row ([sessions and budgets](../sdks/mcp.md#sessions-and-budgets)) |
 | [Security](../security/README.md) | [threat model: assets](../security/threat-model.md#assets) maps each asset to its table, and [cross-tenant data access](../security/threat-model.md#cross-tenant-data-access) is the threat RLS answers; [envelope encryption](../security/credentials.md#envelope-encryption) and [key resolution](../security/api-keys.md#resolution) are the behaviour behind `upstream_credentials` and `api_keys` |
 | [Operations](../operations/README.md) | the [startup bootstrap](../operations/bootstrap.md#1-an-advisory-lock) can migrate on start, under an advisory lock; [troubleshooting: database](../operations/troubleshooting.md#database) covers `type "vector" does not exist` and the append-only error; [Redis](../operations/redis.md#why-none-of-it-is-authoritative) sits in front of PostgreSQL, not instead of it: lose Redis, and the durable cache index and key resolution still answer from here |
+| [Decisions](../adr/README.md) | ADR 0006 and 0012 are implemented in [row-level security](rls.md); ten more bear on single tables, a revision or the driver, listed below |
 
 ## Related
 

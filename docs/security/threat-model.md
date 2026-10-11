@@ -57,15 +57,15 @@ browser / SDK / CLI / agent
 
 | Threat | Main defence | Implemented in | Section |
 | --- | --- | --- | --- |
-| Cross-tenant access | app guards + RLS, `404` not `403` | [RLS](../database/rls.md) | [↓](#cross-tenant-data-access) |
-| Database dump | envelope encryption, peppered HMAC; KEK and pepper not in the DB | [credentials](credentials.md#envelope-encryption) | [↓](#credential-theft-from-the-database) |
+| Cross-tenant access | app guards + RLS, `404` not `403` | [RLS](../database/rls.md), [ADR 0006](../adr/0006-rls-plus-application-guards.md) | [↓](#cross-tenant-data-access) |
+| Database dump | envelope encryption, peppered HMAC; KEK and pepper not in the DB | [credentials](credentials.md#envelope-encryption), [ADR 0003](../adr/0003-envelope-encryption.md) | [↓](#credential-theft-from-the-database) |
 | Exfiltration via the API | credential fields absent from every schema, test-enforced | [credentials](credentials.md#never-in-a-response) | [↓](#credential-exfiltration-through-the-api) |
 | Leakage via logs | redaction filter on four routes | [credentials](credentials.md#never-in-a-log), [observability](../operations/observability.md#logging) | [↓](#credential-leakage-through-logs) |
 | Spend abuse | four independent limits | [executor](../architecture/executor.md#budget-enforcement), [API keys](api-keys.md#service-principal-sessions) | [↓](#spend-abuse) |
-| Wrong data served as live | deterministic guard, freshness, provenance headers | [caching](../architecture/caching.md#the-entity-and-numeral-guard) | [↓](#stale-or-wrong-cached-data-served-as-live) |
+| Wrong data served as live | deterministic guard, freshness, provenance headers | [caching](../architecture/caching.md#the-entity-and-numeral-guard), [ADR 0002](../adr/0002-deterministic-semantic-guard.md) | [↓](#stale-or-wrong-cached-data-served-as-live) |
 | Personal data | separate permission, `pii_risk`, a shorter retention deadline | [executor](../architecture/executor.md#retention) | [↓](#personal-data-in-cached-payloads) |
 | Audit tampering | append-only trigger + hash chain | [RLS: the audit log](../database/rls.md#the-audit-log) | [↓](#tampering-with-the-audit-log) |
-| Mock mistaken for live | absolute mode precedence, loud replay misses | [execution modes](../product/execution-modes.md) | [↓](#replay-or-mock-data-mistaken-for-live) |
+| Mock mistaken for live | absolute mode precedence, loud replay misses | [execution modes](../product/execution-modes.md), [ADR 0005](../adr/0005-test-key-mode-precedence.md) | [↓](#replay-or-mock-data-mistaken-for-live) |
 | Session theft | hashed refresh tokens, 15-minute access tokens | [API: authentication](../api/overview.md#authentication) | [↓](#session-theft) |
 | Denial of service | body cap, rate limit, bounded planning | [API: rate limiting](../api/overview.md#rate-limiting), [planner](../architecture/planner.md#stage-d-path-find-and-generate-candidates) | [↓](#denial-of-service) |
 
@@ -73,7 +73,7 @@ browser / SDK / CLI / agent
 
 **Scenario:** an authenticated caller for org A requests a run id belonging to org B.
 
-- **Enforced twice**:
+- **Enforced twice** ([ADR 0006](../adr/0006-rls-plus-application-guards.md)):
   - the application compares `org_id` on every resource fetched by id
   - PostgreSQL row-level security on **24 tables** is the backstop for a query that forgets ([covered tables](../database/rls.md#covered-tables))
 - **The response is `404`, never `403`:** confirming that an id exists in another organization is itself a leak
@@ -87,7 +87,7 @@ browser / SDK / CLI / agent
 
 **Scenario:** an attacker obtains a database dump.
 
-- **Credentials are AES-256-GCM encrypted** under a per-credential DEK, itself wrapped by a KEK that lives **only in the process environment** ([envelope encryption](credentials.md#envelope-encryption))
+- **Credentials are AES-256-GCM encrypted** under a per-credential DEK, itself wrapped by a KEK that lives **only in the process environment** ([envelope encryption](credentials.md#envelope-encryption), [ADR 0003](../adr/0003-envelope-encryption.md))
   - the dump holds ciphertext and wrapped DEKs, nothing more
 - **API key hashes are HMAC-SHA256 under a server-side pepper**, also not in the database ([API keys: hashing](api-keys.md#hashing-hmac-sha256-not-argon2))
   - so a guessed key cannot be verified offline either
@@ -130,7 +130,7 @@ browser / SDK / CLI / agent
 
 **The cache is the product**, so a bad hit is a **correctness** failure, not a performance one.
 
-- **The deterministic entity, numeral and version guard runs independently of the cosine score** ([the entity and numeral guard](../architecture/caching.md#the-entity-and-numeral-guard))
+- **The deterministic entity, numeral and version guard runs independently of the cosine score** ([the entity and numeral guard](../architecture/caching.md#the-entity-and-numeral-guard), [ADR 0002](../adr/0002-deterministic-semantic-guard.md))
   - "Nvidia Q3 2024 revenue" and "Nvidia Q4 2024 revenue" embed close together, and are rejected on exact set equality
 - **Freshness bounds are enforced before reuse:** a warm entry that misses the step's freshness requirement does not count as warm ([available is not acceptable](../architecture/marginal-replanning.md#available-is-not-acceptable))
 - **Provenance is never implicit** ([API: provenance headers](../api/overview.md#provenance-headers)):
@@ -164,7 +164,7 @@ browser / SDK / CLI / agent
 
 **Scenario:** a demo or test run is read as a real result.
 
-- **Mode precedence is absolute:** a `test` API key routes to the deterministic mock regardless of `SERPFLOW_MODE`, and no configuration overrides it ([execution modes](../product/execution-modes.md#who-chooses-and-precedence))
+- **Mode precedence is absolute:** a `test` API key routes to the deterministic mock regardless of `SERPFLOW_MODE`, and no configuration overrides it ([ADR 0005](../adr/0005-test-key-mode-precedence.md), [execution modes](../product/execution-modes.md#who-chooses-and-precedence))
 - **Replay never silently falls back to the network:** a cassette miss raises `REPLAY_CASSETTE_MISS` instead of quietly spending a credit ([troubleshooting](../operations/troubleshooting.md#replay_cassette_miss))
 - **Choosing a billable mode per request needs its own permission** (`run:mode_override`); downgrading to `replay` needs none ([execution modes: permission](../product/execution-modes.md#permission))
 - **`X-SerpFlow-Mode` on plan and search responses is the resolved mode** of that request; on other routes it is the instance default, or `MOCK` for a test key ([`app/api/middleware.py`](../../backend/app/api/middleware.py))
@@ -227,6 +227,7 @@ Stated plainly, because an unstated boundary reads as an oversight:
 - [API keys](api-keys.md): key format, roles and service sessions
 - [Secrets](secrets.md): the deployment secrets a compromised host would expose
 - [Row-level security](../database/rls.md): the database half of tenant isolation
+- [ADR 0006](../adr/0006-rls-plus-application-guards.md): isolation enforced twice, and an audit log that refuses edits
 - [Production](../deployment/production.md#before-anything-else): the hardening this model assumes
 - [SECURITY.md](../../SECURITY.md#reporting-a-vulnerability): how to report what this page missed
 - [Architecture overview](../architecture/overview.md): the components and trust boundaries modelled here
