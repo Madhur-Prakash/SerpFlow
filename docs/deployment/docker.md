@@ -1,7 +1,7 @@
 # Docker
 
 <p>
-  <a href="../README.md#deployment"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
+  <a href="../deployment/README.md"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
   <img alt="services: 8" src="https://img.shields.io/badge/services-8-2496ED">
   <img alt="Docker: Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
   <img alt="nginx: 1.27" src="https://img.shields.io/badge/nginx-1.27-009639?logo=nginx&logoColor=white">
@@ -12,7 +12,7 @@
   <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../README.md#deployment) › **Docker** · page 8 of 57
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Docker** · page 10 of 50
 
 The whole stack runs in containers, from one compose file:
 
@@ -103,7 +103,7 @@ CMD ["python", "-m", "app.server", "--host", "0.0.0.0", "--port", "8000"]
   - both take a **PostgreSQL advisory lock**, so two replicas starting together cannot race
   - a shell `alembic upgrade head &&` in front of the server could not do that
   - schema changes still go only through Alembic. Details: [bootstrap](../operations/bootstrap.md) · [migrations](../database/migrations.md)
-- **It starts `app.server`, not uvicorn directly:** that module passes an explicit asyncio `loop_factory`. See [async on Windows](../architecture/backend.md#async-on-windows) and [ADR 0013](../adr/0013-explicit-event-loop-factory.md)
+- **It starts `app.server`, not uvicorn directly:** that module passes an explicit asyncio `loop_factory`. See [async on Windows](../architecture/backend.md#async-on-windows)
 - **It bundles `fixtures/`:** the benchmark tasks and results, because the startup seed loads the benchmark suite
   - no cassettes are committed, so `fixtures/cassettes/` starts empty and `replay` with a live key misses until something is recorded
   - compose bind-mounts `./backend/fixtures` over `/app/fixtures`, so cassettes recorded in the container land on the host
@@ -169,7 +169,7 @@ location ~ ^/v1/runs/[^/]+/stream$ {
 ### Kafka
 
 - **Kafka 4.x in KRaft mode.** There is no ZooKeeper service, and there will not be one: ZooKeeper is removed in Kafka 4
-- Kafka carries **background work only**; interactive search never touches it ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md))
+- Kafka carries **background work only**; interactive search never touches it
 
 ```yaml
 KAFKA_PROCESS_ROLES: broker,controller
@@ -236,4 +236,4 @@ docker compose build --no-cache backend
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Local development](../deployment/local.md) | [Docs index](../README.md) | [Deployment guide](../deployment/deployment-guide.md) |
+| [Local development](../deployment/local.md) | [Docs index](../README.md) · [Deployment index](../deployment/README.md) | [Deployment guide](../deployment/deployment-guide.md) |

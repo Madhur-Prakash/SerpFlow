@@ -1,7 +1,7 @@
 # Observability
 
 <p>
-  <a href="../README.md#operations"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
+  <a href="../operations/README.md"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
   <img alt="metrics: 22" src="https://img.shields.io/badge/metrics-22-E6522C">
   <img alt="OpenTelemetry: traces" src="https://img.shields.io/badge/OpenTelemetry-traces-425CC7?logo=opentelemetry&logoColor=white">
   <img alt="Prometheus: metrics" src="https://img.shields.io/badge/Prometheus-metrics-E6522C?logo=prometheus&logoColor=white">
@@ -10,7 +10,7 @@
   <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../README.md#operations) › **Observability** · page 39 of 57
+[Docs](../README.md) › [Operations](../operations/README.md) › **Observability** · page 47 of 50
 
 **Structured logs, Prometheus metrics and OpenTelemetry traces.** A request id ties the logs to the response and the error body the caller sees, and with tracing on a trace id ties both to the trace ([correlating one request](#correlating-one-request)).
 
@@ -343,4 +343,4 @@ X-SerpFlow-Run-Id        <- the run, which the Run Inspector will explain
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Email](../operations/email.md) | [Docs index](../README.md) | [Kafka](../operations/kafka.md) |
+| [Email](../operations/email.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Kafka](../operations/kafka.md) |

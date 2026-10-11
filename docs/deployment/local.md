@@ -1,7 +1,7 @@
 # Local development
 
 <p>
-  <a href="../README.md#deployment"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
+  <a href="../deployment/README.md"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
   <img alt="API keys: not required" src="https://img.shields.io/badge/API%20keys-not%20required-3fcf8e">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="uv: venv" src="https://img.shields.io/badge/uv-venv-DE5FE9?logo=uv&logoColor=white">
@@ -11,7 +11,7 @@
   <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../README.md#deployment) › **Local development** · page 7 of 57
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Local development** · page 9 of 50
 
 **The target: a working system with no API keys at all.** `make dev` and `make seed` must both succeed on a machine that has never seen a SerpApi key, and they do:
 
@@ -41,7 +41,7 @@ cp .env.example .env     # nothing in it needs editing to get started
 make install             # uv venv + backend deps, then npm install
 make up                  # postgres, redis, kafka
 make upgrade             # migrations
-make seed                # catalog, benchmark fixtures, demo org - prints a test key
+make seed                # catalog, benchmark fixtures, demo org - prints two sign-ins and four keys
 make dev                 # API on :8000, frontend on :5173
 ```
 
@@ -68,7 +68,7 @@ API keys (shown once, exactly as the product shows them):
 
 - **Use the `test` key** for everything in these docs
 - **Keys are printed only when the seed creates the demo organization.** A second run says `Demo organization already present` and prints none: `make seed ARGS=--reset` recreates it with fresh keys ([seeding by hand](../operations/bootstrap.md#seeding-by-hand))
-- The `service` key is a [service principal](../security/api-keys.md#service-principal-sessions); all four carry the `developer` role except `service`, which carries `service` ([roles](../security/api-keys.md#roles))
+- The `service` key is a [service principal](../security/api-keys.md#service-principal-sessions); the other three carry the `developer` role, and `service` carries `service` ([roles](../security/api-keys.md#roles))
 
 ## CLI, SDK and MCP
 
@@ -87,7 +87,7 @@ export SERPFLOW_MCP_SESSION=my-agent           # optional, MCP only
 | `SERPFLOW_MCP_SESSION` | MCP | names the service session; the same name resumes it, so the session budget carries across restarts. Unset, each tool call made with a service key opens a new session, so the cap bounds single calls rather than the agent's total |
 
 - Sources: [`app/cli/main.py`](../../backend/app/cli/main.py) · [`app/sdk/__init__.py`](../../backend/app/sdk/__init__.py) · [`app/mcp/server.py`](../../backend/app/mcp/server.py). Listed in the `.env.example` "CLI, SDK and MCP" block and in [secrets](../security/secrets.md#inventory)
-- **`make install` already installed all three** into `backend/.venv`, as an editable install. Neither SDK is published to PyPI or npm yet
+- **`make install` already installed all three** into `backend/.venv`, as an editable install. The SDKs are not released to PyPI or npm until the author decides to host SerpFlow, so a self-hosted setup uses them from this checkout ([why](../sdks/releasing.md#first-who-runs-the-server))
 - How to run each: [CLI](../sdks/cli.md) · [Python SDK: install](../sdks/python.md#install) · [MCP: connect a client](../sdks/mcp.md#connect-a-client) · [which one to use](../sdks/overview.md#which-one-to-use)
 
 ## What is running
@@ -156,7 +156,7 @@ make docs-nav        # regenerate doc badges, breadcrumbs, prev/next links and t
 | `install-backend` | `uv venv --python 3.13 .venv` and an editable `uv pip install -e ".[dev]"` in `backend/` | [CLI: install](../sdks/cli.md#install) · [Python SDK: install](../sdks/python.md#install) |
 | `install-frontend` | `npm install` in `frontend/` | [frontend](../architecture/frontend.md#structure) |
 | `dev` | `backend` and `frontend` in parallel (`make -j2`) | [first run](#first-run) |
-| `backend` | `python -m app.server --reload` on `0.0.0.0:8000` | [async on Windows](../architecture/backend.md#async-on-windows) · [ADR 0013](../adr/0013-explicit-event-loop-factory.md) |
+| `backend` | `python -m app.server --reload` on `0.0.0.0:8000` | [async on Windows](../architecture/backend.md#async-on-windows) |
 | `frontend` | `npm run dev`: Vite on 5173, proxying `/v1`, `/healthz`, `/readyz`, `/metrics` to the API | [frontend](../architecture/frontend.md) |
 | `worker` | `python -m app.workers.runner`: ensures the topics, then runs every consumer | [Kafka: running consumers](../operations/kafka.md#running-consumers) |
 | `mcp` | `python -m app.mcp.server`, stdio; needs `SERPFLOW_API_KEY` in the shell | [MCP server](../sdks/mcp.md#run-it) |
@@ -180,7 +180,7 @@ make docs-nav        # regenerate doc badges, breadcrumbs, prev/next links and t
 | `api-check` | `scripts/check_api.py`: calls every operation against a running instance; `ARGS=--verbose` lists the skips | [checking every operation](../api/overview.md#checking-every-operation) |
 | `catalog-build` | `backend/scripts/catalog_build.py`: regenerates catalog drafts from the SerpApi docs; `ARGS=--diff` | [how the catalog is authored](../architecture/catalog.md#how-the-catalog-is-authored) |
 | `catalog-validate` | `serpflow catalog validate`: lints the committed catalog | [how the catalog is authored](../architecture/catalog.md#how-the-catalog-is-authored) |
-| `benchmark` | `serpflow benchmark compare`: real LLM calls, on demand only | [benchmark: running it](../product/benchmark.md#running-it) |
+| `benchmark` | `serpflow benchmark compare`: real LLM calls with `LLM_PROVIDER=groq` (the default adapter makes none), on demand only | [benchmark: running it](../product/benchmark.md#running-it) |
 | `test` | `pytest -q` in `backend/`: 236 tests | [contributing: tests](../../CONTRIBUTING.md#tests) |
 | `test-unit` | `pytest tests/unit`: 208 tests, no services | [contributing: tests](../../CONTRIBUTING.md#tests) |
 | `test-integration` | `pytest tests/integration`: 25 tests, needs PostgreSQL and Redis | [skipped integration tests](../operations/troubleshooting.md#integration-tests-all-report-skipped) |
@@ -208,7 +208,7 @@ replay   serve from cassettes only, fail loudly on a miss
 ```
 
 - **No cassettes are committed**, so on a fresh checkout every live-key search in `replay` misses until you have recorded it
-- **A `test` API key routes to the deterministic mock regardless of this setting** ([ADR 0010](../adr/0010-test-key-mode-precedence.md))
+- **A `test` API key routes to the deterministic mock regardless of this setting**
   - that precedence is absolute and cannot be overridden
   - it is what makes it safe to develop against a repository with a live key in its `.env`
 - `SERPFLOW_MODE` is only the **instance default**. A project can set its own mode, and a single search can override it: see [execution modes](../product/execution-modes.md#who-chooses-and-precedence)
@@ -267,7 +267,7 @@ Three phases, all inside the SerpApi free tier:
 ```
 
 - **Run it again with `make demo ARGS=--reset-cache`:** without it, phase 1 may find entries an earlier run left warm ([phase 1 says "3 of 3 steps warm"](../operations/troubleshooting.md#phase-1-says-3-of-3-steps-warm))
-- Walkthrough: [the reference demo](../product/demo.md) · why it ranks on marginal cost: [ADR 0001](../adr/0001-marginal-cost-replanning.md)
+- Walkthrough: [the reference demo](../product/demo.md) · why it ranks on marginal cost: [marginal-cost replanning](../architecture/marginal-replanning.md)
 
 ## Resetting
 
@@ -290,10 +290,10 @@ A dedicated page covers the common failures: [operations/troubleshooting](../ope
 - **psycopg and the Windows event loop** ([troubleshooting](../operations/troubleshooting.md#psycopg-fails-on-windows-proactoreventloop))
   - psycopg's async implementation cannot run on `ProactorEventLoop`
   - uvicorn 0.54 picks that loop itself for single-process runs, ignoring the policy
-  - [`app/server.py`](../../backend/app/server.py) exists to pass an explicit `loop_factory`, which is why `make backend` runs `python -m app.server` and not `uvicorn app.main:app`: [ADR 0013](../adr/0013-explicit-event-loop-factory.md)
+  - [`app/server.py`](../../backend/app/server.py) exists to pass an explicit `loop_factory`, which is why `make backend` runs `python -m app.server` and not `uvicorn app.main:app` ([async on Windows](../architecture/backend.md#async-on-windows))
 - **Kafka not ready yet** ([`kafka.degraded` in the logs](../operations/troubleshooting.md#kafkadegraded-in-the-logs))
   - the broker takes a few seconds to form its KRaft quorum
-  - `/readyz` reports it as degraded rather than failing, because Kafka only carries background work ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md))
+  - `/readyz` reports it as degraded rather than failing, because Kafka only carries background work
 
 ## Related
 
@@ -303,11 +303,10 @@ A dedicated page covers the common failures: [operations/troubleshooting](../ope
 - [Startup bootstrap](../operations/bootstrap.md): why `make dev` migrates and seeds on its own
 - [SDKs and tools](../sdks/overview.md): the CLI, Python SDK, TypeScript SDK and MCP server, and how they are configured
 - [Execution modes](../product/execution-modes.md): live, record, replay and mock, and who chooses
-- [ADR 0010](../adr/0010-test-key-mode-precedence.md): why a test key is always mock
 - [Troubleshooting](../operations/troubleshooting.md): every failure above, with its fix
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Installation](../deployment/installation.md) | [Docs index](../README.md) | [Docker](../deployment/docker.md) |
+| [Installation](../deployment/installation.md) | [Docs index](../README.md) · [Deployment index](../deployment/README.md) | [Docker](../deployment/docker.md) |

@@ -1,7 +1,7 @@
 # Migrations
 
 <p>
-  <a href="../README.md#database"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
+  <a href="../database/README.md"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
   <img alt="revisions: 4" src="https://img.shields.io/badge/revisions-4-4169E1">
   <img alt="Alembic: migrations" src="https://img.shields.io/badge/Alembic-migrations-6BA81E">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
@@ -9,7 +9,7 @@
   <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
 </p>
 
-[Docs](../README.md) › [Database](../README.md#database) › **Migrations** · page 30 of 57
+[Docs](../README.md) › [Database](../database/README.md) › **Migrations** · page 36 of 50
 
 - **Every schema change goes through Alembic.** Nothing is created by hand
 - `make seed` runs only **after** `make upgrade` has brought the database to head ([everyday targets](../deployment/local.md#everyday-targets))
@@ -56,13 +56,13 @@ CREATE EXTENSION IF NOT EXISTS vector;     -- cache_entries.embedding, catalog_e
 CREATE EXTENSION IF NOT EXISTS pg_trgm;    -- query_text and search_text trigram search
 ```
 
-- **`btree_gin` is not created by any migration.** Only the container's [`01-extensions.sql`](../../docker/postgres/init/01-extensions.sql) creates it, alongside the other two, because `CREATE EXTENSION` needs a superuser the application role may not be
+- **`btree_gin` is not created by any migration.** Only the container's [`01-extensions.sql`](../../docker/postgres/init/01-extensions.sql) creates it, as the superuser, alongside the other two. `0001_initial` also runs `CREATE EXTENSION IF NOT EXISTS` for `vector` and `pg_trgm`: a no-op once the init script has run, and one that needs a superuser on a database where it has not
 - Then tables
 - Then the three indexes autogenerate cannot express:
   - `ix_cache_entries_embedding_hnsw`: HNSW over cosine distance, `m = 16`, `ef_construction = 64`
   - `ix_cache_entries_query_trgm` and `ix_catalog_engines_search_trgm`: GIN trigram
-- Then row-level security on 23 tables (the 22 in `RLS_TABLES`, plus `organizations`): see [row-level security](rls.md#covered-tables) and [ADR 0011](../adr/0011-rls-plus-application-guards.md)
-- Then the audit trigger ([ADR 0012](../adr/0012-append-only-audit-log.md))
+- Then row-level security on 23 tables (the 22 in `RLS_TABLES`, plus `organizations`): see [row-level security](rls.md#covered-tables)
+- Then the audit trigger
 
 Two details are not obvious:
 
@@ -121,7 +121,7 @@ Code: [`0004_project_execution_mode.py`](../../backend/alembic/versions/0004_pro
 - **The mode used to be server-wide**, so a project that only ever wanted recorded traffic could not say so while another ran live
 - **`NULL` means "inherit the server default"**, deliberately distinct from writing today's default into every row
   - an operator who later changes `SERPFLOW_MODE` moves the projects that never expressed a preference, and leaves the rest alone
-- **A check constraint** admits only `live`, `record` and `replay`. `mock` stays reachable only through a test key ([execution modes](../product/execution-modes.md#why-mock-is-not-selectable), [ADR 0010](../adr/0010-test-key-mode-precedence.md#update-per-project-and-per-request-modes))
+- **A check constraint** admits only `live`, `record` and `replay`. `mock` stays reachable only through a test key ([execution modes](../product/execution-modes.md#why-mock-is-not-selectable))
 
 ## Writing a new revision
 
@@ -184,12 +184,10 @@ docker compose down -v && make up   # drop the volume and start from nothing
 - [Row-level security](rls.md): the policies `0001_initial` and `0003_custom_roles` create
 - [Startup bootstrap](../operations/bootstrap.md): running `alembic upgrade head` on API start, under an advisory lock
 - [Deployment guide: upgrades and rollback](../deployment/deployment-guide.md#14-upgrades-and-rollback): migrating a running server
-- [ADR 0012](../adr/0012-append-only-audit-log.md): the audit trigger `0001` installs and `0002` narrows
-- [ADR 0011](../adr/0011-rls-plus-application-guards.md): why every new tenant table needs a policy
 - [Troubleshooting: `type "vector" does not exist`](../operations/troubleshooting.md#type-vector-does-not-exist): a database provisioned without the extension
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Database schema](../database/schema.md) | [Docs index](../README.md) | [Row-level security](../database/rls.md) |
+| [Database schema](../database/schema.md) | [Docs index](../README.md) · [Database index](../database/README.md) | [Row-level security](../database/rls.md) |

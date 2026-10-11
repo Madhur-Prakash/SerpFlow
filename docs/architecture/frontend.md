@@ -1,7 +1,7 @@
 # Frontend
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="React: 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black">
   <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
   <img alt="Vite: 6" src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white">
@@ -10,7 +10,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **Frontend** · page 18 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Frontend** · page 21 of 50
 
 **React 19, TypeScript, Vite, Tailwind CSS v4**, plus Radix primitives, TanStack Query, Zustand, Framer Motion, GSAP, Lenis, Recharts and Lucide.
 
@@ -58,7 +58,7 @@ src/
 
 - **There is no mock layer and no fixture data in the frontend**
 - **Every number on every chart was computed by the server**
-- **Stored decisions are read, not recomputed:** the Plan Inspector's counterfactual comes from the persisted Plan and its candidates ([ADR 0014](../adr/0014-persist-every-candidate.md))
+- **Stored decisions are read, not recomputed:** the Plan Inspector's counterfactual comes from the persisted Plan and its candidates
   - a recomputation that disagreed with what actually executed would be worse than no display at all
 - **When a run finishes, the search page fetches the persisted run** and renders that, rather than reconstructing the result from stream frames
 
@@ -148,7 +148,7 @@ Code: [`hooks/useRunStream.ts`](../../frontend/src/hooks/useRunStream.ts) · [`p
 | `/app/budgets` | budgets, upstream quota, and project policy: semantic threshold, engine denylist, retention, shared cache | [Budget-aware reduction](marginal-replanning.md#budget-aware-reduction-happens-before-ranking), [budget enforcement](executor.md#budget-enforcement), [engine policy](executor.md#engine-policy), [retention](executor.md#retention) |
 | `/app/analytics` | savings decomposition, engine reach, routing signal, measured volatility | [Spend and savings](../operations/observability.md#spend-and-savings), [adaptive TTL](caching.md#adaptive-ttl) |
 | `/app/benchmarks` | routing accuracy and failure analysis | [Routing benchmark](../product/benchmark.md) |
-| `/app/audit` | the hash-chained log | [The audit log](../database/rls.md#the-audit-log), [ADR 0012](../adr/0012-append-only-audit-log.md) |
+| `/app/audit` | the hash-chained log | [The audit log](../database/rls.md#the-audit-log) |
 | `/app/settings/*` | organization, members, roles, projects, api-keys, credentials, security, notifications | see below |
 
 - **Settings:**
@@ -168,10 +168,9 @@ Code: [`hooks/useRunStream.ts`](../../frontend/src/hooks/useRunStream.ts) · [`p
 - [Backend](backend.md): the API behind every page
 - [API keys](../security/api-keys.md): the roles and permissions the session store mirrors
 - [Troubleshooting: the pipeline animation does not move](../operations/troubleshooting.md#the-pipeline-animation-does-not-move): when the stream is not delivering
-- [ADR 0014](../adr/0014-persist-every-candidate.md): why the Plan Inspector can show every candidate
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Backend](../architecture/backend.md) | [Docs index](../README.md) | [The public web surface](../architecture/web.md) |
+| [Backend](../architecture/backend.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [The public web surface](../architecture/web.md) |

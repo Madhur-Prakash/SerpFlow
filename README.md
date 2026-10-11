@@ -13,7 +13,7 @@
   <a href="docs/product/benchmark.md"><img alt="routing accuracy 38.3%" src="https://img.shields.io/badge/routing%20accuracy-38.3%25-3fcf8e"></a>
   <a href="backend/tests"><img alt="tests: 236 passing" src="https://img.shields.io/badge/tests-236%20passing-3fcf8e"></a>
   <a href="docs/product/demo.md"><img alt="demo: proven" src="https://img.shields.io/badge/make%20demo-PROVEN-3fcf8e"></a>
-  <a href="docs/README.md"><img alt="docs: 62 pages" src="https://img.shields.io/badge/docs-62%20pages-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="docs/README.md"><img alt="docs: 55 pages" src="https://img.shields.io/badge/docs-55%20pages-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <a href="#hosting"><img alt="hosting: self-hosted, for now" src="https://img.shields.io/badge/hosting-self--hosted%2C%20for%20now-555555"></a>
   <a href="LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
 </p>
@@ -180,7 +180,7 @@ intent
 - Caching inside the executor saves credits on the plan you **already picked**
 - Re-planning changes **which plan you pick**
 - Those are different products
-- More: [the thesis](docs/product/product-overview.md#the-thesis) · [ADR 0001: rank on marginal cost](docs/adr/0001-marginal-cost-replanning.md)
+- More: [the thesis](docs/product/product-overview.md#the-thesis)
 
 ---
 
@@ -218,7 +218,7 @@ intent
 - **Dependency edges** make multi-hop chains **computable**
 - **Capability tags and substitutes** make alternative plans **generatable**
 - Remove either one and the thesis has nothing to operate on
-- Totals: **30 dependency edges, 69 substitute edges, 28 capability tags**. See [`docs/architecture/catalog.md`](docs/architecture/catalog.md) · [ADR 0002: two edge sets](docs/adr/0002-typed-catalog-edges.md)
+- Totals: **30 dependency edges, 69 substitute edges, 28 capability tags**. See [`docs/architecture/catalog.md`](docs/architecture/catalog.md)
 
 ### The planner has four stages
 
@@ -237,7 +237,7 @@ realtime  < 15m      fresh  < 24h      recent  < 7d      stable  any valid TTL
 ```
 
 - A warm entry counts toward marginal savings **only if it also meets the step's freshness requirement**
-- More: [`docs/architecture/planner.md`](docs/architecture/planner.md) · [ADR 0009: freshness gates warmth](docs/adr/0009-freshness-gates-warmth.md)
+- More: [`docs/architecture/planner.md`](docs/architecture/planner.md)
 
 ### Marginal cost is the ranking key
 
@@ -250,7 +250,7 @@ Plan B    cold 8    marginal 1      <- SerpFlow selects B
 - When the two disagree, that fact is **persisted on the Plan** and counted in `serpflow_marginal_replan_changed_selection_total`
 - The Plan Inspector renders the stored decision; nothing is recomputed in the browser
 - **Coverage outranks price:** a cheaper, narrow-coverage substitute is no reason to answer a different question
-- More: [`docs/architecture/marginal-replanning.md`](docs/architecture/marginal-replanning.md) · [ADR 0008: coverage before price](docs/adr/0008-coverage-before-price.md)
+- More: [`docs/architecture/marginal-replanning.md`](docs/architecture/marginal-replanning.md)
 
 ### Four cache layers
 
@@ -271,7 +271,7 @@ restaurants in Koramangala   never matches   restaurants in Indiranagar
 
 - This holds **regardless of cosine score**. It is a mechanism, not a model judgement
 - Every rejection is logged, so the threshold can be tuned with evidence
-- More: [`docs/architecture/caching.md`](docs/architecture/caching.md) · [ADR 0003: a deterministic guard](docs/adr/0003-deterministic-semantic-guard.md)
+- More: [`docs/architecture/caching.md`](docs/architecture/caching.md)
 
 ---
 
@@ -365,7 +365,7 @@ Most specific wins. Rule 1 is enforced in [`serpapi/__init__.py`](backend/app/in
 - **An unrecognised mode resolves to `replay`**, never to billable execution
 - The resolved mode travels on every response as `X-SerpFlow-Mode` and is always shown in the UI
 - Replayed or mocked data is never presented as live
-- More: [`docs/product/execution-modes.md`](docs/product/execution-modes.md) · [ADR 0010: test key precedence](docs/adr/0010-test-key-mode-precedence.md)
+- More: [`docs/product/execution-modes.md`](docs/product/execution-modes.md)
 
 ---
 
@@ -441,7 +441,7 @@ serpflow/
 │   └── routes/
 ├── sdk/typescript/            TypeScript SDK
 ├── docs/                      architecture, api, sdks, database, security,
-│                              deployment, operations, product, adr
+│                              deployment, operations, product
 ├── scripts/                   doc link check, docs nav, API check and reference
 ├── docker/                    postgres, redis, prometheus, grafana config
 ├── docker-compose.yml
@@ -596,7 +596,7 @@ for await (const event of client.stream("review rings among Koramangala cafes"))
 
 - **Python:** sync and async clients, one dependency (`httpx`). **TypeScript:** no dependencies; Node 18+, Deno, Bun and the browser
 - Both ship a **SerpApi-shaped drop-in**: a params dict in, `get_dict()` / `getJson()` out. `q` becomes the intent and SerpFlow's planner picks the engines, so existing code gains caching, budgets and provenance without a rewrite
-- **Not on npm or PyPI yet:** install from a checkout. [Releasing them](docs/sdks/releasing.md) covers the one-time fixes and every step
+- **Not released yet, by the author's decision:** the SDKs will be published to npm and PyPI when the author decides to host SerpFlow. If you self-host, install them from a checkout and use them on your own infrastructure ([releasing](docs/sdks/releasing.md#first-who-runs-the-server))
 - **There is no hosted server to point them at:** they talk to your own instance. See [hosting](#hosting)
 - More: [SDKs and tools](docs/sdks/overview.md) · [Python](docs/sdks/python.md) · [TypeScript](docs/sdks/typescript.md) · [CLI](docs/sdks/cli.md) · [`sdk/README.md`](sdk/README.md)
 
@@ -652,21 +652,20 @@ make test-e2e         # includes the thesis assertion
 
 ## Documentation
 
-- Everything lives in [`docs/`](docs/README.md): **62 pages**, each with a badge header and previous/next links, so the set reads end to end
+- Everything lives in [`docs/`](docs/README.md): **55 pages**, each with a badge header and previous/next links, so the set reads end to end, and every folder opens with a section index
 - The running app serves the same pages at `/docs`, with a sidebar, search and on-page contents
 - The API reference at `/api` is generated from the OpenAPI schema
 
 | | |
 | --- | --- |
-| **Product** | [overview](docs/product/product-overview.md) · [demo](docs/product/demo.md) · [execution modes](docs/product/execution-modes.md) · [benchmark](docs/product/benchmark.md) · [glossary](docs/product/glossary.md) |
-| **Deployment** | [installation](docs/deployment/installation.md) · [local](docs/deployment/local.md) · [docker](docs/deployment/docker.md) · [deployment guide](docs/deployment/deployment-guide.md) · [production](docs/deployment/production.md) |
-| **Architecture** | [overview](docs/architecture/overview.md) · [catalog](docs/architecture/catalog.md) · [planner](docs/architecture/planner.md) · [marginal replanning](docs/architecture/marginal-replanning.md) · [caching](docs/architecture/caching.md) · [executor](docs/architecture/executor.md) · [backend](docs/architecture/backend.md) · [frontend](docs/architecture/frontend.md) · [web surface](docs/architecture/web.md) |
-| **API** | [overview](docs/api/overview.md) · [streaming](docs/api/streaming.md) · [examples](docs/api/examples.md) |
-| **Database** | [schema](docs/database/schema.md) · [migrations](docs/database/migrations.md) · [RLS](docs/database/rls.md) |
-| **Security** | [threat model](docs/security/threat-model.md) · [BYOK](docs/security/byok.md) · [credentials](docs/security/credentials.md) · [API keys](docs/security/api-keys.md) · [secrets](docs/security/secrets.md) |
-| **Operations** | [bootstrap](docs/operations/bootstrap.md) · [email](docs/operations/email.md) · [observability](docs/operations/observability.md) · [kafka](docs/operations/kafka.md) · [redis](docs/operations/redis.md) · [troubleshooting](docs/operations/troubleshooting.md) |
-| **SDKs** | [overview](docs/sdks/overview.md) · [Python](docs/sdks/python.md) · [TypeScript](docs/sdks/typescript.md) · [CLI](docs/sdks/cli.md) · [MCP](docs/sdks/mcp.md) · [releasing](docs/sdks/releasing.md) · [in the repo](sdk/README.md) |
-| **Decisions** | [ADR index](docs/adr/README.md): fourteen records, each with the alternative rejected and the cost accepted |
+| **[Product](docs/product/README.md)** | [overview](docs/product/product-overview.md) · [demo](docs/product/demo.md) · [execution modes](docs/product/execution-modes.md) · [benchmark](docs/product/benchmark.md) · [glossary](docs/product/glossary.md) |
+| **[Deployment](docs/deployment/README.md)** | [installation](docs/deployment/installation.md) · [local](docs/deployment/local.md) · [docker](docs/deployment/docker.md) · [deployment guide](docs/deployment/deployment-guide.md) · [production](docs/deployment/production.md) |
+| **[Architecture](docs/architecture/README.md)** | [overview](docs/architecture/overview.md) · [catalog](docs/architecture/catalog.md) · [planner](docs/architecture/planner.md) · [marginal replanning](docs/architecture/marginal-replanning.md) · [caching](docs/architecture/caching.md) · [executor](docs/architecture/executor.md) · [backend](docs/architecture/backend.md) · [frontend](docs/architecture/frontend.md) · [web surface](docs/architecture/web.md) |
+| **[API](docs/api/README.md)** | [overview](docs/api/overview.md) · [streaming](docs/api/streaming.md) · [examples](docs/api/examples.md) |
+| **[Database](docs/database/README.md)** | [schema](docs/database/schema.md) · [migrations](docs/database/migrations.md) · [RLS](docs/database/rls.md) |
+| **[Security](docs/security/README.md)** | [threat model](docs/security/threat-model.md) · [BYOK](docs/security/byok.md) · [credentials](docs/security/credentials.md) · [API keys](docs/security/api-keys.md) · [secrets](docs/security/secrets.md) |
+| **[Operations](docs/operations/README.md)** | [bootstrap](docs/operations/bootstrap.md) · [email](docs/operations/email.md) · [observability](docs/operations/observability.md) · [kafka](docs/operations/kafka.md) · [redis](docs/operations/redis.md) · [troubleshooting](docs/operations/troubleshooting.md) |
+| **[SDKs](docs/sdks/README.md)** | [overview](docs/sdks/overview.md) · [Python](docs/sdks/python.md) · [TypeScript](docs/sdks/typescript.md) · [CLI](docs/sdks/cli.md) · [MCP](docs/sdks/mcp.md) · [releasing](docs/sdks/releasing.md) · [in the repo](sdk/README.md) |
 
 ---
 
@@ -700,27 +699,58 @@ make test-e2e         # includes the thesis assertion
 
 ## License
 
-[Apache-2.0](LICENSE).
+<p>
+  <a href="LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
+  <a href="https://opensource.org/license/apache-2-0"><img alt="OSI approved" src="https://img.shields.io/badge/OSI-approved-3DA639?logo=opensourceinitiative&logoColor=white"></a>
+  <a href="LICENSE"><img alt="copyright: 2026 SerpFlow Contributors" src="https://img.shields.io/badge/%C2%A9%202026-SerpFlow%20Contributors-555555"></a>
+</p>
+
+**SerpFlow is open source under the [Apache License 2.0](LICENSE).** Use it, change it and ship it, commercially or not, on the terms below.
+
+| You may | You must | You may not |
+| --- | --- | --- |
+| use it commercially, privately or inside a product | include a copy of the licence with any copy you distribute | use the SerpFlow name or marks to endorse your product |
+| modify it and distribute your version | keep the copyright and attribution notices | hold the author or contributors liable for damages |
+| use any patent a contributor holds on their contribution | mark the files you changed | expect a warranty: it is provided "as is" |
+
+- **Contributions come in under the same licence:** a pull request is Apache-2.0 unless it says otherwise (section 5 of the licence). How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **The patent grant ends for anyone who sues** claiming SerpFlow infringes a patent (section 3)
+- **Upstream services keep their own terms.** SerpApi, Groq and the engines behind them are not covered by this licence; you use them with your own keys, under their terms ([bring your own key](docs/security/byok.md))
+- This table is a summary, not legal advice: the [full text](LICENSE) governs
 
 ---
 
 <div align="center">
 
-<strong>SerpFlow</strong><br>
-<sub>A search control plane for SerpApi.</sub>
+<img src="frontend/public/serpflow.svg" width="64" height="64" alt="SerpFlow">
 
-<p align="center">
-  <a href="docs/README.md">Documentation</a> &middot;
-  <a href="docs/architecture/overview.md">Architecture</a> &middot;
-  <a href="docs/api/overview.md">API</a> &middot;
-  <a href="docs/adr/README.md">Decisions</a> &middot;
-  <a href="sdk/README.md">SDKs</a> &middot;
-  <a href="CONTRIBUTING.md">Contributing</a> &middot;
-  <a href="SECURITY.md">Security</a> &middot;
-  <a href="CHANGELOG.md">Changelog</a>
+<h3>SerpFlow</h3>
+
+<p>
+  <em>The cache should change which plan wins, not just make the same plan cheaper.</em><br>
+  <sub>A search control plane for SerpApi &middot; self-hosted, for now &middot; open source</sub>
 </p>
 
-<sub>&copy; 2026 SerpFlow. All rights reserved. Released under the Apache-2.0 licence.</sub>
+<p>
+  <a href="docs/README.md"><img alt="Documentation" src="https://img.shields.io/badge/Documentation-2F6BFF?style=for-the-badge&logo=readthedocs&logoColor=white"></a>
+  <a href="docs/architecture/README.md"><img alt="Architecture" src="https://img.shields.io/badge/Architecture-2F6BFF?style=for-the-badge"></a>
+  <a href="docs/api/README.md"><img alt="API" src="https://img.shields.io/badge/API-009688?style=for-the-badge&logo=fastapi&logoColor=white"></a>
+  <a href="docs/sdks/README.md"><img alt="SDKs" src="https://img.shields.io/badge/SDKs-8250DF?style=for-the-badge"></a>
+</p>
+
+<p>
+  <a href="#quick-start">Quick start</a> &middot;
+  <a href="#hosting">Hosting</a> &middot;
+  <a href="CONTRIBUTING.md">Contributing</a> &middot;
+  <a href="SECURITY.md">Security</a> &middot;
+  <a href="CHANGELOG.md">Changelog</a> &middot;
+  <a href="https://github.com/Madhur-Prakash/SerpFlow/issues">Issues</a>
+</p>
+
+<sub>&copy; 2026 SerpFlow Contributors &middot; released under the <a href="LICENSE">Apache-2.0 licence</a></sub>
+
+<br>
+<br>
 
 <h3 align="center">
   Made with ❤️ for the <a href="https://serpapi.github.io/serpapi-india-hackathon-2026/">SerpApi India Hackathon 2026</a> by <a href="https://github.com/Madhur-Prakash">Madhur-Prakash</a>

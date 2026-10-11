@@ -1,14 +1,14 @@
 # CLI
 
 <p>
-  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <a href="../sdks/README.md"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
   <img alt="commands: 14" src="https://img.shields.io/badge/commands-14-8250DF">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <a href="../../backend/app/cli/main.py"><img alt="source: cli/main.py" src="https://img.shields.io/badge/source-cli%2Fmain.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../README.md#sdks) › **CLI** · page 26 of 57
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **CLI** · page 31 of 50
 
 - **`serpflow`: fourteen commands** for planning, searching, inspecting runs, exploring the catalog, the cache and the benchmark: [`app/cli/main.py`](../../backend/app/cli/main.py)
 - **Built on [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/)**, so plans render as tables and errors as panels
@@ -198,4 +198,4 @@ serpflow catalog validate || exit 1
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [TypeScript SDK](../sdks/typescript.md) | [Docs index](../README.md) | [MCP server](../sdks/mcp.md) |
+| [TypeScript SDK](../sdks/typescript.md) | [Docs index](../README.md) · [SDKs index](../sdks/README.md) | [MCP server](../sdks/mcp.md) |

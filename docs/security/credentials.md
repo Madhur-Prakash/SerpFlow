@@ -1,19 +1,19 @@
 # Upstream credentials
 
 <p>
-  <a href="../README.md#security"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
+  <a href="../security/README.md"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
   <img alt="AES: 256-GCM" src="https://img.shields.io/badge/AES-256--GCM-6E40C9">
   <a href="../../backend/app/core/security.py"><img alt="source: core/security.py" src="https://img.shields.io/badge/source-core%2Fsecurity.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../README.md#security) › **Upstream credentials** · page 34 of 57
+[Docs](../README.md) › [Security](../security/README.md) › **Upstream credentials** · page 41 of 50
 
 **A SerpFlow organization attaches its own SerpApi key**, and optionally a Groq key ([bring your own key](byok.md)). That key is what an attacker actually wants, and the design treats it that way:
 
-- it is encrypted with a **per-credential data key** ([ADR 0005](../adr/0005-envelope-encryption.md))
+- it is encrypted with a **per-credential data key**
 - it is decrypted only **at the point of use**, for the call about to be made
-- **no response schema** in the codebase has a field that could carry it ([ADR 0006](../adr/0006-no-credential-field-in-schemas.md))
+- **no response schema** in the codebase has a field that could carry it
 
 Implementation: [`app/core/security.py`](../../backend/app/core/security.py) · [`app/services/credentials/`](../../backend/app/services/credentials) · [`app/services/executor/service.py`](../../backend/app/services/executor/service.py) · table: [`upstream_credentials`](../database/schema.md#upstream_credentials)
 
@@ -98,7 +98,7 @@ class CredentialResponse(APIModel):
 ```
 
 - **`exclude=True` is a serialization setting.** Settings get changed, overridden by `model_dump(exclude=None)`, or forgotten in a subclass
-- **A field that does not exist cannot be serialized by any means.** See [ADR 0006](../adr/0006-no-credential-field-in-schemas.md)
+- **A field that does not exist cannot be serialized by any means.**
 - **Every credential response is built by `public_view`**, which has no code path that could emit the secret ([`app/api/v1/credentials.py`](../../backend/app/api/v1/credentials.py))
 
 ## Never in a log
@@ -199,8 +199,6 @@ POST /v1/credentials/reconcile-quota    serpflow.quota.reconcile: refresh upstre
 - [Bring your own key](byok.md): which keys you supply, and what happens without them
 - [API keys](api-keys.md): the other half of the credential story
 - [Secrets](secrets.md#kek): the KEK, and what rotating it involves
-- [ADR 0005: envelope encryption](../adr/0005-envelope-encryption.md): why a per-credential DEK under a KEK
-- [ADR 0006: no credential field in schemas](../adr/0006-no-credential-field-in-schemas.md): absent, not excluded
 - [Executor: the credential boundary](../architecture/executor.md#the-credential-boundary): where a run decrypts, and when
 - [Threat model](threat-model.md#credential-theft-from-the-database): the threats this page answers
 - [Troubleshooting: `NO_UPSTREAM_CREDENTIAL`](../operations/troubleshooting.md#no_upstream_credential): a live key with nothing attached
@@ -210,4 +208,4 @@ POST /v1/credentials/reconcile-quota    serpflow.quota.reconcile: refresh upstre
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Bring your own key](../security/byok.md) | [Docs index](../README.md) | [API keys](../security/api-keys.md) |
+| [Bring your own key](../security/byok.md) | [Docs index](../README.md) · [Security index](../security/README.md) | [API keys](../security/api-keys.md) |

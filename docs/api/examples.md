@@ -1,7 +1,7 @@
 # Worked examples
 
 <p>
-  <a href="../README.md#api"><img alt="docs: API" src="https://img.shields.io/badge/docs-API-009688?logo=readthedocs&logoColor=white"></a>
+  <a href="../api/README.md"><img alt="docs: API" src="https://img.shields.io/badge/docs-API-009688?logo=readthedocs&logoColor=white"></a>
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
   <img alt="MCP: server" src="https://img.shields.io/badge/MCP-server-555555">
@@ -9,7 +9,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [API](../README.md#api) › **Worked examples** · page 22 of 57
+[Docs](../README.md) › [API](../api/README.md) › **Worked examples** · page 26 of 50
 
 - **Every example runs against the deterministic mock** with a `test` API key ([test keys](../security/api-keys.md#test-keys))
 - **Each one spends zero SerpApi credits.** [A search that found nothing](#a-search-that-found-nothing) also shows what a live key gets back
@@ -183,7 +183,7 @@ Returns the **Run Inspector payload**:
 - every step, with the cache layer that served it
 - the matched query and similarity, for semantic hits
 - entry age, TTL source, credits and latency
-- the whole plan, with every candidate ([ADR 0014](../adr/0014-persist-every-candidate.md))
+- the whole plan, with every candidate
 - each step's `payload_ref` only when the key holds `payload:read`; the raw payload is `GET /v1/runs/{id}/steps/{step_id}/payload` ([runs](overview.md#runs))
 
 ## Report a bad semantic hit
@@ -201,7 +201,7 @@ curl -s -X POST http://localhost:8000/v1/runs/$RUN/report-false-hit \
 - **Records the report**, against `step_id` if given, else the run's first semantic step (or its first step)
 - **Increments** [`serpflow_semantic_false_hit_reports_total`](../operations/observability.md#metrics)
 - **Invalidates the offending entry**, so it cannot be served again. The message says `Report filed.` alone when no matching entry was found
-- Why a wrong hit is evidence, not noise: [rejections are evidence](../architecture/caching.md#rejections-are-evidence) and [ADR 0003](../adr/0003-deterministic-semantic-guard.md)
+- Why a wrong hit is evidence, not noise: [rejections are evidence](../architecture/caching.md#rejections-are-evidence)
 
 ## Explore the catalog
 
@@ -230,13 +230,13 @@ curl -s -H "X-API-Key: $SERPFLOW_API_KEY" \
 
 ## Python SDK
 
-**Not on PyPI yet:** install from a checkout ([install](../sdks/python.md#install)).
+**Not released yet:** it will be published when the author decides to host SerpFlow. If you self-host, install it from a checkout ([install](../sdks/python.md#install)).
 
 ```python
 from serpflow import SerpFlow
 
 with SerpFlow(api_key="sf_test_...") as client:
-    # Plan only. Calls a language model, not SerpApi: zero credits.
+    # Plan only. No SerpApi call, so zero credits (a model is called only if Groq is configured).
     plan = client.route("review rings among Koramangala cafes", budget=20)
     print(plan.engines, plan.naive_cost, "->", plan.marginal_cost)
 
@@ -251,7 +251,7 @@ with SerpFlow(api_key="sf_test_...") as client:
 
 ## TypeScript SDK
 
-**Not on npm yet:** build and install it from a checkout ([install](../sdks/typescript.md#install)).
+**Not released yet:** it will be published when the author decides to host SerpFlow. If you self-host, build and install it from a checkout ([install](../sdks/typescript.md#install)).
 
 ```typescript
 import { SerpFlow, SerpFlowError } from "@serpflow/sdk";
@@ -361,4 +361,4 @@ serpflow health
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Streaming](../api/streaming.md) | [Docs index](../README.md) | [SDKs and tools](../sdks/overview.md) |
+| [Streaming](../api/streaming.md) | [Docs index](../README.md) · [API index](../api/README.md) | [SDKs index](../sdks/README.md) |

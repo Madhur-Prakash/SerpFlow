@@ -1,7 +1,7 @@
 # Caching
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="layers: 4" src="https://img.shields.io/badge/layers-4-2F6BFF">
   <img alt="Redis: 7" src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
@@ -9,7 +9,7 @@
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **Caching** · page 15 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Caching** · page 18 of 50
 
 **Four layers, in order. Only the last one spends.**
 
@@ -38,7 +38,7 @@ cache.lookup(engine, params, freshness=...)    # executor: give me the payload
 | `store` | the executor, after a live call | writes object storage, the durable row and Redis |
 
 - `inspect` is what makes marginal cost **a real number**, not something observed after the fact. See [costing a step](marginal-replanning.md#costing-a-step)
-- **A warm entry must also be fresh enough to count:** `CacheState` carries `available` and `acceptable` separately, and only both together are warm ([ADR 0009](../adr/0009-freshness-gates-warmth.md))
+- **A warm entry must also be fresh enough to count:** `CacheState` carries `available` and `acceptable` separately, and only both together are warm
 
 ## Normalisation
 
@@ -140,7 +140,6 @@ python 3.12 release notes     never matches   python 3.13 release notes
 - "Most of the time" means serving Indiranagar restaurants to someone who asked about Koramangala, once every few dozen queries
   - a silent correctness failure that a high hit rate makes look like a win, and nobody reports as a bug
 - **Deterministic extraction is** auditable, reproducible, free, and has no failure mode that depends on prompt phrasing
-- More: [ADR 0003](../adr/0003-deterministic-semantic-guard.md)
 
 ### Rejections are evidence
 
@@ -293,11 +292,10 @@ serpflow_adaptive_ttl_seconds{engine, direction}              extended | shorten
 - [Redis](../operations/redis.md#why-none-of-it-is-authoritative): the hot layer, and why losing it costs no credits
 - [Database schema](../database/schema.md#cache): `cache_entries`, `archive_refs`, `ttl_observations`, `semantic_guard_rejections`, `false_hit_reports`
 - [Observability](../operations/observability.md#cache): the cache series, and what a falling rejection count means
-- [ADR 0003](../adr/0003-deterministic-semantic-guard.md) and [ADR 0009](../adr/0009-freshness-gates-warmth.md): the guard that ignores the score, and why a warm entry can still be refused
 - [Troubleshooting](../operations/troubleshooting.md#nothing-is-ever-warm): nothing is ever warm, a wrong semantic hit, Redis evicting too much
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Marginal-cost replanning](../architecture/marginal-replanning.md) | [Docs index](../README.md) | [The executor](../architecture/executor.md) |
+| [Marginal-cost replanning](../architecture/marginal-replanning.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [The executor](../architecture/executor.md) |

@@ -1,7 +1,7 @@
 # Installation
 
 <p>
-  <a href="../README.md#deployment"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
+  <a href="../deployment/README.md"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
   <img alt="API keys: not required" src="https://img.shields.io/badge/API%20keys-not%20required-3fcf8e">
   <img alt="paths: dev · docker" src="https://img.shields.io/badge/paths-dev%20%C2%B7%20docker-2496ED">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
@@ -12,7 +12,7 @@
   <img alt="read: 10 min" src="https://img.shields.io/badge/read-10%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../README.md#deployment) › **Installation** · page 6 of 57
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Installation** · page 8 of 50
 
 **From a blank machine to a running, verified SerpFlow**, with every command. No API keys are needed at any step.
 
@@ -129,7 +129,7 @@ What each step does:
 4. **`make seed`** prints two sign-in accounts and four API keys, **once**. Copy them now
    - **Keys are printed only when the seed creates the demo organization.** If it already exists (a second run, or `make dev` started first and the [startup bootstrap](../operations/bootstrap.md) seeded it), it says so and prints none: run `make seed ARGS=--reset` for fresh keys ([seeding by hand](../operations/bootstrap.md#seeding-by-hand))
 5. **`make dev`** runs `make backend` and `make frontend` together. `Ctrl+C` stops both
-   - the API starts through `python -m app.server`, not `uvicorn` directly: [ADR 0013](../adr/0013-explicit-event-loop-factory.md)
+   - the API starts through `python -m app.server`, not `uvicorn` directly ([async on Windows](../architecture/backend.md#async-on-windows))
 
 | Open | What |
 | --- | --- |
@@ -229,7 +229,7 @@ Not needed for anything above. When you want live SerpApi results:
 2. Optionally add a **Groq** key the same way, for model-driven planning
 3. Set the project's execution mode to `live` (**Settings → Projects**): [setting it](../product/execution-modes.md#setting-it)
 4. Use the `sf_live_...` key that `make seed` printed
-   - an `sf_test_...` key **always** returns mock results, whatever the mode: [ADR 0010](../adr/0010-test-key-mode-precedence.md)
+   - an `sf_test_...` key **always** returns mock results, whatever the mode ([execution modes](../product/execution-modes.md))
 
 - Details: [bring your own key](../security/byok.md) · [execution modes](../product/execution-modes.md) · [using real keys locally](local.md#using-real-keys)
 
@@ -273,4 +273,4 @@ rm -rf backend/.venv frontend/node_modules
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Glossary](../product/glossary.md) | [Docs index](../README.md) | [Local development](../deployment/local.md) |
+| [Deployment index](../deployment/README.md) | [Docs index](../README.md) · [Deployment index](../deployment/README.md) | [Local development](../deployment/local.md) |

@@ -21,11 +21,12 @@
 - Runs in **Node 18+, Deno, Bun and the browser**
 - **ES module only**, with type declarations
 
-```bash
-npm install @serpflow/sdk
-```
+- **Not released yet, by the author's decision.** It will be published to npm as `@serpflow/sdk` when the author decides to host SerpFlow ([why](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/releasing.md#first-who-runs-the-server))
+- **If you self-host, install it from a checkout** and use it on your own infrastructure: [building from source](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/typescript.md#install)
 
-- **Until the first release is on npm**, install from a checkout: [building from source](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/typescript.md#install)
+```bash
+npm install @serpflow/sdk   # once it is released
+```
 
 > **You need your own SerpFlow server.** SerpFlow is self-hosted for now: there is no public hosted instance, and `baseUrl` defaults to `http://localhost:8000`.
 > Run one with the [quick start](https://github.com/Madhur-Prakash/SerpFlow#quick-start). The author will host SerpFlow on demand, once enough people ask for it in a [public GitHub issue](https://github.com/Madhur-Prakash/SerpFlow/issues): see [hosting](https://github.com/Madhur-Prakash/SerpFlow#hosting).

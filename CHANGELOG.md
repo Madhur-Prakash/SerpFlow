@@ -25,9 +25,49 @@
 - **Regional engines stay in their markets.** Naver (Korea), Baidu (China) and Yandex (Russia) are penalised outside their market unless the intent names them or is written in their script. "cafes in Koramangala" used to route to Naver because its description mentions cafes
 - **The console scrolls natively again.** It had been running Lenis smooth scrolling on its scroll container, which cached the first page's height and never re-measured after a navigation, so a taller page such as a run stopped short of its bottom. The console now uses native scrolling, as `useSmoothScroll` already intended, and a navigation starts the new page at the top
 
+- **The docs browser opens the page a link names.** It resolved relative links against the route, not the file, so `../README.md` from any section page (every breadcrumb and footer) opened the project README instead of the docs index, every link on a folder's `README.md` led to a 404, and links to `sdk/`, `scripts/`, `docker/` and `.env.example` 404'd in the app. Links now resolve in repository coordinates against the file they are written in: pages under `docs/` open in `/docs`, everything else opens on GitHub
+- **The docs browser's sidebar and previous / next follow the reading order**, the same order as the footer of every page, instead of alphabetical order inside a differently ordered set of sections
+- **Escaped pipes (`\|`) in a table cell no longer split the row** in the docs browser
+- **The in-app API reference lists all 85 operations** (it had 84): regenerated from the OpenAPI schema
+
 ### Changed
 
 - **The search pipeline reveals stages one at a time.** Each stage is held as running for at least 320 ms before its real result is shown, so a fast run reads in order instead of appearing all at once. Nothing is ever shown complete before its real frame arrives
+- **SerpFlow is self-hosted, by the author's decision.** There is no public hosted instance; the author will host one once enough people ask in a GitHub issue ([hosting](README.md#hosting))
+- **The SDKs are released when SerpFlow is hosted.** Neither is published to npm or PyPI while SerpFlow is self-hosted; a self-hosted instance installs them from a checkout and uses them on its own infrastructure ([releasing](docs/sdks/releasing.md#first-who-runs-the-server))
+- **Security problems are reported in public GitHub issues**, without real keys or secrets ([SECURITY.md](SECURITY.md#reporting-a-vulnerability))
+
+### Documentation
+
+- **Removed: the architecture decision records** (docs/adr), at the author's decision. The pages that cited one now make their point in place, and the docs browser, the reading order and the site footer no longer list them
+- **Every page re-checked against the code at HEAD**, section by section, and corrected where the code had moved on or the page had been wrong from the start. Among the corrections:
+  - 236 tests (was 216); the in-app API reference and every count re-verified: 85 operations over 74 paths, 33 tables, 24 RLS tables, 22 metrics, 8 topics, 54 engines
+  - **the SerpApi drop-in re-routes:** only `q` becomes the intent; `engine` is echoed, not honoured
+  - **the MCP server runs in-process** against `DATABASE_URL`: its config passes `SERPFLOW_MCP_SESSION`, not `SERPFLOW_BASE_URL`, and the session cap is only checked when a named session is resumed
+  - **`BUDGET_INFEASIBLE` is never raised:** a per-request budget caps planning, not execution
+  - **the rate limit is per principal and path**; `TRUSTED_PROXY_HOPS` decides the IP recorded in the audit log and sessions, not a rate-limit bucket
+  - **the demo's Phase 1** ranks two 19-credit chains under its 20-credit budget, not 51 against 101
+  - the OTLP exporter is HTTP on port 4318; the Kafka consumer group is one per topic; neither SDK is published yet; `git clone` creates `SerpFlow`, not `serpflow`
+  - [deployment guide, step 8](docs/deployment/deployment-guide.md#8-make-row-level-security-bind): the bundled stack connects as a superuser, which bypasses row-level security even when forced
+- **The docs are interlinked.** The first mention of a concept links to the one page that owns it: a table to the [schema](docs/database/schema.md), a metric to [observability](docs/operations/observability.md), an environment variable to [secrets](docs/security/secrets.md). Every page ends with a Related section, each link with its reason. Links between pages went from 274 to over a thousand
+- **New: a section index in every docs folder.** Each folder's `README.md` lists its pages in reading order, routes common questions to the exact section, and says how it meets every other section. Breadcrumbs, section badges and footers point up to it
+- **New: [glossary](docs/product/glossary.md)**, 110 terms, each defined in a sentence and linked to the page that explains it
+- **New: [SDKs section](docs/sdks/README.md):** Python, TypeScript, CLI, MCP and releasing them
+- **New: the code behind this release's fixes is documented:** [query adapters](docs/architecture/planner.md#query-adapters), [temporal phrases](docs/architecture/planner.md#temporal-phrases-are-not-places), the regional penalty, [billed empty results](docs/architecture/caching.md#billed-empty-results), the paced pipeline and the native console scroll
+- **`make docs-check` enforces the structure:** it now runs with `--anchors --interlinks`, failing on a broken anchor, a page with no Related section, an orphan page, or a folder whose section index leaves out a page. `make docs-nav` also writes the docs browser's reading order to `frontend/src/lib/docs-order.generated.ts`
+
+### Known issues
+
+Found while checking the docs against the code. Each is documented where it applies; none is fixed yet.
+
+- **A run that fails mid-execution rolls back its transaction**, so credits SerpApi already billed are dropped from the ledger, and the failed-run panel shows 0 ([troubleshooting](docs/operations/troubleshooting.md#a-run-failed-why-and-what-it-cost))
+- **Cache entries are not separated by execution mode:** a mock or replay payload can serve a later live run in the same partition ([caching](docs/architecture/caching.md#execution-mode-is-not-part-of-the-key))
+- **The planner's cache probe does not apply query adapters**, so a warm Google Finance step is costed as cold ([planner](docs/architecture/planner.md#query-adapters))
+- **Rotating an API key never revokes the old key**; it works until deleted ([API keys: rotation](docs/security/api-keys.md#rotation))
+- **Client IPs can be spoofed:** uvicorn trusts `X-Forwarded-For` from any peer, so the recorded IP is whatever the leftmost entry says ([behind a reverse proxy](docs/deployment/production.md#behind-a-reverse-proxy))
+- **`/metrics` is unauthenticated** and the bundled nginx serves it publicly; the deployment guide blocks it at the TLS proxy
+- **Retention is recorded but not enforced:** per-project values are ignored and nothing purges expired runs or payloads ([retention](docs/deployment/production.md#retention))
+- **A false-hit report does not clear Redis**, so the bad payload keeps serving until its hot key expires ([invalidation](docs/architecture/caching.md#invalidation))
 
 ## [1.0.0] - 2026-10-10
 
@@ -402,7 +442,7 @@ only the searches that still need a live call.
 - A documentation tree under `docs/`, indexed by `docs/README.md`, covering
   architecture, the API, the database, security, deployment, operations and
   the product. Every page links to the implementation path it describes.
-- Fourteen architecture decision records under `docs/adr/`, each stating the
+- Fourteen architecture decision records under docs/adr (since removed), each stating the
   alternative that was rejected and the cost that was accepted.
 
 [Unreleased]: https://github.com/Madhur-Prakash/SerpFlow/compare/v1.0.0...HEAD

@@ -1,7 +1,7 @@
 # MCP server
 
 <p>
-  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <a href="../sdks/README.md"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
   <img alt="tools: 4" src="https://img.shields.io/badge/tools-4-8250DF">
   <img alt="transport: stdio" src="https://img.shields.io/badge/transport-stdio-555555">
   <img alt="MCP: server" src="https://img.shields.io/badge/MCP-server-555555">
@@ -11,7 +11,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../README.md#sdks) › **MCP server** · page 27 of 57
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **MCP server** · page 32 of 50
 
 - **`serpflow-mcp` gives an LLM agent four tools:** `plan`, `search`, `explain` and `catalog`: [`app/mcp/server.py`](../../backend/app/mcp/server.py)
 - **Stdio transport**, on the official [`mcp`](https://pypi.org/project/mcp/) Python package. It works with 1.x (`FastMCP`) and 2.x (`MCPServer`)
@@ -164,7 +164,7 @@ curl -s -X POST http://localhost:8000/v1/budgets \
 | `UNAUTHENTICATED` | `SERPFLOW_API_KEY` is not set |
 | `INVALID_API_KEY` | revoked, expired, mistyped, **or `API_KEY_PEPPER` differs from the API's** |
 | `SESSION_CAP_EXCEEDED` | the service session's cap is spent |
-| `BUDGET_EXHAUSTED` | a project, key or organization budget is spent |
+| `BUDGET_EXHAUSTED` | a session, key, project or organization budget is spent |
 | `NO_UPSTREAM_CREDENTIAL` | a live key with no SerpApi credential in the vault |
 | `NOT_FOUND` | an unknown run or engine |
 
@@ -201,4 +201,4 @@ curl -s -X POST http://localhost:8000/v1/budgets \
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [CLI](../sdks/cli.md) | [Docs index](../README.md) | [Releasing the SDKs](../sdks/releasing.md) |
+| [CLI](../sdks/cli.md) | [Docs index](../README.md) · [SDKs index](../sdks/README.md) | [Releasing the SDKs](../sdks/releasing.md) |

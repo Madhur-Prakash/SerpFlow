@@ -1,7 +1,7 @@
 # The planner
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="stages: 4" src="https://img.shields.io/badge/stages-4-2F6BFF">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="Groq: BYOK" src="https://img.shields.io/badge/Groq-BYOK-F55036">
@@ -9,7 +9,7 @@
   <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **The planner** · page 13 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **The planner** · page 16 of 50
 
 **Four stages, then costing, then budget.**
 
@@ -175,6 +175,9 @@ flights to Tokyo next week                   ->  no location ("to" does not open
 - "what is nvidia trading at right now" is sent as `q=NVDA:NASDAQ`
 - **The adapted value is what `steps[].parameters` carries**, so the plan records what will actually be sent; `parameter_bindings` keeps the synthesised free text
 - [`test_live_responses.py`](../../backend/tests/unit/test_live_responses.py) asserts each resolution, and that other engines are left alone
+- **Known gap: the cost model's cache probe does not adapt.** `_probe_parameters` in [`cost.py`](../../backend/app/services/planner/cost.py) builds its probe from the unadapted root parameters, and always adds `gl` and `hl`, while the executor stores the entry under the adapted, bound parameters
+  - so a warm Google Finance step still probes as cold, and [marginal cost](marginal-replanning.md) overstates it
+  - an engine that takes no `gl` or `hl` can probe under a different key from the one it was stored under, with the same effect
 
 ### Freshness inference
 
@@ -188,7 +191,7 @@ stable    any TTL  patents, papers, reference lookups
 - **Three signal families:** temporal language in the intent, the engine's `volatility_prior`, and the query class
 - **Each step gets its own level:** one intent can touch a 15-minute-prior engine and a 30-day-prior one, and needs the right bar for each
   - the intent-level requirement is a floor that an engine's prior may tighten, never relax: "latest reviews" stays `fresh` on a 30-day-prior engine
-- **This is not decoration.** The cost model uses it to decide whether a warm entry is **acceptable**, not merely **available**. See [available is not acceptable](marginal-replanning.md#available-is-not-acceptable) and [ADR 0009](../adr/0009-freshness-gates-warmth.md)
+- **This is not decoration.** The cost model uses it to decide whether a warm entry is **acceptable**, not merely **available**. See [available is not acceptable](marginal-replanning.md#available-is-not-acceptable)
   - without it, marginal cost is computed against an undefined bar, and stale data gets served for time-sensitive intents
 
 ## Stage D: path-find and generate candidates
@@ -223,7 +226,7 @@ Two rules decide what competes:
 - **Role assignment**
   - stage B ranks its choices; the top choice defines the capability the intent asks for
   - a plan ending anywhere else answers a different question, and becomes a **fallback**
-  - without this, a one-credit place lookup outranks a review-ring investigation on price, and the planner optimises a question nobody asked. The same reasoning ranks [coverage before price](marginal-replanning.md#coverage-before-price) ([ADR 0008](../adr/0008-coverage-before-price.md))
+  - without this, a one-credit place lookup outranks a review-ring investigation on price, and the planner optimises a question nobody asked. The same reasoning ranks [coverage before price](marginal-replanning.md#coverage-before-price)
 - **Truncation demotion**
   - a plan whose engine list is a strict prefix of another's is a truncation, not a peer: it is cheaper **because it does less**
   - fallbacks stay in the set, persisted and visible in the Plan Inspector, but only win when nothing else fits a budget
@@ -256,7 +259,7 @@ budget_limit, planner_latency_ms, mode
 stage_trace[]                     every stage transition with timings
 ```
 
-- `plan_candidates` persists **every** candidate, not just the winner, with its costs, ranks, per-step cache state and rejection reason. See [ADR 0014](../adr/0014-persist-every-candidate.md)
+- `plan_candidates` persists **every** candidate, not just the winner, with its costs, ranks, per-step cache state and rejection reason
 - **`steps[].parameters` are the concrete values each step will send**, after [query adaptation](#query-adapters); chained values stay as `$from_step` placeholders until the executor resolves them
 
 ## Observability
@@ -268,16 +271,15 @@ stage_trace[]                     every stage transition with timings
 ## Related
 
 - [Marginal replanning](marginal-replanning.md): the cost model and ranking the candidates feed
-- [The engine catalog](catalog.md) and [ADR 0002](../adr/0002-typed-catalog-edges.md): the typed edges stage D walks, the vocabulary stage A scores, and why chaining and competing are separate edge sets
+- [The engine catalog](catalog.md): the typed edges stage D walks, the vocabulary stage A scores, and why chaining and competing are separate edge sets
 - [Caching](caching.md#two-entry-points): what `inspect()` is actually looking at
 - [Streaming](../api/streaming.md#the-stage-sequence): the frames each stage emits
 - [Database schema](../database/schema.md#planning-and-execution): the `plans` and `plan_candidates` rows
 - [Benchmark](../product/benchmark.md#failure-analysis): how well this routes, honestly, and where it misroutes
-- [ADR 0008](../adr/0008-coverage-before-price.md) and [ADR 0014](../adr/0014-persist-every-candidate.md): coverage before price, and why every candidate is kept
 - [Troubleshooting `NO_VIABLE_PLAN`](../operations/troubleshooting.md#no_viable_plan): when no path survives stage D
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [The engine catalog](../architecture/catalog.md) | [Docs index](../README.md) | [Marginal-cost replanning](../architecture/marginal-replanning.md) |
+| [The engine catalog](../architecture/catalog.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [Marginal-cost replanning](../architecture/marginal-replanning.md) |

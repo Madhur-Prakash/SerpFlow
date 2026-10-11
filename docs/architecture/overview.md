@@ -1,7 +1,7 @@
 # Architecture overview
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="FastAPI: 0.118" src="https://img.shields.io/badge/FastAPI-0.118-009688?logo=fastapi&logoColor=white">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
   <img alt="Redis: 7" src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white">
@@ -11,7 +11,7 @@
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **Architecture overview** · page 11 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Architecture overview** · page 14 of 50
 
 **SerpFlow sits between an application and SerpApi.** For each natural-language intent it:
 
@@ -79,9 +79,9 @@ What `POST /v1/search` does, in order ([`search.py`](../../backend/app/api/v1/se
 
 1. **Authenticate and scope.** [`deps.py`](../../backend/app/api/deps.py) resolves the principal from an API key or a session token, checks the `execute` permission, rate-limits, and sets `app.current_org` so [row-level security](../database/rls.md) binds the transaction. The middleware around it: [backend request lifecycle](backend.md#request-lifecycle)
 2. **Resolve the execution mode** (`resolve_execution_mode`): see [execution modes](#execution-modes) below
-3. **Open a run.** A `runs` row is written with status `planning`, and the [SSE](../api/streaming.md) buffer for it starts
-   - with `stream: true` the API returns `202` and a `stream_url` first, then carries on in-process: interactive search never goes through Kafka ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md))
-4. **Plan** (`create_plan`): the tightest remaining [budget](../database/schema.md#governance), a cache scoped to the project's [partition](caching.md#partitioning), the organization's [planning adapter](planner.md#which-adapter-plans), then the [planner](planner.md). The `plans` and `plan_candidates` rows are written; ten stage frames stream as it goes
+3. **Open a run.** A `runs` row is written with status `planning` (a streamed search has already committed it as `pending` before its 202), and the [SSE](../api/streaming.md) buffer for it starts
+   - with `stream: true` the API returns `202` and a `stream_url` first, then carries on in-process: interactive search never goes through Kafka
+4. **Plan** (`create_plan`): the tightest remaining [budget](../database/schema.md#governance), a cache scoped to the project's [partition](caching.md#partitioning), the organization's [planning adapter](planner.md#which-adapter-plans), then the [planner](planner.md). The `plans` and `plan_candidates` rows are written; frames for the ten planning stages stream as it goes
 5. **Resolve the credential**, for `live` and `record` only: project, then organization default, else `NO_UPSTREAM_CREDENTIAL`, before anything is spent
 6. **Execute.** The [executor](executor.md) runs each step through the four layers, writing `steps`, ledger and cache rows, and streams `executing` frames
 7. **Record and finish.** Any routing saving goes to the ledger, a service session's usage is updated, `run.executed` is [audited](../database/rls.md#the-audit-log), and the stream closes with `complete`. The response carries [provenance headers](../api/overview.md#provenance-headers)
@@ -140,7 +140,7 @@ Kafka 4.x (KRaft)           background work only, 8 topics
 - **A Redis restart repopulates lazily** from the durable index
   - no credits are lost, no durable state is destroyed
   - which is why the hot layer can evict aggressively. See [why none of it is authoritative](../operations/redis.md#why-none-of-it-is-authoritative)
-- **Interactive search never goes through Kafka** ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md))
+- **Interactive search never goes through Kafka**
   - `POST /v1/search` executes in-process and streams stage progress over [SSE](../api/streaming.md#the-stage-sequence)
   - a broker in that path would add latency and a failure mode for no benefit
 - **Each dependency degrades on its own:** PostgreSQL is the only one whose loss fails readiness. See [degradation](backend.md#degradation)
@@ -161,7 +161,7 @@ Most specific wins:
 ```
 
 - **Rules 2-4 resolve in one function:** [`resolve_execution_mode`](../../backend/app/services/runs.py)
-- **The gateway applies the result:** [`resolve_mode`](../../backend/app/integrations/serpapi/__init__.py), where rule 1 is enforced ([ADR 0010](../adr/0010-test-key-mode-precedence.md))
+- **The gateway applies the result:** [`resolve_mode`](../../backend/app/integrations/serpapi/__init__.py), where rule 1 is enforced
 - **A caller cannot ask for `mock`**, and asking for a billable mode needs `run:mode_override`: see [permission](../product/execution-modes.md#permission)
 - **The resolved mode travels on every response** as `X-SerpFlow-Mode` ([provenance headers](../api/overview.md#provenance-headers)), and is always shown in the UI
 - **Replay never reaches the network:** a miss raises `REPLAY_CASSETTE_MISS`, naming the exact file that is absent ([the fix](../operations/troubleshooting.md#replay_cassette_miss))
@@ -183,7 +183,7 @@ Organization
   - small organizations configure one credential
   - organizations with several SerpApi accounts override per project or cost centre
   - stored under envelope encryption, decrypted only in the executor: [upstream credentials](../security/credentials.md)
-- **Every tenant-scoped query is guarded twice** ([ADR 0011](../adr/0011-rls-plus-application-guards.md)):
+- **Every tenant-scoped query is guarded twice**:
   - application checks in [`deps.py`](../../backend/app/api/deps.py)
   - PostgreSQL row-level security keyed on `app.current_org`, as a backstop. See [RLS](../database/rls.md)
 - What each boundary defends against: [threat model](../security/threat-model.md#trust-boundaries)
@@ -201,7 +201,7 @@ Plan B    cold 8 credits    marginal 1 credit     <- selected
 ```
 
 - A planner comparing only cold costs picks A, and **pays four credits to avoid paying one**
-- More: [marginal replanning](marginal-replanning.md) ([ADR 0001](../adr/0001-marginal-cost-replanning.md)), and [the reference demo](../product/demo.md) that proves it with `make demo`
+- More: [marginal replanning](marginal-replanning.md), and [the reference demo](../product/demo.md) that proves it with `make demo`
 
 ## Reading further
 
@@ -223,10 +223,9 @@ Plan B    cold 8 credits    marginal 1 credit     <- selected
 - [SDKs and tools](../sdks/overview.md#how-they-connect): how the SDKs, CLI and MCP server reach `plan_and_execute`
 - [Threat model](../security/threat-model.md#trust-boundaries): the boundaries in this diagram, and what crosses them
 - [Observability](../operations/observability.md#correlating-one-request): following one request through logs, metrics and traces
-- [Architecture decision records](../adr/README.md): why each part is the way it is
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Production](../deployment/production.md) | [Docs index](../README.md) | [The engine catalog](../architecture/catalog.md) |
+| [Architecture index](../architecture/README.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [The engine catalog](../architecture/catalog.md) |

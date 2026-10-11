@@ -1,7 +1,7 @@
 # API overview
 
 <p>
-  <a href="../README.md#api"><img alt="docs: API" src="https://img.shields.io/badge/docs-API-009688?logo=readthedocs&logoColor=white"></a>
+  <a href="../api/README.md"><img alt="docs: API" src="https://img.shields.io/badge/docs-API-009688?logo=readthedocs&logoColor=white"></a>
   <img alt="operations: 85" src="https://img.shields.io/badge/operations-85-009688">
   <img alt="paths: 74" src="https://img.shields.io/badge/paths-74-009688">
   <img alt="FastAPI: 0.118" src="https://img.shields.io/badge/FastAPI-0.118-009688?logo=fastapi&logoColor=white">
@@ -11,12 +11,12 @@
   <img alt="read: 14 min" src="https://img.shields.io/badge/read-14%20min-555555">
 </p>
 
-[Docs](../README.md) › [API](../README.md#api) › **API overview** · page 20 of 57
+[Docs](../README.md) › [API](../api/README.md) › **API overview** · page 24 of 50
 
 - **Base URL:** `http://localhost:8000`; every product route sits under `/v1` ([`app/api/v1/__init__.py`](../../backend/app/api/v1/__init__.py))
 - **Interactive OpenAPI:** `/docs` (Swagger UI) and `/redoc` · **schema:** `/openapi.json` (OpenAPI 3.1)
 - **Size:** 85 operations across 74 paths, every one listed below
-- **In-app reference:** the console's `/api` page ([`ApiReferencePage.tsx`](../../frontend/src/pages/ApiReferencePage.tsx)) is generated from the same schema by [`scripts/generate_api_reference.py`](../../scripts/generate_api_reference.py) (`make api-reference`). See [the API reference](../architecture/web.md#the-api-reference)
+- **In-app reference:** the web app's public `/api` page ([`ApiReferencePage.tsx`](../../frontend/src/pages/ApiReferencePage.tsx)) is generated from the same schema by [`scripts/generate_api_reference.py`](../../scripts/generate_api_reference.py) (`make api-reference`). See [the API reference](../architecture/web.md#the-api-reference)
 - **Client libraries:** a Python SDK, a TypeScript SDK, a CLI and an MCP server wrap these routes. See [SDKs and tools](../sdks/overview.md)
 
 ## Authentication
@@ -50,9 +50,9 @@ sf_live_pm8kd3_v1a7Qx9mNc2PfLz4Rt6WbYs8KdJh3Gn5
 ```
 
 - **`env` is `live` or `test`**, the prefix is six lowercase letters or digits, the secret 32 letters or digits ([`app/core/security.py`](../../backend/app/core/security.py))
-- **Stored as HMAC-SHA256 under a server-side pepper**, shown in plaintext exactly once. See [API keys](../security/api-keys.md#format) and [ADR 0004](../adr/0004-hmac-for-api-keys.md)
+- **Stored as HMAC-SHA256 under a server-side pepper**, shown in plaintext exactly once. See [API keys](../security/api-keys.md#format)
 - **A `test` key always routes to the deterministic mock** and spends zero SerpApi credits, whatever [`SERPFLOW_MODE`](../security/secrets.md#inventory) says
-- That precedence is **absolute**. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence) and [ADR 0010](../adr/0010-test-key-mode-precedence.md)
+- That precedence is **absolute**. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence)
 
 ### Who can call what
 
@@ -84,8 +84,8 @@ POST /v1/plan                                      plan:create
 ```
 
 - **Returns the full Plan:** selected steps, every candidate, cold and marginal costs, warm steps, freshness requirements, budget reductions, and whether marginal cost changed the selection
-  - field by field: [what the Plan stores](../architecture/planner.md#what-the-plan-stores). Every candidate is persisted, not just the winner ([ADR 0014](../adr/0014-persist-every-candidate.md))
-- **Spends zero credits:** planning calls a language model, not SerpApi
+  - field by field: [what the Plan stores](../architecture/planner.md#what-the-plan-stores). Every candidate is persisted, not just the winner
+- **Spends zero credits:** planning makes no SerpApi call. The default adapter is deterministic; a language model is called only when Groq is configured ([which adapter plans](../architecture/planner.md#which-adapter-plans))
   - that is why the `analyst` role may call this, but not `/v1/search`
 - **Body:** `intent` (3 to 2,000 characters), optional `budget` (1 to 100,000), `project_id` and `mode` ([`app/schemas/planning.py`](../../backend/app/schemas/planning.py))
 - **[Rate limited](#rate-limiting)**
@@ -102,7 +102,7 @@ POST /v1/search                                    run:execute
   - **`notice`** carries SerpApi's own message, at most 300 characters, when a billed search found nothing: the run **succeeded**, the credit is recorded and the empty answer is cached ([`app/services/executor/service.py`](../../backend/app/services/executor/service.py)). Example: [a search that found nothing](examples.md#a-search-that-found-nothing)
   - `results` also carries `payload_ref`, `terminal_engine`, `steps` (layer, credits, calls and latency per step) and `catalog_version`
 - **With `"stream": true`:** returns `202` and `{ run_id, stream_url, mode, status: "running" }`, executes in-process, and the client tails `GET /v1/runs/{id}/stream` ([streaming](streaming.md#starting-a-run-you-can-stream))
-- **Either way, interactive search never goes through Kafka.** That topic is for scheduled, bulk, retried and webhook-triggered runs ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md), [Kafka](../operations/kafka.md#what-goes-through-it-and-what-does-not))
+- **Either way, interactive search never goes through Kafka.** That topic is for scheduled, bulk, retried and webhook-triggered runs ([Kafka](../operations/kafka.md#what-goes-through-it-and-what-does-not))
 - **Optional `"mode"`** overrides the project's execution mode for this one request (needs `run:mode_override` for `live` or `record`; `replay` needs nothing; `mock` is not selectable and fails validation). See [execution modes](../product/execution-modes.md#permission)
 - **[Rate limited](#rate-limiting)**, the same as `/v1/plan`
 - **`POST /v1/run`** is an alias, for symmetry with `/v1/plan`
@@ -139,7 +139,7 @@ GET /v1/catalog/graph
 ```
 
 - **Every catalog route needs `catalog:read`**, which every built-in role holds. `?version=` picks a catalog version on `/catalog`, `/engines/{engine}`, `/paths` and `/graph` ([`app/api/v1/catalog.py`](../../backend/app/api/v1/catalog.py))
-- **`/graph` returns `dependency_edges` and `substitute_edges` as separate arrays**: one is how engines chain, the other how they compete ([ADR 0002](../adr/0002-typed-catalog-edges.md))
+- **`/graph` returns `dependency_edges` and `substitute_edges` as separate arrays**: one is how engines chain, the other how they compete
 - **`/paths` answers** "what valid chains reach this engine from an ordinary query?", the question the planner asks internally
   - `params` defaults to `q`, and the query-like parameters (`q`, `query`, `text`, `term`, ...) are always added
 - The data behind these routes, and the console page that draws them: [the engine catalog](../architecture/catalog.md#catalog-explorer)
@@ -187,7 +187,7 @@ GET    /v1/notification-channels/labels  alert:read
   - `POST /v1/cache/invalidate` takes `{ engine?, entry_id? }`: one entry, or every live entry in the project's partition, optionally for one engine. See [invalidation](../architecture/caching.md#invalidation)
 - **Analytics:** the savings waterfall sums [`budget_ledger`](../database/schema.md#budget_ledger) savings by source (routing, exact, semantic, archive) on top of spend, the same split as the [savings counters](../architecture/marginal-replanning.md#instrumentation); cross-project flows come from [organization-level sharing](../architecture/caching.md#organization-level-sharing)
 - **Benchmarks:** the 120-task routing suite. See [routing benchmark](../product/benchmark.md#running-it)
-- **Audit:** a trigger makes [`audit_log`](../database/schema.md#audit_log) append-only and a hash chain makes tampering detectable; `/verify` walks the chain and reports where it breaks. See [the audit log](../database/rls.md#the-audit-log) and [ADR 0012](../adr/0012-append-only-audit-log.md)
+- **Audit:** a trigger makes [`audit_log`](../database/schema.md#audit_log) append-only and a hash chain makes tampering detectable; `/verify` walks the chain and reports where it breaks. See [the audit log](../database/rls.md#the-audit-log)
 - **Alerts and channels:** budget, exhaustion and quota alerts, delivered to `email`, `webhook` or `slack` channels. See [alerting](../operations/observability.md#alerting) and [email](../operations/email.md#what-gets-sent)
 
 ### Identity and access
@@ -237,7 +237,7 @@ POST   /v1/credentials/reconcile-quota         credential:read
 - **Projects** carry the execution mode, engine policy, semantic threshold and TTL overrides. See [setting the mode](../product/execution-modes.md#setting-it) and [engine policy](../architecture/executor.md#engine-policy)
 - **Keys:** a new key's plaintext is returned once, and a key's role can never exceed its creator's. See [rotation](../security/api-keys.md#rotation) and [test keys](../security/api-keys.md#test-keys)
 - **Roles:** owner-defined permission sets (migration [`0003_custom_roles`](../database/migrations.md#0003_custom_roles)). See [custom roles](../security/api-keys.md#custom-roles)
-- **Credentials:** envelope-encrypted upstream keys, never returned in any response ([ADR 0006](../adr/0006-no-credential-field-in-schemas.md)). Validation, rotation and revocation: [upstream credentials](../security/credentials.md#validation-and-revocation); the `groq` provider is [bring your own key](../security/byok.md#what-you-bring) for the language model
+- **Credentials:** envelope-encrypted upstream keys, never returned in any response. Validation, rotation and revocation: [upstream credentials](../security/credentials.md#validation-and-revocation); the `groq` provider is [bring your own key](../security/byok.md#what-you-bring) for the language model
   - `revalidate` and `reconcile-quota` only queue work on [Kafka](../operations/kafka.md#topics), and answer `ok: false` when the broker is unavailable
 
 ### Infrastructure
@@ -325,7 +325,7 @@ X-SerpFlow-Run-Id
 | `INTERNAL_ERROR` | 500 | Quote the `request_id` |
 
 - **`BUDGET_EXHAUSTED` and `UPSTREAM_QUOTA_EXHAUSTED` are never conflated:** different causes, different fixes ([which one you have](../operations/troubleshooting.md#budget_exhausted-against-upstream_quota_exhausted))
-- **`TENANT_ISOLATION_VIOLATION` (403) is defined but not raised:** a cross-tenant id is `NOT_FOUND`, so an id's existence in another organization is never confirmed ([ADR 0011](../adr/0011-rls-plus-application-guards.md))
+- **`TENANT_ISOLATION_VIOLATION` (403) is defined but not raised:** a cross-tenant id is `NOT_FOUND`, so an id's existence in another organization is never confirmed
 
 ## Pagination
 
@@ -365,7 +365,6 @@ make api-check ARGS=--verbose  # print every call
 - [SDKs and tools](../sdks/overview.md): the Python, TypeScript, CLI and MCP clients over this API
 - [API keys](../security/api-keys.md#roles): the roles, custom roles and service sessions behind every permission above
 - [Backend](../architecture/backend.md#error-model): where the error envelope and request lifecycle are implemented
-- [ADR 0010](../adr/0010-test-key-mode-precedence.md): why a test key overrides every execution mode
 - [Troubleshooting](../operations/troubleshooting.md#authentication): fixes for the authentication and execution error codes
 - [Glossary](../product/glossary.md): every term used on this page, with its canonical page
 - [Architecture overview](../architecture/overview.md): where the API sits in the request lifecycle
@@ -374,4 +373,4 @@ make api-check ARGS=--verbose  # print every call
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [The public web surface](../architecture/web.md) | [Docs index](../README.md) | [Streaming](../api/streaming.md) |
+| [API index](../api/README.md) | [Docs index](../README.md) · [API index](../api/README.md) | [Streaming](../api/streaming.md) |

@@ -23,7 +23,7 @@ const PAGES = [
   { path: "/", name: "landing", minHeight: 4000 },
   { path: "/docs", name: "docs index", minHeight: 800 },
   { path: "/docs/architecture/planner", name: "docs page", minHeight: 1200 },
-  { path: "/docs/adr/0001-marginal-cost-replanning", name: "adr", minHeight: 900 },
+  { path: "/docs/architecture", name: "section index", minHeight: 900 },
   { path: "/docs/readme:README", name: "repo readme", minHeight: 1200 },
   { path: "/api", name: "api reference", minHeight: 1200 },
 ];

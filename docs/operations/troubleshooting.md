@@ -1,7 +1,7 @@
 # Troubleshooting
 
 <p>
-  <a href="../README.md#operations"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
+  <a href="../operations/README.md"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
   <img alt="Docker: Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
   <img alt="Redis: 7" src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white">
@@ -10,7 +10,7 @@
   <img alt="read: 24 min" src="https://img.shields.io/badge/read-24%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../README.md#operations) › **Troubleshooting** · page 42 of 57
+[Docs](../README.md) › [Operations](../operations/README.md) › **Troubleshooting** · page 50 of 50
 
 **Start here:**
 
@@ -101,7 +101,7 @@ asyncio.run(server.serve(), loop_factory=_loop_factory())
 ```
 
 - **So run the server as `python -m app.server`**, as `make backend` and the container both do. `uvicorn app.main:app` directly on Windows will fail
-- Why: [ADR 0013](../adr/0013-explicit-event-loop-factory.md) and [backend: async on Windows](../architecture/backend.md#async-on-windows)
+- Why: [backend: async on Windows](../architecture/backend.md#async-on-windows)
 
 ### `connection refused` on 5432
 
@@ -133,7 +133,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gin;
 
 ### `audit_log is append-only; DELETE is not permitted`
 
-- **Working as designed:** the trigger refuses `UPDATE` unconditionally, and `DELETE` unless the transaction set `app.audit_purge` ([ADR 0012](../adr/0012-append-only-audit-log.md), [row-level security: the audit log](../database/rls.md#the-audit-log))
+- **Working as designed:** the trigger refuses `UPDATE` unconditionally, and `DELETE` unless the transaction set `app.audit_purge` ([row-level security: the audit log](../database/rls.md#the-audit-log))
 - `make seed ARGS=--reset` goes through `AuditService.allow_purge`, which sets it. It is the only caller at HEAD: there is no organization-deletion endpoint yet ([`app/db/seed.py`](../../backend/app/db/seed.py))
 - **Anything else hitting this is trying to delete audit rows it should not**
 
@@ -173,7 +173,7 @@ export SERPFLOW_API_KEY=sf_test_...     # PowerShell: $env:SERPFLOW_API_KEY = "s
 
 - **Check the environment segment.** The lookup matches the `sf_live_` / `sf_test_` segment against the stored row's `environment`, so a key whose segment was edited or mistyped will not resolve. A project holds keys of both kinds ([API keys: resolution](../security/api-keys.md#resolution))
 - **Check it has not been revoked or expired** (`revoked_at`, `expires_at` on `GET /v1/keys`)
-- **Check `API_KEY_PEPPER` has not changed.** The pepper is an input to the hash, so changing it invalidates **every** stored key hash. There is no re-peppering without the plaintext, which is gone by design ([ADR 0004](../adr/0004-hmac-for-api-keys.md), [secrets: pepper](../security/secrets.md#pepper))
+- **Check `API_KEY_PEPPER` has not changed.** The pepper is an input to the hash, so changing it invalidates **every** stored key hash. There is no re-peppering without the plaintext, which is gone by design ([secrets: pepper](../security/secrets.md#pepper))
   - the MCP server and scripts load their own settings: one started outside `backend/` can pick up a different `.env` and pepper ([MCP: connect a client](../sdks/mcp.md#connect-a-client))
 
 ### A revoked key still works
@@ -209,7 +209,7 @@ export SERPFLOW_API_KEY=sf_test_...     # PowerShell: $env:SERPFLOW_API_KEY = "s
 ### Results look wrong, but the request succeeded
 
 - **Check `X-SerpFlow-Mode` on the response** ([provenance headers](../api/overview.md#provenance-headers)). `MOCK` or `REPLAY` means you are not looking at live data
-- A `test` API key routes to the mock regardless of `SERPFLOW_MODE`, and that precedence is absolute ([ADR 0010](../adr/0010-test-key-mode-precedence.md))
+- A `test` API key routes to the mock regardless of `SERPFLOW_MODE`, and that precedence is absolute
 - **Then check what was sent:** each step's `parameters` in the Plan Inspector are the values that went upstream. The next three entries are the known ways they went wrong
 
 ### Google Finance returned no results, or the ledger shows 0 credits for a search SerpApi charged
@@ -297,7 +297,7 @@ curl -s -H "X-API-Key: $KEY" \
 
 - **Mode:** a dry run (`POST /v1/plan`, `serpflow plan`) plans without executing, and therefore warms nothing
 - **Partition:** the cache is partitioned by project by default. Two projects share entries only if `shared_cache_enabled` is on, and then only within one organization ([partitioning](../architecture/caching.md#partitioning), [organization-level sharing](../architecture/caching.md#organization-level-sharing))
-- **Freshness:** "available" is not "acceptable". An entry that misses the step's freshness bound does not count as warm. Check `freshness_requirement` on the step and `age_seconds` on the entry ([available is not acceptable](../architecture/marginal-replanning.md#available-is-not-acceptable), [ADR 0009](../adr/0009-freshness-gates-warmth.md))
+- **Freshness:** "available" is not "acceptable". An entry that misses the step's freshness bound does not count as warm. Check `freshness_requirement` on the step and `age_seconds` on the entry ([available is not acceptable](../architecture/marginal-replanning.md#available-is-not-acceptable))
 - **A failed run leaves no durable entry:** its transaction is rolled back, `cache_entries` rows included ([executor: when a run fails](../architecture/executor.md#when-a-run-fails)). The Redis pointer and the object-storage payload are written outside that transaction, so an exact repeat can still hit Redis until the pointer expires
 
 ### A semantic hit returned the wrong thing
@@ -311,7 +311,7 @@ curl -X POST localhost:8000/v1/runs/$RUN/report-false-hit \
 ```
 
 - **Then invalidate the engine too** (`POST /v1/cache/invalidate` with `{"engine": "..."}`). The report marks the PostgreSQL entry invalidated but leaves Redis alone, and the semantic hit wrote its pointer under the requesting query's key, so that exact query keeps getting the bad payload until the hot key expires ([Redis: invalidation](redis.md#invalidation))
-- Then look at `GET /v1/cache/guard-rejections` to see what the deterministic guard is catching ([the entity and numeral guard](../architecture/caching.md#the-entity-and-numeral-guard), [ADR 0003](../adr/0003-deterministic-semantic-guard.md))
+- Then look at `GET /v1/cache/guard-rejections` to see what the deterministic guard is catching ([the entity and numeral guard](../architecture/caching.md#the-entity-and-numeral-guard))
 - **If the wrong hit had no numerals, versions or named entities to differ on**, raising `SEMANTIC_SIMILARITY_THRESHOLD` (default 0.95) is the lever. The guard cannot catch what it cannot see ([threshold](../architecture/caching.md#threshold-and-what-the-local-embedder-means-for-it))
 - Reports are counted in [`serpflow_semantic_false_hit_reports_total`](observability.md#cache), which should page someone
 
@@ -429,7 +429,7 @@ cd frontend && npm run typecheck
 - **What it affects:** the `ip` on [audit log](../database/rls.md#the-audit-log) entries, an API key's `last_used_ip`, and the IP stored on login sessions
 - **What it does not affect: the rate limit.** That is keyed by principal and path, not by IP, so callers never share a bucket through this setting ([Redis: rate limits](redis.md#rate-limits), [API: rate limiting](../api/overview.md#rate-limiting))
 - TLS proxy + bundled nginx: set it to **2** ([deployment guide, step 4](../deployment/deployment-guide.md#4-configure-the-environment))
-- **Too high is worse than too low:** a client that sends its own `X-Forwarded-For` entries can then choose the address that gets recorded. With fewer entries than hops, the socket peer is used
+- **Too high is worse than too low:** a client that sends its own `X-Forwarded-For` entries can then choose the address that gets recorded. With fewer entries than hops, the socket peer is used, but uvicorn has already replaced that peer with the leftmost, client-supplied entry, so neither fallback is trustworthy ([threat model: exposed surfaces](../security/threat-model.md#exposed-surfaces))
 
 ### Datastore ports are open on a server
 
@@ -476,11 +476,10 @@ grep '"request_id": "8a9e9172' logs/serpflow.log | python -m json.tool
 - [API overview](../api/overview.md#errors): every error code, with its status
 - [Executor](../architecture/executor.md#when-a-run-fails): what a failed run keeps, and what is rolled back
 - [Planner](../architecture/planner.md#stage-c-synthesize): how parameters such as `location` and Google Finance's `q` are bound
-- [ADR 0010](../adr/0010-test-key-mode-precedence.md): why a test key always means mock data
 - [Kafka](kafka.md#degradation) and [Redis](redis.md#degradation): why neither outage takes the API down
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Redis](../operations/redis.md) | [Docs index](../README.md) | [Architecture decision records](../adr/README.md) |
+| [Redis](../operations/redis.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Back to the start](../README.md) |

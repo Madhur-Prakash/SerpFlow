@@ -88,8 +88,6 @@ ORDER = [
     "operations/kafka.md",
     "operations/redis.md",
     "operations/troubleshooting.md",
-    "adr/README.md",
-    *[f"adr/{p.name}" for p in sorted((DOCS / "adr").glob("[0-9][0-9][0-9][0-9]-*.md"))],
 ]
 
 # Section id -> (breadcrumb label, anchor on the index page, badge colour)
@@ -102,7 +100,6 @@ SECTIONS = {
     "database": ("Database", "database", "4169E1"),
     "security": ("Security", "security", "6E40C9"),
     "operations": ("Operations", "operations", "E6522C"),
-    "adr": ("Decisions", "decisions", "555555"),
 }
 
 # The stack, as badges: label, message, colour, simple-icons logo, logo colour.
@@ -169,7 +166,7 @@ PAGES: dict[str, dict] = {
     "api/examples.md": {"facts": [], "tech": ["python", "typescript", "mcp"]},
     "sdks/overview.md": {"facts": [("surfaces", "Python · TypeScript · CLI · MCP", "8250DF")], "tech": ["python", "typescript", "mcp"]},
     "sdks/python.md": {"facts": [("runtime deps", "httpx", "3fcf8e")], "tech": ["python"]},
-    "sdks/typescript.md": {"facts": [("runtime deps", "none", "3fcf8e")], "tech": ["typescript", "node"]},
+    "sdks/typescript.md": {"facts": [("runtime deps", "none", "3fcf8e"), ("runs on", "Node 18+ · Deno · Bun · browsers", "8250DF")], "tech": ["typescript"]},
     "sdks/cli.md": {"facts": [("commands", "14", "8250DF")], "tech": ["python"]},
     "sdks/mcp.md": {"facts": [("tools", "4", "8250DF"), ("transport", "stdio", "555555")], "tech": ["mcp", "python", "postgres"]},
     "sdks/releasing.md": {"facts": [("registries", "npm · PyPI", "8250DF")], "tech": ["typescript", "python"]},
@@ -187,7 +184,6 @@ PAGES: dict[str, dict] = {
     "operations/kafka.md": {"facts": [], "tech": ["kafka"]},
     "operations/redis.md": {"facts": [("authoritative", "never", "555555")], "tech": ["redis"]},
     "operations/troubleshooting.md": {"facts": [], "tech": ["docker", "postgres", "redis", "kafka"]},
-    "adr/README.md": {"facts": [("records", "14", "555555"), ("status", "all accepted", "3fcf8e")], "tech": []},
 }
 
 HEADER_MARK = "img.shields.io/badge/docs-"
@@ -230,12 +226,9 @@ def is_section_index(rel_docs: str) -> bool:
 
 def short_title(rel_docs: str) -> str:
     title = title_of((DOCS / rel_docs).read_text(encoding="utf-8"))
-    if is_section_index(rel_docs) and rel_docs != "adr/README.md":
+    if is_section_index(rel_docs):
         # "Product" alone reads like a page about the product, not a contents page.
         return f"{SECTIONS[rel_docs.split('/')[0]][0]} index"
-    if rel_docs.startswith("adr/") and rel_docs != "adr/README.md":
-        number, _, rest = title.partition(". ")
-        title = f"ADR {number}: {rest}"
     return title if len(title) <= 52 else title[:50].rstrip() + "…"
 
 
@@ -293,7 +286,7 @@ def render(rel_docs: str, index: int) -> str:
     head, body = strip_generated(page.read_text(encoding="utf-8"))
     section = rel_docs.split("/")[0]
     label, anchor, color = SECTIONS[section]
-    meta = PAGES.get(rel_docs, {"facts": [("status", "accepted", "3fcf8e")], "tech": []})
+    meta = PAGES.get(rel_docs, {"facts": [], "tech": []})
     index_link = link_to("README.md", rel_docs)
 
     # Every page points up to its section index; the section index points up to
@@ -336,7 +329,7 @@ def render(rel_docs: str, index: int) -> str:
 
 
 def slug_of(rel_docs: str) -> str:
-    """The docs browser's route for a page: "adr/README.md" is "adr"."""
+    """The docs browser's route for a page: "api/README.md" is "api"."""
     return re.sub(r"(^|/)README$", "", rel_docs.removesuffix(".md"))
 
 

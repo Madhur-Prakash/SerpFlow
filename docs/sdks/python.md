@@ -1,14 +1,14 @@
 # Python SDK
 
 <p>
-  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <a href="../sdks/README.md"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
   <img alt="runtime deps: httpx" src="https://img.shields.io/badge/runtime%20deps-httpx-3fcf8e">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <a href="../../backend/app/sdk/__init__.py"><img alt="source: sdk/__init__.py" src="https://img.shields.io/badge/source-sdk%2F____init____.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../README.md#sdks) › **Python SDK** · page 24 of 57
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **Python SDK** · page 29 of 50
 
 - **A sync client, an async client and a SerpApi drop-in**, in one module: [`app/sdk/__init__.py`](../../backend/app/sdk/__init__.py)
 - **One runtime dependency, `httpx`.** The module imports nothing else from the backend, so it can be lifted out into its own distribution unchanged
@@ -18,7 +18,7 @@
 
 ## Install
 
-**Today, from a checkout.** The SDK is not on PyPI yet.
+**From a checkout, on your own infrastructure.** The SDK is not released: it will be published to PyPI when the author decides to host SerpFlow ([why](releasing.md#first-who-runs-the-server)). Until then, a self-hosted instance installs and uses it as below.
 
 - **You also need a SerpFlow server to call.** SerpFlow is self-hosted for now, so that is your own instance, `http://localhost:8000` by default. The author will host one on demand: [hosting](../../README.md#hosting)
 
@@ -315,4 +315,4 @@ SerpApiCompat(params, *, base_url=None)
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [SDKs and tools](../sdks/overview.md) | [Docs index](../README.md) | [TypeScript SDK](../sdks/typescript.md) |
+| [SDKs and tools](../sdks/overview.md) | [Docs index](../README.md) · [SDKs index](../sdks/README.md) | [TypeScript SDK](../sdks/typescript.md) |

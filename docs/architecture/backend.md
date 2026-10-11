@@ -1,16 +1,16 @@
 # Backend
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="FastAPI: 0.118" src="https://img.shields.io/badge/FastAPI-0.118-009688?logo=fastapi&logoColor=white">
   <img alt="SQLAlchemy: 2" src="https://img.shields.io/badge/SQLAlchemy-2-D71F00?logo=sqlalchemy&logoColor=white">
   <img alt="Pydantic: v2" src="https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white">
   <a href="../../backend/app/main.py"><img alt="source: app/main.py" src="https://img.shields.io/badge/source-app%2Fmain.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
+  <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **Backend** · page 17 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Backend** · page 20 of 50
 
 **Python 3.13, FastAPI, SQLAlchemy 2 with async psycopg, Pydantic v2.** How the pieces fit at the system level is in the [architecture overview](overview.md#layers); this page is the package itself. The console that calls it is the [frontend](frontend.md).
 
@@ -75,12 +75,12 @@ backend/
 | Part | Canonical page |
 | --- | --- |
 | `main.py` lifespan, `/healthz` `/readyz` | [Bootstrap](../operations/bootstrap.md), [observability: health](../operations/observability.md#health) |
-| `server.py` | [Async on Windows](#async-on-windows), [ADR 0013](../adr/0013-explicit-event-loop-factory.md) |
+| `server.py` | [Async on Windows](#async-on-windows) |
 | `api/v1/` | [API overview](../api/overview.md#core-endpoints) |
 | `api/deps.py` principal resolution | [API keys: resolution](../security/api-keys.md#resolution), [RLS: application guards](../database/rls.md#the-application-guards) |
 | `api/middleware.py` | [Provenance headers](../api/overview.md#provenance-headers), [errors](../api/overview.md#errors) |
 | `core/config.py` | [Secrets](../security/secrets.md#inventory), [`.env.example`](../../.env.example) |
-| `core/security.py` | [Credentials: envelope encryption](../security/credentials.md#envelope-encryption), [ADR 0004](../adr/0004-hmac-for-api-keys.md) |
+| `core/security.py` | [Credentials: envelope encryption](../security/credentials.md#envelope-encryption) |
 | `core/permissions.py` | [API keys: roles](../security/api-keys.md#roles) |
 | `core/logging.py` `telemetry.py` `metrics.py` | [Observability](../operations/observability.md) |
 | `core/text.py` `routes.py` | [Planner: stage C](planner.md#stage-c-synthesize), [caching: the guard](caching.md#the-entity-and-numeral-guard) |
@@ -96,7 +96,7 @@ backend/
 | `services/budgets/` | [Executor: budget enforcement](executor.md#budget-enforcement) |
 | `services/credentials/` | [Credentials](../security/credentials.md), [BYOK](../security/byok.md) |
 | `services/auth/` `roles/` | [API keys](../security/api-keys.md), [custom roles](../security/api-keys.md#custom-roles) |
-| `services/audit/` | [RLS: the audit log](../database/rls.md#the-audit-log), [ADR 0012](../adr/0012-append-only-audit-log.md) |
+| `services/audit/` | [RLS: the audit log](../database/rls.md#the-audit-log) |
 | `services/benchmark/`, `fixtures/benchmark/` | [Routing benchmark](../product/benchmark.md) |
 | `services/email/` `notifications/`, `templates/email/` | [Email](../operations/email.md) |
 | `integrations/serpapi/` | [Executor: where LIVE goes](executor.md#where-live-goes), [execution modes](../product/execution-modes.md) |
@@ -124,7 +124,7 @@ Middleware is registered in [`main.py`](../../backend/app/main.py); the last one
    - deny by default
    - no business-logic module performs its own check
 7. **The route calls a service.** Services never touch `Request`
-   - interactive search executes in-process; only background work goes to Kafka ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md))
+   - interactive search executes in-process; only background work goes to Kafka
 8. **The response** picks up [provenance headers](../api/overview.md#provenance-headers) and security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`)
 
 ## Identifiers
@@ -170,7 +170,7 @@ Every error carries a **stable machine code**, and never a stack trace:
 
 - **The psycopg async driver cannot run on a proactor event loop**
 - uvicorn picks its loop with a factory that returns one on Windows for single-process runs
-- **`python -m app.server` drives uvicorn with an explicit selector loop factory**, so a laptop behaves like a container ([ADR 0013](../adr/0013-explicit-event-loop-factory.md))
+- **`python -m app.server` drives uvicorn with an explicit selector loop factory**, so a laptop behaves like a container
 - `--reload` and `--workers` above 1 take uvicorn's supervisor path, which spawns subprocesses, for which uvicorn picks a selector loop itself
 - If you see `InterfaceError` from psycopg on Windows, you started uvicorn directly: [troubleshooting](../operations/troubleshooting.md#psycopg-fails-on-windows-proactoreventloop)
 
@@ -200,11 +200,10 @@ Every error carries a **stable machine code**, and never a stack trace:
 - [Database schema](../database/schema.md): the tables behind `db/models/`
 - [API overview](../api/overview.md): the routes in `api/v1/` and the error codes
 - [SDKs and tools](../sdks/overview.md): the CLI, SDK and MCP server packaged in this backend
-- [ADR 0013](../adr/0013-explicit-event-loop-factory.md): why the server has its own entry point
 - [Troubleshooting: database](../operations/troubleshooting.md#database): the async-driver failures this page explains
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [The executor](../architecture/executor.md) | [Docs index](../README.md) | [Frontend](../architecture/frontend.md) |
+| [The executor](../architecture/executor.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [Frontend](../architecture/frontend.md) |

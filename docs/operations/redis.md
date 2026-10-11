@@ -1,14 +1,14 @@
 # Redis
 
 <p>
-  <a href="../README.md#operations"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
+  <a href="../operations/README.md"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
   <img alt="authoritative: never" src="https://img.shields.io/badge/authoritative-never-555555">
   <img alt="Redis: 7" src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white">
   <a href="../../backend/app/services/cache/redis_client.py"><img alt="source: cache/redis_client.py" src="https://img.shields.io/badge/source-cache%2Fredis__client.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../README.md#operations) › **Redis** · page 41 of 57
+[Docs](../README.md) › [Operations](../operations/README.md) › **Redis** · page 49 of 50
 
 **Redis holds four things, and none of them is a source of truth.** That single fact decides every operational choice on this page.
 
@@ -172,7 +172,6 @@ serpflow_cache_lookup_seconds{layer}
 ## Related
 
 - [Caching architecture](../architecture/caching.md#the-redis-boundary): what the hot layer is allowed to answer, and what it defers to PostgreSQL
-- [ADR 0009](../adr/0009-freshness-gates-warmth.md): why a warm entry can still be refused, whichever layer holds it
 - [API keys](../security/api-keys.md#resolution): the principal cache in the key-resolution path
 - [Streaming](../api/streaming.md#reconnecting): the frame buffer `sf:stream:` mirrors
 - [Docker](../deployment/docker.md#redis): the compose service and its mounted config
@@ -184,4 +183,4 @@ serpflow_cache_lookup_seconds{layer}
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Kafka](../operations/kafka.md) | [Docs index](../README.md) | [Troubleshooting](../operations/troubleshooting.md) |
+| [Kafka](../operations/kafka.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Troubleshooting](../operations/troubleshooting.md) |

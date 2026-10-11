@@ -1,7 +1,7 @@
 # Production
 
 <p>
-  <a href="../README.md#deployment"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
+  <a href="../deployment/README.md"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
   <img alt="bootstrap: advisory-locked" src="https://img.shields.io/badge/bootstrap-advisory--locked-3fcf8e">
   <img alt="Docker: Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
@@ -10,7 +10,7 @@
   <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../README.md#deployment) › **Production** · page 10 of 57
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Production** · page 12 of 50
 
 **The bundled compose stack is honest about what it is:** a complete, working deployment for a single host. The step-by-step version of that host is the [deployment guide](deployment-guide.md). This page covers:
 
@@ -23,7 +23,7 @@
 | --- | --- |
 | `ENVIRONMENT=production`, `DEBUG=false` | turns off development behaviour, and makes startup refuse to seed demo data ([bootstrap](../operations/bootstrap.md#3-an-environment-refusal)) |
 | `JWT_SECRET`, `API_KEY_PEPPER`, `CREDENTIAL_KEK` replaced, distinct, none still `change-me` | the defaults are public ([generating real ones](../security/secrets.md#generating-real-ones)) |
-| `CREDENTIAL_KEK` held in a secret manager or KMS and injected at deploy time; on a single host, at least a `chmod 600` `.env` ([step 4](deployment-guide.md#4-configure-the-environment)) | the KEK unlocks every upstream credential ([ADR 0005](../adr/0005-envelope-encryption.md)). The code reads it from the environment (`_load_kek` in [`app/core/security.py`](../../backend/app/core/security.py)); there is no KMS client yet, see [credentials](../security/credentials.md#envelope-encryption) |
+| `CREDENTIAL_KEK` held in a secret manager or KMS and injected at deploy time; on a single host, at least a `chmod 600` `.env` ([step 4](deployment-guide.md#4-configure-the-environment)) | the KEK unlocks every upstream credential. The code reads it from the environment (`_load_kek` in [`app/core/security.py`](../../backend/app/core/security.py)); there is no KMS client yet, see [credentials](../security/credentials.md#envelope-encryption) |
 | `CORS_ORIGINS` set to real origins, never `*` | credentials travel on these requests |
 | TLS terminated in front of the service | tokens and keys travel in headers ([deployment guide: TLS](deployment-guide.md#9-put-tls-in-front)) |
 | PostgreSQL password rotated away from the compose default | the default is in the repository |
@@ -32,7 +32,7 @@
 | `LOG_JSON=true`, log shipping configured | logs are the incident record ([logging](../operations/observability.md#logging)) |
 | **The application's database role does not own the tables** | see below: easiest to miss |
 
-**That last one matters most.** A table owner bypasses row-level security by default, so running the application as the owner **silently disables the backstop** ([ADR 0011](../adr/0011-rls-plus-application-guards.md)):
+**That last one matters most.** A table owner bypasses row-level security by default, so running the application as the owner **silently disables the backstop**:
 
 ```sql
 CREATE ROLE serpflow_app LOGIN PASSWORD '...';
@@ -46,7 +46,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
   - **the startup bootstrap migrates with the application's own `DATABASE_URL`** ([`app/db/bootstrap.py`](../../backend/app/db/bootstrap.py)), so with a separate role set `RUN_MIGRATIONS_ON_STARTUP=false` and run `alembic upgrade head` as the owner before each rollout
   - in the bundled compose file the backend's `DATABASE_URL` is built from `POSTGRES_USER`; override it for the backend to connect as `serpflow_app` ([Docker](docker.md#running))
   - every table uses string identifiers, so there are no sequences to grant
-- Alternatively, mark the tables `FORCE ROW LEVEL SECURITY`, which applies the policies to the owner too: [deployment guide, step 8](deployment-guide.md#8-make-row-level-security-bind)
+- **`FORCE ROW LEVEL SECURITY` is not an alternative to this role.** It applies the policies to a table owner, but never to a superuser, and the bundled stack's `POSTGRES_USER` is a superuser. Use it in addition, for any path that still connects as the owner: [deployment guide, step 8](deployment-guide.md#8-make-row-level-security-bind)
 - More: [secrets](../security/secrets.md) · [row-level security](../database/rls.md) · [threat model: cross-tenant data access](../security/threat-model.md#cross-tenant-data-access)
 
 ## Scaling
@@ -58,7 +58,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
     - `Last-Event-ID` resumption works across a reconnect that lands elsewhere ([reconnecting](../api/streaming.md#reconnecting))
   - **Background work can be scaled separately:** [`make worker`](local.md#everyday-targets) (`python -m app.workers.runner`) runs the Kafka consumers on their own ([running consumers](../operations/kafka.md#running-consumers))
     - scheduled, bulk, retried and webhook-triggered runs go through Kafka
-    - **interactive search executes in-process** and never touches the broker ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md))
+    - **interactive search executes in-process** and never touches the broker
     - **every API process also starts the same consumers in-process** while `KAFKA_ENABLED=true` ([`app/main.py`](../../backend/app/main.py)). They share the `serpflow-workers` group with the workers, so partitions spread across both
     - there is no setting that turns off only the API's consumers: `KAFKA_ENABLED=false` also disables its producer, so its background events are dropped and `/readyz` reports Kafka `degraded`
   - **Rate limiting is central:** Redis-backed, so the limit is per principal across the fleet, not per container ([rate limiting](../api/overview.md#rate-limiting))
@@ -106,7 +106,7 @@ ALTER TABLE cache_entries SET (autovacuum_vacuum_scale_factor = 0.02);
 ```
 
 - **Backups**
-  - the audit log is hash chained, so a restore that silently loses entries is detectable with `GET /v1/audit/verify` ([ADR 0012](../adr/0012-append-only-audit-log.md))
+  - the audit log is hash chained, so a restore that silently loses entries is detectable with `GET /v1/audit/verify`
   - point-in-time recovery is worth the setup here
   - the single-host commands: [deployment guide: backups](deployment-guide.md#13-backups)
 
@@ -137,7 +137,7 @@ METRICS_ENABLED=true
 - **Scrape `/metrics`** from inside the network; it is unauthenticated, so do not expose it publicly ([deployment guide: TLS](deployment-guide.md#9-put-tls-in-front)). The alerting rules that matter are in [observability: alerting](../operations/observability.md#alerting)
 - **The one specific to this system:** [`serpflow_semantic_false_hit_reports_total`](../operations/observability.md#cache) rising
   - it means the semantic layer is serving wrong data
-  - it is a **correctness** page, not a performance one ([ADR 0003](../adr/0003-deterministic-semantic-guard.md))
+  - it is a **correctness** page, not a performance one
 
 ## Zero-downtime deploys
 
@@ -220,4 +220,4 @@ RETENTION_HIGH_PII_DAYS=7
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Deployment guide](../deployment/deployment-guide.md) | [Docs index](../README.md) | [Architecture overview](../architecture/overview.md) |
+| [Deployment guide](../deployment/deployment-guide.md) | [Docs index](../README.md) · [Deployment index](../deployment/README.md) | [Architecture index](../architecture/README.md) |

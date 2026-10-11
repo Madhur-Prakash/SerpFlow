@@ -1,21 +1,21 @@
 # Marginal-cost replanning
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="thesis: marginal cost" src="https://img.shields.io/badge/thesis-marginal%20cost-3fcf8e">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <a href="../../backend/app/services/planner/cost.py"><img alt="source: planner/cost.py" src="https://img.shields.io/badge/source-planner%2Fcost.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **Marginal-cost replanning** · page 14 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **Marginal-cost replanning** · page 17 of 50
 
 **This is the thesis.** Everything else in SerpFlow exists to make it possible.
 
 > SerpFlow does not merely cache search results. It re-plans execution based on
 > what is already warm, optimizing **marginal** cost rather than cold cost.
 
-Code: [`app/services/planner/cost.py`](../../backend/app/services/planner/cost.py) · [`budget.py`](../../backend/app/services/planner/budget.py) · decision: [ADR 0001](../adr/0001-marginal-cost-replanning.md)
+Code: [`app/services/planner/cost.py`](../../backend/app/services/planner/cost.py) · [`budget.py`](../../backend/app/services/planner/budget.py)
 
 - `replan_on_marginal_cost` runs after [stage D](planner.md#stage-d-path-find-and-generate-candidates) of the planner, over every candidate it emitted
 - It is the `inspecting_cache`, `calculating_marginal_cost`, `reranking_plans` and `checking_budget` part of the [stage sequence](../api/streaming.md#the-stage-sequence)
@@ -43,7 +43,7 @@ intent
  -> execute
 ```
 
-The spec's own example:
+A worked example:
 
 ```
 Plan A    cold cost 4    marginal cost 4
@@ -56,7 +56,7 @@ Plan B    cold cost 8    marginal cost 1     <- selected
 
 ## Available is not acceptable
 
-The single most important rule in the cost model, recorded as [ADR 0009](../adr/0009-freshness-gates-warmth.md):
+The single most important rule in the cost model:
 
 > A warm entry counts toward marginal savings **only if it also satisfies the
 > step's freshness requirement**.
@@ -118,7 +118,7 @@ full = 0    partial = 1    narrow = 2
 - A narrow substitute is cheaper **precisely because it answers a smaller question**
   - `yelp_reviews` costs a ninth of the Google Maps contributor chain, and cannot establish reviewer identity at all
 - Letting price outrank coverage makes the planner optimise a question nobody asked
-- **Cost only breaks ties within a coverage band.** See [ADR 0008](../adr/0008-coverage-before-price.md)
+- **Cost only breaks ties within a coverage band.**
 
 ### What `changed_selection` means
 
@@ -131,7 +131,7 @@ plan.replan_explanation                  = a sentence naming both and their cost
 metrics.marginal_replan_changed_selection_total.inc()
 ```
 
-- **That boolean is the product, persisted** on the [`plans`](../database/schema.md#planning-and-execution) row, with the cold winner kept as a `plan_candidates` row ([ADR 0014](../adr/0014-persist-every-candidate.md))
+- **That boolean is the product, persisted** on the [`plans`](../database/schema.md#planning-and-execution) row, with the cold winner kept as a `plan_candidates` row
   - the Plan Inspector renders it
   - the overview counts it
   - the e2e suite, [`test_marginal_replanning.py`](../../backend/tests/e2e/test_marginal_replanning.py), asserts it
@@ -139,7 +139,7 @@ metrics.marginal_replan_changed_selection_total.inc()
 
 ## Budget-aware reduction happens before ranking
 
-Section 16 orders the steps:
+The planner runs the steps in this order:
 
 ```
 1. generate candidate plans
@@ -254,8 +254,6 @@ Phase 3  same intent, same catalog version, same 20-credit budget, warm cache
 
 ## Related
 
-- [ADR 0001](../adr/0001-marginal-cost-replanning.md): why candidates are ranked on marginal cost, not cold cost
-- [ADR 0009](../adr/0009-freshness-gates-warmth.md) and [ADR 0008](../adr/0008-coverage-before-price.md): freshness gates warmth, and coverage outranks price
 - [The planner](planner.md#stage-d-path-find-and-generate-candidates): where the candidates and their freshness requirements come from
 - [Caching](caching.md#two-entry-points): what `inspect()` reads, and the layers behind it
 - [The executor](executor.md#budget-enforcement): the per-call budget check, and the spend and saving rows it writes
@@ -267,4 +265,4 @@ Phase 3  same intent, same catalog version, same 20-credit budget, warm cache
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [The planner](../architecture/planner.md) | [Docs index](../README.md) | [Caching](../architecture/caching.md) |
+| [The planner](../architecture/planner.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [Caching](../architecture/caching.md) |

@@ -57,7 +57,6 @@ const SECTIONS: { id: string; title: string; blurb: string }[] = [
   { id: "database", title: "Database", blurb: "Schema, migrations, row-level security." },
   { id: "security", title: "Security", blurb: "Threat model, credentials, keys, secrets." },
   { id: "operations", title: "Operations", blurb: "Bootstrap, email, observability, Kafka, Redis." },
-  { id: "adr", title: "Decisions", blurb: "Architecture decision records." },
 ];
 
 const READING_RANK = new Map(DOC_READING_ORDER.map((slug, index) => [slug, index]));
@@ -89,7 +88,6 @@ const TITLE_OVERRIDES: Record<string, string> = {
   "sdks/cli": "CLI",
   "sdks/mcp": "MCP server",
   "sdks/releasing": "Releasing",
-  adr: "Decision records",
   "readme:README": "Project README",
   "readme:CONTRIBUTING": "Contributing",
   "readme:SECURITY": "Security policy",
@@ -99,11 +97,8 @@ const TITLE_OVERRIDES: Record<string, string> = {
 function titleFromSlug(slug: string): string {
   if (TITLE_OVERRIDES[slug]) return TITLE_OVERRIDES[slug];
   const last = slug.split("/").pop() ?? slug;
-  // ADR filenames carry a number: "0008-coverage-before-price".
-  const adr = last.match(/^(\d{4})-(.+)$/);
-  const words = (adr ? adr[2] : last).replace(/-/g, " ");
-  const cased = words.charAt(0).toUpperCase() + words.slice(1);
-  return adr ? `${adr[1]}. ${cased}` : cased;
+  const words = last.replace(/-/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function slugFor(path: string): string {
@@ -199,8 +194,8 @@ function sourceOf(slug: string): string {
  * are correct on GitHub and meaningless to a single-page app. This resolves
  * them against the file the link is written in, in repository coordinates, and
  * maps pages under docs/ onto `/docs/...`, so the same markdown works in both
- * places. The file matters, not the slug: "adr" is `docs/adr/README.md`, so its
- * links resolve from `docs/adr/`, and `../README.md` from a section page is the
+ * places. The file matters, not the slug: "api" is `docs/api/README.md`, so its
+ * links resolve from `docs/api/`, and `../README.md` from a section page is the
  * docs index, not the project README.
  */
 export function resolveDocLink(href: string, fromSlug: string): string | null {

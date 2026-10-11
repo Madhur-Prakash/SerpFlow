@@ -1,13 +1,13 @@
 # Kafka
 
 <p>
-  <a href="../README.md#operations"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
+  <a href="../operations/README.md"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
   <img alt="Kafka: 4.0 KRaft" src="https://img.shields.io/badge/Kafka-4.0%20KRaft-231F20?logo=apachekafka&logoColor=white">
   <a href="../../backend/app/workers"><img alt="source: app/workers" src="https://img.shields.io/badge/source-app%2Fworkers-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../README.md#operations) › **Kafka** · page 40 of 57
+[Docs](../README.md) › [Operations](../operations/README.md) › **Kafka** · page 48 of 50
 
 - **Kafka 4.x in KRaft mode**: the compose service runs `apache/kafka:4.0.0` as a single combined broker and controller ([Docker: Kafka](../deployment/docker.md#kafka))
 - **No ZooKeeper, and there will not be one:** ZooKeeper is removed in Kafka 4
@@ -29,7 +29,7 @@ Not Kafka        interactive POST /v1/search
 - **A broker in that path would add latency and a failure mode for nothing:**
   - the caller is already waiting on the response
   - the SSE stream is served from the same process doing the work
-- **Putting a synchronous user-facing request through a queue to look event-driven is a common mistake.** Kafka is here for work that genuinely is asynchronous. See [ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md)
+- **Putting a synchronous user-facing request through a queue to look event-driven is a common mistake.** Kafka is here for work that genuinely is asynchronous.
 
 **What actually publishes at HEAD** is narrower than what the topics are for:
 
@@ -188,7 +188,6 @@ serpflow_kafka_messages_total{topic, direction, status}
 
 ## Related
 
-- [ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md): why interactive search never touches the broker
 - [Docker](../deployment/docker.md#kafka): the KRaft service and its two listeners
 - [Production](../deployment/production.md#kafka): brokers, replication and worker scaling for a real deployment
 - [Architecture overview](../architecture/overview.md#data-stores-and-what-each-is-for): where Kafka sits among the data stores
@@ -201,4 +200,4 @@ serpflow_kafka_messages_total{topic, direction, status}
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Observability](../operations/observability.md) | [Docs index](../README.md) | [Redis](../operations/redis.md) |
+| [Observability](../operations/observability.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Redis](../operations/redis.md) |

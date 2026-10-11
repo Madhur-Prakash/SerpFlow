@@ -1,7 +1,7 @@
 # Deployment guide
 
 <p>
-  <a href="../README.md#deployment"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
+  <a href="../deployment/README.md"><img alt="docs: Deployment" src="https://img.shields.io/badge/docs-Deployment-2496ED?logo=readthedocs&logoColor=white"></a>
   <img alt="steps: 15" src="https://img.shields.io/badge/steps-15-2496ED">
   <img alt="TLS: Caddy" src="https://img.shields.io/badge/TLS-Caddy-1F88C0">
   <img alt="Docker: Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
@@ -12,7 +12,7 @@
   <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Deployment](../README.md#deployment) › **Deployment guide** · page 9 of 57
+[Docs](../README.md) › [Deployment](../deployment/README.md) › **Deployment guide** · page 11 of 50
 
 **A runbook: from a blank server to a verified production instance**, with every command. It deploys the bundled Docker Compose stack on **one host**, behind a TLS proxy.
 
@@ -75,8 +75,8 @@ openssl rand -hex 16                 # GRAFANA_PASSWORD
 
 | Secret | If you lose it or change it carelessly |
 | --- | --- |
-| `CREDENTIAL_KEK` | every stored SerpApi/Groq credential becomes **undecryptable**. Rotate only with the [rewrap procedure](../security/secrets.md#kek); why it wraps per-credential keys: [ADR 0005](../adr/0005-envelope-encryption.md) |
-| `API_KEY_PEPPER` | **every API key stops working**. Rotation means re-issuing all keys: [pepper rotation](../security/secrets.md#pepper); why a pepper: [ADR 0004](../adr/0004-hmac-for-api-keys.md) |
+| `CREDENTIAL_KEK` | every stored SerpApi/Groq credential becomes **undecryptable**. Rotate only with the [rewrap procedure](../security/secrets.md#kek) |
+| `API_KEY_PEPPER` | **every API key stops working**. Rotation means re-issuing all keys: [pepper rotation](../security/secrets.md#pepper) |
 | `JWT_SECRET` | every user is signed out. Recoverable ([JWT secret rotation](../security/secrets.md#jwt-secret)) |
 | `POSTGRES_PASSWORD` | only set at first initialisation of the volume; changing it later needs `ALTER ROLE` too |
 
@@ -214,7 +214,7 @@ dc exec backend python -m app.workers.topics
 - **The table owner bypasses [row-level security](../database/rls.md) by default**, and the backend connects as the owner (`POSTGRES_USER`)
 - **Worse, the official postgres image creates `POSTGRES_USER` as a superuser, and a superuser bypasses RLS always, `FORCE` included.** On the bundled compose stack, forcing alone changes nothing
   - **So first connect the backend as a separate role that is not a superuser**: the [`serpflow_app` recipe in production](production.md#before-anything-else). Until then the [application guards](../database/rls.md#the-application-guards) are the only tenant boundary
-- Then force the policies onto the owner too, for any path that still connects as it. With the policy's [empty-setting clause](../database/rls.md#the-empty-value-clause), migrations and workers keep working. Why both RLS and application guards: [ADR 0011](../adr/0011-rls-plus-application-guards.md)
+- Then force the policies onto the owner too, for any path that still connects as it. With the policy's [empty-setting clause](../database/rls.md#the-empty-value-clause), migrations and workers keep working
 
 ```bash
 dc exec -T postgres psql -U serpflow -d serpflow <<'SQL'
@@ -233,7 +233,7 @@ SQL
 - **Expect `forced = 24`**: the 22 tenant tables of `0001_initial`, plus `organizations` and `custom_roles` ([covered tables](../database/rls.md#covered-tables))
 - **A count is not proof.** Connected as the role the backend uses, run the `BEGIN ... ROLLBACK` check in [verifying it](../database/rls.md#verifying-it): it must return `0`. As a superuser it returns every row
 - **Re-run it after any upgrade that adds a table**
-- The alternative, a separate non-owner application role, is in [production](production.md#before-anything-else)
+- The separate application role, which this step depends on, is in [production](production.md#before-anything-else)
 
 ## 9. Put TLS in front
 
@@ -298,7 +298,7 @@ curl -s https://serpflow.example.com/readyz           # every check "ok"
 dc exec backend python -m app.cli.main health        # the same, from inside
 ```
 
-Smoke-test with the **test key**. It routes to the deterministic mock and **spends zero credits** ([test keys](../security/api-keys.md#test-keys) · [ADR 0010](../adr/0010-test-key-mode-precedence.md)):
+Smoke-test with the **test key**. It routes to the deterministic mock and **spends zero credits** ([test keys](../security/api-keys.md#test-keys)):
 
 ```bash
 export KEY=sf_test_...
@@ -377,7 +377,7 @@ dc exec -T postgres pg_restore -U serpflow -d serpflow --clean --if-exists < /op
 curl -s -H "Authorization: Bearer <owner token>" https://serpflow.example.com/v1/audit/verify
 ```
 
-- **`/v1/audit/verify` walks the audit log's hash chain** and reports the first break, so a restore that lost entries shows up. It needs `audit:read` (owner or admin): [the audit log](../database/rls.md#the-audit-log) · [ADR 0012](../adr/0012-append-only-audit-log.md)
+- **`/v1/audit/verify` walks the audit log's hash chain** and reports the first break, so a restore that lost entries shows up. It needs `audit:read` (owner or admin): [the audit log](../database/rls.md#the-audit-log)
 - **Redis needs no backup:** it is a hot cache and repopulates lazily ([why none of it is authoritative](../operations/redis.md#why-none-of-it-is-authoritative))
 - **The volume names** carry the compose project prefix, `serpflow_` ([Docker: volumes](docker.md#volumes))
 - **Copy backups off the server**, and test a restore before you need one. Point-in-time recovery: [production: PostgreSQL](production.md#postgresql)
@@ -455,4 +455,4 @@ dc build && dc up -d
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Docker](../deployment/docker.md) | [Docs index](../README.md) | [Production](../deployment/production.md) |
+| [Docker](../deployment/docker.md) | [Docs index](../README.md) · [Deployment index](../deployment/README.md) | [Production](../deployment/production.md) |

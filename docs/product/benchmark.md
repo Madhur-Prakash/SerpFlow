@@ -1,15 +1,15 @@
 # Routing benchmark
 
 <p>
-  <a href="../README.md#product"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../product/README.md"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="routing accuracy: 38.3%" src="https://img.shields.io/badge/routing%20accuracy-38.3%25-3fcf8e">
   <img alt="tasks: 120" src="https://img.shields.io/badge/tasks-120-2F6BFF">
   <img alt="Groq: BYOK" src="https://img.shields.io/badge/Groq-BYOK-F55036">
   <a href="../../backend/app/services/benchmark/service.py"><img alt="source: benchmark/service.py" src="https://img.shields.io/badge/source-benchmark%2Fservice.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
+  <img alt="read: 10 min" src="https://img.shields.io/badge/read-10%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../README.md#product) › **Routing benchmark** · page 4 of 57
+[Docs](../README.md) › [Product](../product/README.md) › **Routing benchmark** · page 5 of 50
 
 ```bash
 make benchmark
@@ -73,7 +73,7 @@ They are not sabotaged. They are measured doing what they can actually do.
 - **Embedding retrieval:** returns the single nearest engine by cosine similarity ([stage A](../architecture/planner.md#stage-a-retrieve) alone)
   - no selector and no path-finding, so it **structurally cannot** produce a two-engine chain
   - every multi-hop task is lost before scoring starts
-  - that is why it is included: it isolates how much of SerpFlow's accuracy comes from the **typed graph** ([ADR 0002](../adr/0002-typed-catalog-edges.md)) rather than from retrieval
+  - that is why it is included: it isolates how much of SerpFlow's accuracy comes from the **typed graph** rather than from retrieval
 
 ## Failure analysis
 
@@ -207,7 +207,7 @@ freshness_correct reported separately, not part of `correct`
 
 - Freshness is scored, but **kept out of the headline** so the number stays comparable with a routing-only baseline
 - **A match on an acceptable alternative counts as correct**, and is counted separately as `matched_alternative_count` (23 in the committed SerpFlow report)
-- **The SerpFlow system is scored on the plan the planner would rank first on a cold cache:** coverage, then cold cost, then selector confidence, the same order the planner uses ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price), [ADR 0008](../adr/0008-coverage-before-price.md))
+- **The SerpFlow system is scored on the plan the planner would rank first on a cold cache:** coverage, then cold cost, then selector confidence, the same order the planner uses ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price))
 
 ## Running it
 
@@ -241,11 +241,9 @@ serpflow benchmark run --system serpflow --limit 20 --no-write   # a subset, whi
 - [Bring your own key](../security/byok.md): the Groq key that swaps in a model-backed selector
 - [CLI](../sdks/cli.md#serpflow-benchmark): every `serpflow benchmark` flag, including `--no-write`
 - [Database schema](../database/schema.md#benchmark): `benchmark_tasks`, `benchmark_runs` and `routing_evals`
-- [ADR 0008](../adr/0008-coverage-before-price.md): coverage before price, the order the harness ranks in
-- [ADR 0002](../adr/0002-typed-catalog-edges.md): the typed graph the embedding-only baseline lacks
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Execution modes](../product/execution-modes.md) | [Docs index](../README.md) | [Glossary](../product/glossary.md) |
+| [Execution modes](../product/execution-modes.md) | [Docs index](../README.md) · [Product index](../product/README.md) | [Glossary](../product/glossary.md) |

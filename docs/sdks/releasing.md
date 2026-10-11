@@ -1,7 +1,7 @@
 # Releasing the SDKs
 
 <p>
-  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <a href="../sdks/README.md"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
   <img alt="registries: npm · PyPI" src="https://img.shields.io/badge/registries-npm%20%C2%B7%20PyPI-8250DF">
   <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
@@ -9,10 +9,10 @@
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../README.md#sdks) › **Releasing the SDKs** · page 28 of 57
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **Releasing the SDKs** · page 33 of 50
 
 - **Two artifacts, two registries:** the TypeScript SDK goes to **npm** as `@serpflow/sdk`, and the Python SDK goes to **PyPI** as `serpflow`
-- **Neither has been published yet.** On 2026-10-11 both names were unclaimed: `registry.npmjs.org/@serpflow%2fsdk` and `pypi.org/pypi/serpflow/json` both answered 404
+- **Neither is released, by the author's decision, and neither will be until the author decides to host SerpFlow** ([who runs the server](#first-who-runs-the-server)). On 2026-10-11 both names were unclaimed: `registry.npmjs.org/@serpflow%2fsdk` and `pypi.org/pypi/serpflow/json` both answered 404
 - **Each needs a few one-time fixes before its first release.** They are listed below, and every fix was tried on a scratch copy of the repository first, so they are known to work
 - After that, every release is the same [checklist](#every-release), and it can be [automated](#automating-it-with-github-actions)
 
@@ -26,19 +26,19 @@
 > Every user runs their own server, and the SDKs, the CLI and the MCP server point at it.
 > **The author will host SerpFlow on demand**, once enough people ask for it. To ask, open a public GitHub issue. See [hosting](../../README.md#hosting).
 
-**So the packages are released as clients for self-hosted SerpFlow.** The table shows what that means today, and what would have to change on the day the author hosts it:
+**So the SDKs are not released while SerpFlow is self-hosted.** They will be published to npm and PyPI on the day the author decides to host the platform. Until then, if you self-host, install them from a checkout and use them on your own infrastructure, against your own instance ([Python](python.md#install), [TypeScript](typescript.md#install)). The table shows what that means today, and what changes on the day the author hosts it:
 
 | | Self-hosted: **today** | Hosted by the author: **on demand, later** |
 | --- | --- | --- |
 | **Who runs the API** | each user, from this repository ([Docker](../deployment/docker.md), [deployment guide](../deployment/deployment-guide.md)) | the author, at one public URL |
 | **What the author operates** | nothing | the API, PostgreSQL, Redis, Kafka, TLS, backups, sign-ups, uptime and abuse handling |
 | **Upstream cost to the author** | none | still none: SerpApi and Groq keys are [bring-your-own](../security/byok.md), per organization |
-| **SDK default `baseUrl`** | `http://localhost:8000` | the hosted URL. Changing a default is a **major** version of each SDK |
+| **SDKs** | not released: installed from a checkout, `baseUrl` defaulting to `http://localhost:8000` | published to npm and PyPI for the first time, with the hosted URL as the default |
 | **`serpflow-mcp`** | works: the user owns the database it connects to | **would not work for hosted users**: it needs the server's database and `API_KEY_PEPPER`. A remote MCP endpoint, or a rewrite as an HTTP client of the API, comes first |
 | **CLI** | works | works for the HTTP commands; `catalog` and `benchmark` run locally anyway |
 
-- **Release the SDKs with the self-hosted defaults.** Every page in these docs describes the self-hosted setup
-- **The day hosting starts,** ship a major release of both SDKs with the new default URL, and the MCP change before announcing it, and stand the instance up with the [production deployment](../deployment/production.md) guide
+- **Until then, nothing is published.** Every page in these docs describes the self-hosted setup, installed from a checkout
+- **The day hosting starts,** stand the instance up with the [production deployment](../deployment/production.md) guide, ship the MCP change, then publish the first release of both SDKs with the hosted URL as the default. The rest of this page is the procedure for that day
 
 ## What ships where
 
@@ -431,4 +431,4 @@ jobs:
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [MCP server](../sdks/mcp.md) | [Docs index](../README.md) | [Database schema](../database/schema.md) |
+| [MCP server](../sdks/mcp.md) | [Docs index](../README.md) · [SDKs index](../sdks/README.md) | [Database index](../database/README.md) |

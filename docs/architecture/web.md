@@ -1,7 +1,7 @@
 # The public web surface
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="React: 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black">
   <img alt="GSAP: ScrollTrigger" src="https://img.shields.io/badge/GSAP-ScrollTrigger-88CE02?logo=greensock&logoColor=black">
   <img alt="Tailwind CSS: 4" src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
@@ -9,7 +9,7 @@
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **The public web surface** · page 19 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **The public web surface** · page 22 of 50
 
 **Three pages share one shell:** the landing page, the documentation browser and the API reference. The signed-in console is the [frontend](frontend.md).
 
@@ -94,7 +94,7 @@ ScrollTrigger  44 kB    SplitText  7.4 kB    DrawSVGPlugin  4 kB
 ### The pinned story
 
 - **The thesis section is the one piece of real scroll choreography:** four beats, pinned, **scrubbed rather than played** ([`ThesisStory.tsx`](../../frontend/src/pages/landing/ThesisStory.tsx))
-- It tells [the thesis](../product/product-overview.md#the-thesis): ranking on [marginal cost instead of cold cost](marginal-replanning.md#the-distinction) changes which plan is selected ([ADR 0001](../adr/0001-marginal-cost-replanning.md))
+- It tells [the thesis](../product/product-overview.md#the-thesis): ranking on [marginal cost instead of cold cost](marginal-replanning.md#the-distinction) changes which plan is selected
 - Scrolling back runs it in reverse, and a reader can hold the moment the selection changes
 
 ```
@@ -148,7 +148,7 @@ Code: [`lib/docs.ts`](../../frontend/src/lib/docs.ts) · [`pages/DocsPage.tsx`](
 
 - **Absolute URLs** are left alone and open in a new tab; **`#anchor`** links stay on the page
 - **Everything else resolves in repository coordinates, against the file the link is written in**, not against the URL
-  - the file matters, not the slug: `/docs/adr` is `docs/adr/README.md`, so its links resolve from `docs/adr/`
+  - the file matters, not the slug: `/docs/architecture` is `docs/architecture/README.md`, so its links resolve from `docs/architecture/`
   - and `../README.md` from a section page is the docs index, not the project README
 
 | The link lands on | Opens as |
@@ -171,7 +171,7 @@ Code: [`lib/docs.ts`](../../frontend/src/lib/docs.ts) · [`pages/DocsPage.tsx`](
 - **`make docs-check`** ([`scripts/check_doc_links.py`](../../scripts/check_doc_links.py)) fails on any relative link that does not resolve, in every markdown file in the repository
   - it also checks backticked paths such as `backend/app/core/text.py` and `app/services/planner/cost.py`, because a doc that names a file it does not link is just as wrong when that file moves
   - `--anchors` also checks every `#fragment` against the target's headings
-  - `--interlinks` requires every page to end with a `## Related` (or, for a decision record, `## See also`) of at least three links and to be linked from another page's body, and lists one-way Related links
+  - `--interlinks` requires every page to end with a `## Related` of at least three links and to be linked from another page's body, and lists one-way Related links
 
 ## The API reference
 
@@ -194,7 +194,7 @@ make api-reference ARGS=--offline   # imports the app and asks FastAPI for the s
 make test-ui
 ```
 
-Renders the public pages in a real browser, in **both themes**: the landing page, the docs index, a docs page, an ADR, the project README at `/docs/readme:README`, and the API reference ([`smoke.mjs`](../../frontend/scripts/smoke.mjs)). It fails on:
+Renders the public pages in a real browser, in **both themes**: the landing page, the docs index, a docs page, a section index, the project README at `/docs/readme:README`, and the API reference ([`smoke.mjs`](../../frontend/scripts/smoke.mjs)). It fails on:
 
 - any console error, failed resource loads included, or uncaught exception
 - a page with less than 400 characters of text
@@ -234,4 +234,4 @@ A third looks for horizontal overflow at 320, 390, 414, 768 and 1024 px on the l
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Frontend](../architecture/frontend.md) | [Docs index](../README.md) | [API overview](../api/overview.md) |
+| [Frontend](../architecture/frontend.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [API index](../api/README.md) |

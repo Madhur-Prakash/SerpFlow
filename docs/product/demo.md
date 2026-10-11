@@ -1,15 +1,15 @@
 # The reference demo
 
 <p>
-  <a href="../README.md#product"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../product/README.md"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="make demo: PROVEN" src="https://img.shields.io/badge/make%20demo-PROVEN-3fcf8e">
   <img alt="naive: 101 to 0 credits" src="https://img.shields.io/badge/naive-101%20to%200%20credits-3fcf8e">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <a href="../../backend/scripts/demo.py"><img alt="source: scripts/demo.py" src="https://img.shields.io/badge/source-scripts%2Fdemo.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
+  <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../README.md#product) › **The reference demo** · page 2 of 57
+[Docs](../README.md) › [Product](../product/README.md) › **The reference demo** · page 3 of 50
 
 ```bash
 make seed ARGS=--reset
@@ -27,7 +27,7 @@ make demo ARGS=--reset-cache
 - **Not** "a cache hit happened"
 - **Not** "the second run was faster"
 - The same intent, against the same catalog version, produced a **different execution plan**, because the cache state between the two runs differed
-- That is the claim [ADR 0001](../adr/0001-marginal-cost-replanning.md) makes, and the one the [product overview](product-overview.md#the-thesis) calls falsifiable
+- That is the claim the [product overview](product-overview.md#the-thesis) calls falsifiable
 - **The pass condition is the warm run's own counterfactual:** its cold-cost ranking and its marginal-cost ranking disagreed, and the marginal one executed. The script checks the persisted `marginal_replan_changed_selection` flag on that plan, not a cache hit
 
 ## The question
@@ -51,7 +51,7 @@ google_maps_contributor_reviews    read each reviewer's full history
 ```
 
 - `google_maps_contributor_reviews` has effectively **zero usage** in the SerpApi ecosystem
-- The planner reaches it by **walking typed dependency edges** ([the reference demo chain](../architecture/catalog.md#the-reference-demo-chain), [ADR 0002](../adr/0002-typed-catalog-edges.md)), not because a model recalled the chain: [stage D](../architecture/planner.md#stage-d-path-find-and-generate-candidates)
+- The planner reaches it by **walking typed dependency edges** ([the reference demo chain](../architecture/catalog.md#the-reference-demo-chain)), not because a model recalled the chain: [stage D](../architecture/planner.md#stage-d-path-find-and-generate-candidates)
 - That is the discovery proof
 
 ## The three phases
@@ -80,7 +80,7 @@ changed            no
 - **The 11-credit Yelp route does not win.** It is a narrow-coverage substitute:
   - Yelp exposes reviewer display names, but no stable contributor identity
   - cross-venue linkage degrades to name matching
-  - coverage is ranked **before** price ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price), [ADR 0008](../adr/0008-coverage-before-price.md))
+  - coverage is ranked **before** price ([coverage before price](../architecture/marginal-replanning.md#coverage-before-price))
 
 ### Phase 2: a different project warms the Maps chain
 
@@ -136,7 +136,7 @@ google_maps_contributor_reviews   volatility 30d    requirement stable
 - An entry from earlier the same week meets all three, and the contributor step accepts any of its 80 entries that is still cached
 - So the **expensive tail of the chain is the part that stays free**
 - That is why this chain's economics invert after it has been run once
-- Warm is not enough on its own: an entry that misses its step's bound is available but not acceptable, and costs a live call ([ADR 0009](../adr/0009-freshness-gates-warmth.md), [adaptive TTL](../architecture/caching.md#adaptive-ttl))
+- Warm is not enough on its own: an entry that misses its step's bound is available but not acceptable, and costs a live call ([adaptive TTL](../architecture/caching.md#adaptive-ttl))
 
 ## The full-scale figure
 
@@ -211,8 +211,6 @@ assert _replan_counter_total() > before
 - [The engine catalog](../architecture/catalog.md#the-reference-demo-chain): the dependency edges the chain walks
 - [Execution modes](execution-modes.md): why a test key means zero credits, and why `replay` still serves a warm intent
 - [Product overview](product-overview.md#the-thesis): the claim being proven
-- [ADR 0001](../adr/0001-marginal-cost-replanning.md): the decision the demo exists to prove
-- [ADR 0009](../adr/0009-freshness-gates-warmth.md): why a warm entry must also be fresh enough to count
 - [Observability](../operations/observability.md#the-thesis-metric): the counter the demo increments
 - [Troubleshooting](../operations/troubleshooting.md#the-demo): when `make demo` exits non-zero
 - [Architecture overview](../architecture/overview.md): the components the demo exercises
@@ -221,4 +219,4 @@ assert _replan_counter_total() > before
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Product overview](../product/product-overview.md) | [Docs index](../README.md) | [Execution modes](../product/execution-modes.md) |
+| [Product overview](../product/product-overview.md) | [Docs index](../README.md) · [Product index](../product/README.md) | [Execution modes](../product/execution-modes.md) |

@@ -1,15 +1,15 @@
 # The executor
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="cache layers: exact · semantic · archive · live" src="https://img.shields.io/badge/cache%20layers-exact%20%C2%B7%20semantic%20%C2%B7%20archive%20%C2%B7%20live-2F6BFF">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="SerpApi: 54 engines" src="https://img.shields.io/badge/SerpApi-54%20engines-2F6BFF">
   <a href="../../backend/app/services/executor/service.py"><img alt="source: executor/service.py" src="https://img.shields.io/badge/source-executor%2Fservice.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
+  <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **The executor** · page 16 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **The executor** · page 19 of 50
 
 Code: [`app/services/executor/service.py`](../../backend/app/services/executor/service.py) · [`app/integrations/serpapi/`](../../backend/app/integrations/serpapi) · [`app/services/runs.py`](../../backend/app/services/runs.py)
 
@@ -22,7 +22,7 @@ EXACT  ->  SEMANTIC  ->  SEARCHES ARCHIVE  ->  LIVE
 - **Only the last one spends a credit**, and only in the `live` and `record` [execution modes](../product/execution-modes.md)
 - **There is one way in:** `plan_and_execute` in [`app/services/runs.py`](../../backend/app/services/runs.py)
   - the REST API calls it, and the [CLI](../sdks/cli.md) and both [SDKs](../sdks/overview.md) reach it through the REST API; the [MCP server](../sdks/mcp.md) calls it in-process, and the [Kafka](../operations/kafka.md) worker calls it for background runs
-  - interactive search runs on the request's own event loop, never through Kafka ([ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md))
+  - interactive search runs on the request's own event loop, never through Kafka
 
 ## The credential boundary
 
@@ -41,8 +41,8 @@ finally:
     upstream_key = None
 ```
 
-- It is **never** returned, logged, attached to a model, or present as a field in any response schema ([ADR 0006](../adr/0006-no-credential-field-in-schemas.md))
-- More: [credentials](../security/credentials.md), [envelope encryption](../adr/0005-envelope-encryption.md)
+- It is **never** returned, logged, attached to a model, or present as a field in any response schema
+- More: [credentials](../security/credentials.md)
 
 ### Revocation mid-run
 
@@ -57,7 +57,7 @@ finally:
 
 Code: [`SerpApiGateway`](../../backend/app/integrations/serpapi/__init__.py)
 
-- **Every upstream search leaves through one `SerpApiGateway`**, built once per run with the mode `resolve_execution_mode` resolved ([precedence](../product/execution-modes.md#who-chooses-and-precedence), [ADR 0010](../adr/0010-test-key-mode-precedence.md))
+- **Every upstream search leaves through one `SerpApiGateway`**, built once per run with the mode `resolve_execution_mode` resolved ([precedence](../product/execution-modes.md#who-chooses-and-precedence))
 - **The archive is tried first, in `live` and `record` only:** an archived re-read is free. In `replay` and `mock` there is no archive to read
 
 | Mode | What the LIVE layer does | Credited | Step `cache_layer` |
@@ -138,7 +138,7 @@ provenance                mode, mode_reason, catalog_version,
    - a [`budget_ledger`](../database/schema.md#governance) row, `kind=spend`, `source=live`, attributed to the fetching project
    - the credits added to `current_usage` on **every applicable budget**, which can raise a `budget.threshold_reached` or `budget.exhausted` alert ([`budgets/service.py`](../../backend/app/services/budgets/service.py))
    - `serpflow_credits_spent_total` incremented ([spend and savings](../operations/observability.md#spend-and-savings))
-2. Computes the TTL from the engine's volatility prior (or the project's per-engine TTL override), **capped by the step's freshness requirement** ([adaptive TTL](caching.md#adaptive-ttl), [ADR 0009](../adr/0009-freshness-gates-warmth.md))
+2. Computes the TTL from the engine's volatility prior (or the project's per-engine TTL override), **capped by the step's freshness requirement** ([adaptive TTL](caching.md#adaptive-ttl))
 3. Stores the payload (content-addressed) and the durable cache entry, extracting the [guard tokens](caching.md#the-entity-and-numeral-guard) **once, at write time**, and refreshes the [Redis](../operations/redis.md) hot entry
    - this happens in every mode; the entry records the mode it was written under
 4. Records an `archive_refs` row with the credential fingerprint, when the mode is `live` or `record` and SerpApi returned a search id, so the [Searches Archive](caching.md#the-searches-archive) can be reused later without paying again
@@ -239,11 +239,10 @@ session  ->  api_key  ->  project  ->  organization
 - [Credentials](../security/credentials.md): the decryption boundary and revocation
 - [Database schema](../database/schema.md#governance): `runs`, `steps`, `budgets` and `budget_ledger`
 - [Streaming](../api/streaming.md): the `executing` frames each step publishes
-- [ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md): why interactive execution never goes through Kafka
 - [Troubleshooting: execution](../operations/troubleshooting.md#execution): cassette misses, budget errors, revoked credentials
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Caching](../architecture/caching.md) | [Docs index](../README.md) | [Backend](../architecture/backend.md) |
+| [Caching](../architecture/caching.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [Backend](../architecture/backend.md) |

@@ -1,7 +1,7 @@
 # Execution modes
 
 <p>
-  <a href="../README.md#product"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../product/README.md"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="modes: live · record · replay" src="https://img.shields.io/badge/modes-live%20%C2%B7%20record%20%C2%B7%20replay-2F6BFF">
   <img alt="test keys: always mock" src="https://img.shields.io/badge/test%20keys-always%20mock-3fcf8e">
   <img alt="SerpApi: 54 engines" src="https://img.shields.io/badge/SerpApi-54%20engines-2F6BFF">
@@ -9,14 +9,13 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../README.md#product) › **Execution modes** · page 3 of 57
+[Docs](../README.md) › [Product](../product/README.md) › **Execution modes** · page 4 of 50
 
 An execution mode answers one question: **where does this result come from, and does it cost anything?**
 
 - **It used to be** a server-wide environment variable: every project in every organization on an instance executed the same way
 - **It is now chosen where the decision belongs:** by the project, or by a single search. The project column arrived in migration [`0004_project_mode`](../database/migrations.md#0004_project_mode)
 - The environment variable, [`SERPFLOW_MODE`](../security/secrets.md#inventory), survives as the **floor**
-- The decision, and the one rule nothing overrides, is [ADR 0010](../adr/0010-test-key-mode-precedence.md)
 
 **On this page:** [the four modes](#the-four-modes) · [who chooses, and precedence](#who-chooses-and-precedence) · [permission](#permission) · [setting it](#setting-it) · [why `mock` is not selectable](#why-mock-is-not-selectable)
 
@@ -52,7 +51,7 @@ Most specific wins:
 4.  SERPFLOW_MODE                            (instance default)
 ```
 
-- **Rule 1 is checked first**, and nothing below it is consulted ([ADR 0010](../adr/0010-test-key-mode-precedence.md))
+- **Rule 1 is checked first**, and nothing below it is consulted
   - a [`test` key](../security/api-keys.md#test-keys) **always** routes to the deterministic mock and **always** costs zero
   - no setting at any level overrides that. It is the one guarantee the whole mode system exists to protect
   - [`resolve_mode`](../../backend/app/integrations/serpapi/__init__.py) applies it, and states the reason on the result
@@ -118,7 +117,8 @@ SERPFLOW_MODE=replay
   - on the run, and on each step ([per-step record](../architecture/executor.md#per-step-record))
   - in the [`X-SerpFlow-Mode` header](../api/overview.md#provenance-headers)
   - verbatim in the console, as the mode badge and its reason
-- Replayed or mocked data is **never** presented as live ([replay or mock data mistaken for live](../security/threat-model.md#replay-or-mock-data-mistaken-for-live))
+- A run and each of its steps record the mode they ran in, and `X-SerpFlow-Mode` returns it
+- **Known gap:** the cache does not key on mode, so a payload first fetched by a mock or replay run can serve a later `live` run in the same partition as a cache hit ([caching: execution mode is not part of the key](../architecture/caching.md#execution-mode-is-not-part-of-the-key), [replay or mock data mistaken for live](../security/threat-model.md#replay-or-mock-data-mistaken-for-live))
 
 ## Why `mock` is not selectable
 
@@ -130,7 +130,6 @@ SERPFLOW_MODE=replay
 
 ## Related
 
-- [ADR 0010](../adr/0010-test-key-mode-precedence.md): why a test key overrides every other setting, and the per-project update
 - [API keys](../security/api-keys.md#test-keys): what a test key is and how one is minted
 - [Bring your own key](../security/byok.md): the SerpApi credential `live` and `record` need
 - [The executor](../architecture/executor.md): the gateway that reads and writes cassettes, and the credential boundary
@@ -144,4 +143,4 @@ SERPFLOW_MODE=replay
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [The reference demo](../product/demo.md) | [Docs index](../README.md) | [Routing benchmark](../product/benchmark.md) |
+| [The reference demo](../product/demo.md) | [Docs index](../README.md) · [Product index](../product/README.md) | [Routing benchmark](../product/benchmark.md) |

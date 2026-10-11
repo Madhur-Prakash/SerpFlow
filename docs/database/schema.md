@@ -1,15 +1,15 @@
 # Database schema
 
 <p>
-  <a href="../README.md#database"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
+  <a href="../database/README.md"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
   <img alt="tables: 33" src="https://img.shields.io/badge/tables-33-4169E1">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
   <img alt="SQLAlchemy: 2" src="https://img.shields.io/badge/SQLAlchemy-2-D71F00?logo=sqlalchemy&logoColor=white">
   <a href="../../docker/postgres/init/01-extensions.sql"><img alt="source: init/01-extensions.sql" src="https://img.shields.io/badge/source-init%2F01--extensions.sql-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 14 min" src="https://img.shields.io/badge/read-14%20min-555555">
+  <img alt="read: 13 min" src="https://img.shields.io/badge/read-13%20min-555555">
 </p>
 
-[Docs](../README.md) › [Database](../README.md#database) › **Database schema** · page 29 of 57
+[Docs](../README.md) › [Database](../database/README.md) › **Database schema** · page 35 of 50
 
 - **PostgreSQL 17** with the `vector`, `pg_trgm` and `btree_gin` extensions
   - `vector` and `pg_trgm` are created by migration [`0001_initial`](migrations.md#0001_initial) and by the container's init script
@@ -54,7 +54,7 @@ service_sessions     machine identity: api_key_id, external_session_ref,
 ### `users`
 
 - **Not tenant-scoped, and not under RLS:** a user can belong to several organizations, and `memberships` carries the tenancy
-- **`password_hash` is Argon2id** ([ADR 0004](../adr/0004-hmac-for-api-keys.md#passwords-argon2id))
+- **`password_hash` is Argon2id**
 - **The verification and reset token columns hold HMAC-SHA256 hashes** under `API_KEY_PEPPER`, never the tokens themselves ([`hash_opaque_token`](../../backend/app/core/security.py)). The mail that carries them: [email](../operations/email.md#what-gets-sent)
 - **`mfa_enabled` and `mfa_secret` exist as columns**; no endpoint sets them at HEAD
 
@@ -67,7 +67,7 @@ service_sessions     machine identity: api_key_id, external_session_ref,
 
 - **`key_prefix` is 6 plaintext characters, uniquely indexed** (`ix_projects_key_prefix`). Every API key issued for the project embeds it ([API keys: format](../security/api-keys.md#format))
 - **`credential_id` is the project's own SerpApi credential**, first in the resolution order. `PATCH /v1/projects/{id}` refuses to point it at a non-SerpApi key ([bring your own key](../security/byok.md#how-a-key-is-chosen-for-a-request))
-- **`projects.execution_mode`** (migration `0004`): the project's own mode. `NULL` inherits `SERPFLOW_MODE`; a check constraint admits only `live`, `record` and `replay`. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence) and [ADR 0010](../adr/0010-test-key-mode-precedence.md#update-per-project-and-per-request-modes)
+- **`projects.execution_mode`** (migration `0004`): the project's own mode. `NULL` inherits `SERPFLOW_MODE`; a check constraint admits only `live`, `record` and `replay`. See [execution modes](../product/execution-modes.md#who-chooses-and-precedence)
 - **`engine_allowlist` / `engine_denylist`** are checked by the planner and again by the executor at each step ([executor: engine policy](../architecture/executor.md#engine-policy))
 - **`retention_days` and `retention_high_pii_days` are stored, not applied:** the executor's retention deadline reads the instance settings ([executor: retention](../architecture/executor.md#retention))
 
@@ -113,12 +113,12 @@ upstream_quota_snapshots  periodic reconciliation, with divergence
 
 - **Two indexes serve authentication:** `ix_api_keys_hash` on `key_hash` (unique) and `ix_api_keys_prefix_env` on `(project_prefix, environment)`. Resolution filters on all three, so a key is found with an index lookup, not a scan over every key ([API keys: resolution](../security/api-keys.md#resolution))
 - **`project_prefix` copies the project's `key_prefix`.** Uniqueness lives on `projects.key_prefix`, since one project holds many keys
-- **`key_hash` is HMAC-SHA256, not Argon2** ([ADR 0004](../adr/0004-hmac-for-api-keys.md))
+- **`key_hash` is HMAC-SHA256, not Argon2**
 
 ### `upstream_credentials`
 
-- **No column holds a recoverable plaintext key:** `ciphertext` and `encrypted_dek` are the two halves of the envelope ([ADR 0005](../adr/0005-envelope-encryption.md), [envelope encryption](../security/credentials.md#envelope-encryption))
-- **No response schema** in `app/schemas` has a field that could carry one ([ADR 0006](../adr/0006-no-credential-field-in-schemas.md))
+- **No column holds a recoverable plaintext key:** `ciphertext` and `encrypted_dek` are the two halves of the envelope ([envelope encryption](../security/credentials.md#envelope-encryption))
+- **No response schema** in `app/schemas` has a field that could carry one
 - **`provider` is `serpapi` or `groq`.** `project_id` NULL means an organization-wide credential; it is a plain column, not a foreign key
 - **`fingerprint` is indexed**, so attaching a key the organization already holds is refused with `CONFLICT`. `ix_upstream_credentials_org_active` covers `(org_id, revoked_at)`
 
@@ -165,14 +165,14 @@ steps             engine, parameters, depends_on, fan_out, cache_layer,
 ### `plans`
 
 - **`plans.marginal_replan_changed_selection` is indexed** (`ix_plans_replan_changed`), so "show me the runs where replanning changed the answer" is a cheap query. `ix_plans_project_created` serves the per-project history
-- **`selected_candidate_id` and `cold_winner_candidate_id`** point into `plan_candidates`; when they differ, marginal re-ranking changed the answer ([what `changed_selection` means](../architecture/marginal-replanning.md#what-changed_selection-means), [ADR 0001](../adr/0001-marginal-cost-replanning.md))
+- **`selected_candidate_id` and `cold_winner_candidate_id`** point into `plan_candidates`; when they differ, marginal re-ranking changed the answer ([what `changed_selection` means](../architecture/marginal-replanning.md#what-changed_selection-means))
 - **`single_candidate_reason` is required when `candidate_count` is 1** ([candidate plurality](../architecture/planner.md#candidate-plurality-is-a-hard-requirement))
 - **`budget_reduction`** records what [budget-aware reduction](../architecture/marginal-replanning.md#budget-aware-reduction-happens-before-ranking) dropped, with its impact note
 - **`stage_trace`** records each planner stage, including the provider and model that chose the engines ([what the Plan stores](../architecture/planner.md#what-the-plan-stores))
 
 ### `plan_candidates`
 
-- **`plan_candidates` exists** because the Plan Inspector must show why the selected plan beat the alternatives. See [ADR 0014](../adr/0014-persist-every-candidate.md)
+- **`plan_candidates` exists** because the Plan Inspector must show why the selected plan beat the alternatives
 - **`ix_plan_candidates_plan_rank`** on `(plan_id, marginal_rank)` returns a plan's candidates in ranked order
 - **`naive_rank` and `marginal_rank` side by side** are the counterfactual, stored rather than recomputed in the frontend ([ranking](../architecture/marginal-replanning.md#ranking))
 
@@ -192,7 +192,7 @@ steps             engine, parameters, depends_on, fan_out, cache_layer,
 
 ## Cache
 
-Behaviour: [caching](../architecture/caching.md) ([ADR 0003](../adr/0003-deterministic-semantic-guard.md), [ADR 0009](../adr/0009-freshness-gates-warmth.md))
+Behaviour: [caching](../architecture/caching.md)
 
 ```
 cache_entries              partition_key, engine, gl, hl, location,
@@ -252,7 +252,7 @@ ix_cache_entries_project_engine (project_id, engine)
 
 ## Catalog projection
 
-Behaviour: [the engine catalog](../architecture/catalog.md) ([ADR 0002](../adr/0002-typed-catalog-edges.md))
+Behaviour: [the engine catalog](../architecture/catalog.md)
 
 ```
 catalog_versions     version (unique), engine/edge/substitute/tag counts,
@@ -326,7 +326,7 @@ SAVINGS   attributed to the project that benefited
 
 ### `audit_log`
 
-- **`audit_log` is append-only at the database level**, enforced by a trigger. See [migrations](migrations.md#0002_audit_purge), [row-level security: the audit log](rls.md#the-audit-log) and [ADR 0012](../adr/0012-append-only-audit-log.md)
+- **`audit_log` is append-only at the database level**, enforced by a trigger. See [migrations](migrations.md#0002_audit_purge), [row-level security: the audit log](rls.md#the-audit-log)
 - **Hash-chained per organization:** `entry_hash` is SHA-256 over the previous hash, `sequence`, actor, action, resource, `before`, `after` and `created_at`, which the application sets itself so the hash is final before the INSERT ([`AuditService.record`](../../backend/app/services/audit/service.py))
 - **`before` and `after` are redacted** with the same rules as the log sinks before they are hashed
 - **Indexes:** `ix_audit_org_created`, `ix_audit_actor`, `ix_audit_resource`
@@ -387,8 +387,6 @@ routing_evals     per task per run: predicted engines and params, correctness
 - [Backend](../architecture/backend.md#identifiers): prefixed ULIDs, and how sessions reach these tables
 - [Caching](../architecture/caching.md): what `cache_entries` and its neighbours do on every lookup
 - [Upstream credentials](../security/credentials.md): the envelope behind `upstream_credentials`
-- [ADR 0014](../adr/0014-persist-every-candidate.md): why `plan_candidates` keeps the losers too
-- [ADR 0012](../adr/0012-append-only-audit-log.md): why `audit_log` refuses `UPDATE`
 - [Troubleshooting: `type "vector" does not exist`](../operations/troubleshooting.md#type-vector-does-not-exist): when the extension is missing
 - [Architecture overview](../architecture/overview.md): which component writes which table
 
@@ -396,4 +394,4 @@ routing_evals     per task per run: predicted engines and params, correctness
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Releasing the SDKs](../sdks/releasing.md) | [Docs index](../README.md) | [Migrations](../database/migrations.md) |
+| [Database index](../database/README.md) | [Docs index](../README.md) · [Database index](../database/README.md) | [Migrations](../database/migrations.md) |

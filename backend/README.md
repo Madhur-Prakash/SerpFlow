@@ -36,7 +36,7 @@ make backend             # python -m app.server --reload, on :8000
 make test                # 236 tests
 ```
 
-- **Start the server with `python -m app.server`**, not `uvicorn app.main:app`: see [ADR 0013](../docs/adr/0013-explicit-event-loop-factory.md)
+- **Start the server with `python -m app.server`**, not `uvicorn app.main:app`: the [explicit event-loop factory](../docs/architecture/backend.md#async-on-windows) needs it
 - **Entry points:** `serpflow` (CLI, `app.cli.main`) and `serpflow-mcp` (MCP server, `app.mcp.server`): see [CLI](../docs/sdks/cli.md) and [MCP server](../docs/sdks/mcp.md)
 - **Settings** come from the environment, then from `.env` and `../.env` relative to the working directory: [`app/core/config.py`](app/core/config.py). The secrets among them: [secrets](../docs/security/secrets.md#inventory)
 - **Migrations and seeding can run on startup**, under an advisory lock: [startup bootstrap](../docs/operations/bootstrap.md)

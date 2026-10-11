@@ -1,14 +1,14 @@
 # Product overview
 
 <p>
-  <a href="../README.md#product"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../product/README.md"><img alt="docs: Product" src="https://img.shields.io/badge/docs-Product-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="thesis: marginal-cost replanning" src="https://img.shields.io/badge/thesis-marginal--cost%20replanning-2F6BFF">
   <img alt="SerpApi: 54 engines" src="https://img.shields.io/badge/SerpApi-54%20engines-2F6BFF">
   <a href="../../backend/app/sdk/__init__.py"><img alt="source: sdk/__init__.py" src="https://img.shields.io/badge/source-sdk%2F____init____.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Product](../README.md#product) › **Product overview** · page 1 of 57
+[Docs](../README.md) › [Product](../product/README.md) › **Product overview** · page 2 of 50
 
 **SerpFlow is a search control plane for SerpApi.** Given a natural-language intent, it:
 
@@ -41,7 +41,7 @@ A team using SerpApi at any scale ends up building four things, badly, in the ap
 
 > **Cache state should change which plan is selected, not just make the selected plan faster.**
 
-- That is the one claim this system makes, and it is **deliberately falsifiable**: [ADR 0001](../adr/0001-marginal-cost-replanning.md)
+- That is the one claim this system makes, and it is **deliberately falsifiable**: [the demo](demo.md) fails if it stops being true
 - **Conventional caching:** rank plans on cold cost, pick a winner, then check the cache. Savings only happen if the winner is cached
 - **SerpFlow:** rank on **marginal** cost, the cost of the steps that still need a live call
   - a plan costing 101 credits cold but fully warm costs **0**
@@ -66,7 +66,7 @@ Four pieces, none of them optional.
 ### 1. A typed catalog
 
 - **54 engines**, each [described](../architecture/catalog.md#what-an-engine-entry-declares) with required parameters, produced fields, cost, volatility prior and capability tags (28 in the [vocabulary](../architecture/catalog.md#the-capability-vocabulary))
-- **Two edge sets** on top, both mandatory ([ADR 0002](../adr/0002-typed-catalog-edges.md)):
+- **Two edge sets** on top, both mandatory:
   - **Dependency edges** (`satisfied_by` / `feeds`, 30 of them): how engines **chain**. Without them, multi-hop chains are not computable and [`/paths`](../api/overview.md#catalog) has nothing to answer
   - **Substitute edges** (`capability_tags` / `substitutes`, 69 of them): how engines **compete**. Without them there is only ever one candidate plan, and a one-entry ranking cannot change
 - The thesis needs alternatives to choose between
@@ -82,8 +82,8 @@ D  generate      multiple competing plans, via substitutes and path-finding
 ```
 
 - **[Stage D](../architecture/planner.md#stage-d-path-find-and-generate-candidates) matters most for the thesis:** it produces a candidate **set**, not a winner
-- **Every candidate is persisted** ([ADR 0014](../adr/0014-persist-every-candidate.md)), so the [Plan Inspector](../architecture/frontend.md#routes) can show why the winner won instead of asserting it
-- **Coverage is ranked before price** ([ADR 0008](../adr/0008-coverage-before-price.md)): a cheap plan that only partly answers the intent does not beat one that answers it
+- **Every candidate is persisted**, so the [Plan Inspector](../architecture/frontend.md#routes) can show why the winner won instead of asserting it
+- **Coverage is ranked before price**: a cheap plan that only partly answers the intent does not beat one that answers it
 - More: [planner architecture](../architecture/planner.md)
 
 ### 3. Four cache layers, with a deterministic guard
@@ -99,9 +99,9 @@ LIVE       SerpApi                                       the only layer that spe
 - **The semantic layer is the interesting one, and the dangerous one**
   - "Nvidia Q3 2024 revenue" and "Nvidia Q4 2024 revenue" embed close together
   - a cosine threshold alone serves one for the other, confidently: a correctness failure dressed as a saving
-- **[The entity, numeral and version guard](../architecture/caching.md#the-entity-and-numeral-guard)** runs **independently of the similarity score**, on exact set equality ([ADR 0003](../adr/0003-deterministic-semantic-guard.md))
+- **[The entity, numeral and version guard](../architecture/caching.md#the-entity-and-numeral-guard)** runs **independently of the similarity score**, on exact set equality
   - both queries mention a quarter, the sets differ, so it is rejected whatever the cosine says
-- **[Availability is not acceptability](../architecture/marginal-replanning.md#available-is-not-acceptable):** an entry only counts as warm if it meets the step's [inferred freshness bound](../architecture/planner.md#freshness-inference) ([ADR 0009](../adr/0009-freshness-gates-warmth.md))
+- **[Availability is not acceptability](../architecture/marginal-replanning.md#available-is-not-acceptable):** an entry only counts as warm if it meets the step's [inferred freshness bound](../architecture/planner.md#freshness-inference)
 
 ```
 realtime   < 15m      fresh   < 24h      recent   < 7d      stable
@@ -122,7 +122,7 @@ realtime   < 15m      fresh   < 24h      recent   < 7d      stable
   - [the drop-in compat client](../sdks/python.md#the-serpapi-drop-in) keeps existing call sites in shape: a params dict in, `get_dict()` out
   - change the base URL and key, and caching, budgets and provenance arrive without a rewrite
   - **it re-routes:** only `q` (or `query`) is sent, as the intent of a [`POST /v1/search`](../api/overview.md#plan-and-execute), and the planner picks the engines. `engine` and every other parameter are echoed back in `search_parameters` and `search_metadata`, not honoured ([`app/sdk/__init__.py`](../../backend/app/sdk/__init__.py))
-  - **neither SDK is published yet:** install from a checkout ([Python](../sdks/python.md#install), [TypeScript](../sdks/typescript.md#install)). `from serpflow import ...` needs an editable install of `backend/`
+  - **the SDKs are not released yet:** they will be published when the author decides to host SerpFlow; if you self-host, install them from a checkout and use them on your own infrastructure ([Python](../sdks/python.md#install), [TypeScript](../sdks/typescript.md#install), [why](../sdks/releasing.md#first-who-runs-the-server)). `from serpflow import ...` needs an editable install of `backend/`
 
 ```python
 from serpflow import SerpApiCompat
@@ -136,9 +136,9 @@ results = search.get_dict()   # routed by the planner; "engine" is echoed, not e
   - **with [`SERPFLOW_MCP_SESSION`](../security/secrets.md#inventory) set**, every call resumes that named session, so an agent stuck in a loop hits `SESSION_CAP_EXCEEDED`, not the organization's monthly budget
   - **without it**, each tool call opens a fresh session, so the cap does not accumulate across calls; the key's own budget, created alongside a service key's cap, is the cumulative limit ([`open_service_session`](../../backend/app/services/auth/service.py), [`organizations.py`](../../backend/app/api/v1/organizations.py), [sessions and budgets](../sdks/mcp.md#sessions-and-budgets))
 - **A platform team**
-  - multi-tenant with [row-level security](../database/rls.md), enforced in the database and again in the application ([ADR 0011](../adr/0011-rls-plus-application-guards.md))
+  - multi-tenant with [row-level security](../database/rls.md), enforced in the database and again in the application
   - per-project [engine policy](../architecture/executor.md#engine-policy)
-  - an [append-only, hash-chained audit log](../database/rls.md#the-audit-log) ([ADR 0012](../adr/0012-append-only-audit-log.md))
+  - an [append-only, hash-chained audit log](../database/rls.md#the-audit-log)
   - shorter [retention](../architecture/executor.md#retention) for high-PII payloads
 
 ## What it does not do
@@ -160,7 +160,7 @@ Stated plainly, because an unstated boundary reads as an oversight.
 | [REST API](../api/overview.md) | anything |
 | [SSE stream](../api/streaming.md) | watching a run happen, one frame per real stage transition |
 | [Python SDK](../sdks/python.md) | sync and async, plus the SerpApi drop-in; not on PyPI yet |
-| [TypeScript SDK](../sdks/typescript.md) | no runtime dependencies; Node, Deno, Bun, browser; not on npm yet |
+| [TypeScript SDK](../sdks/typescript.md) | no runtime dependencies; Node, Deno, Bun, browser; not released until SerpFlow is hosted |
 | [CLI](../sdks/cli.md) | `serpflow plan`, `search`, `runs`, `replay`, `catalog`, `cache`, `benchmark`, `health`, `version` |
 | [MCP](../sdks/mcp.md) | agents, with their own budget identity |
 | [Web console](../architecture/frontend.md) | dashboard, Run Inspector, Plan Inspector, Catalog Explorer, Cache Dashboard |
@@ -189,10 +189,9 @@ make test-e2e    # asserts the replan actually changed the selection
 - [Architecture overview](../architecture/overview.md): the system map behind the four pieces
 - [Marginal-cost replanning](../architecture/marginal-replanning.md): the mechanism the thesis rests on
 - [SDKs and tools](../sdks/overview.md): the SDK, CLI and MCP surfaces side by side
-- [Decision records](../adr/README.md): why each piece is built the way it is
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Docs index](../README.md) | [Docs index](../README.md) | [The reference demo](../product/demo.md) |
+| [Product index](../product/README.md) | [Docs index](../README.md) · [Product index](../product/README.md) | [The reference demo](../product/demo.md) |

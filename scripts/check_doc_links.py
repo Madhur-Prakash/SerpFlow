@@ -20,7 +20,7 @@ normally misses.
     python scripts/check_doc_links.py --interlinks  # also check the docs are woven together
 
 With `--interlinks`, every page under docs/ must also end with a `## Related`
-(or, for a decision record, `## See also`) section of at least three links,
+section of at least three links,
 and must be linked from the body of at least one other page. Every folder must
 have a README.md section index that links every page in the folder. The generated
 badge header, breadcrumb and previous / next footer do not count: a page that
@@ -84,7 +84,7 @@ def anchors_in(path: Path) -> set[str]:
     return found
 
 
-RELATED = re.compile(r"^## (?:Related|See also)\s*$", re.MULTILINE)
+RELATED = re.compile(r"^## Related\s*$", re.MULTILINE)
 DOCS = ROOT / "docs"
 
 
@@ -118,7 +118,7 @@ def check_interlinks() -> tuple[list[str], list[str], int]:
         section = body[match.end():] if match else ""
         related[page] = doc_links(section, page)
         if len(LINK.findall(section)) < 3:
-            problems.append(f"{page.relative_to(ROOT)}  no closing Related / See also section of 3+ links")
+            problems.append(f"{page.relative_to(ROOT)}  no closing Related section of 3+ links")
 
     inbound = {page: 0 for page in pages}
     total = 0

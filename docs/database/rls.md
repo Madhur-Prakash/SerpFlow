@@ -1,16 +1,16 @@
 # Row-level security
 
 <p>
-  <a href="../README.md#database"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
+  <a href="../database/README.md"><img alt="docs: Database" src="https://img.shields.io/badge/docs-Database-4169E1?logo=readthedocs&logoColor=white"></a>
   <img alt="RLS tables: 24" src="https://img.shields.io/badge/RLS%20tables-24-4169E1">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
   <a href="../../backend/app/db/session.py"><img alt="source: db/session.py" src="https://img.shields.io/badge/source-db%2Fsession.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
+  <img alt="read: 5 min" src="https://img.shields.io/badge/read-5%20min-555555">
 </p>
 
-[Docs](../README.md) › [Database](../README.md#database) › **Row-level security** · page 31 of 57
+[Docs](../README.md) › [Database](../database/README.md) › **Row-level security** · page 37 of 50
 
-**Tenant isolation is enforced twice** ([ADR 0011](../adr/0011-rls-plus-application-guards.md)):
+**Tenant isolation is enforced twice**:
 
 - **Application guards** are the primary check
 - **PostgreSQL row-level security** is the backstop, for the query somebody forgets to scope
@@ -138,7 +138,7 @@ ROLLBACK;
 
 ## The audit log
 
-**`audit_log` has one more guarantee beyond isolation:** it is append-only at the database level ([ADR 0012](../adr/0012-append-only-audit-log.md)).
+**`audit_log` has one more guarantee beyond isolation:** it is append-only at the database level.
 
 ```sql
 CREATE TRIGGER serpflow_audit_no_update
@@ -157,8 +157,6 @@ CREATE TRIGGER serpflow_audit_no_update
 
 ## Related
 
-- [ADR 0011: tenant isolation enforced twice](../adr/0011-rls-plus-application-guards.md): why RLS is the backstop, not the only check
-- [ADR 0012: append-only audit log](../adr/0012-append-only-audit-log.md): the trigger and the hash chain
 - [Database schema](schema.md): every table, with the 24 covered ones marked
 - [Migrations](migrations.md#0001_initial): where the policies and the trigger are created
 - [Threat model: cross-tenant data access](../security/threat-model.md#cross-tenant-data-access): the threat this answers
@@ -169,4 +167,4 @@ CREATE TRIGGER serpflow_audit_no_update
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Migrations](../database/migrations.md) | [Docs index](../README.md) | [Threat model](../security/threat-model.md) |
+| [Migrations](../database/migrations.md) | [Docs index](../README.md) · [Database index](../database/README.md) | [Security index](../security/README.md) |

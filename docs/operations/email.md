@@ -1,13 +1,13 @@
 # Email
 
 <p>
-  <a href="../README.md#operations"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
+  <a href="../operations/README.md"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
   <img alt="Gmail: API" src="https://img.shields.io/badge/Gmail-API-EA4335?logo=gmail&logoColor=white">
   <a href="../../backend/app/core/config.py"><img alt="source: core/config.py" src="https://img.shields.io/badge/source-core%2Fconfig.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 9 min" src="https://img.shields.io/badge/read-9%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../README.md#operations) › **Email** · page 38 of 57
+[Docs](../README.md) › [Operations](../operations/README.md) › **Email** · page 46 of 50
 
 **Three [environment variables](../security/secrets.md#inventory) are all it takes to send for real.** With none set, mail goes to the log instead, which keeps [`make dev`](../deployment/local.md#everyday-targets) working with no keys at all.
 
@@ -122,7 +122,7 @@ except EmailSendError as exc:
 
 - **An account that was created successfully should not come back as a 500** because Gmail was unreachable
 - **More importantly:** `forgot-password` returns the same response whether or not the address exists
-  - raising on a send failure would turn a delivery problem into an **account-enumeration oracle** (see [threat model](../security/threat-model.md#threats-and-responses))
+  - raising on a send failure would turn a delivery problem into an **account-enumeration oracle**
 - The failure is logged **with its cause** as `email.failed`, with the context (`verification`, `password reset`), recipient and template. The bodies, which carry single-use tokens, are not
 - **A notification email that fails** marks its `webhook_deliveries` row `failed` with the error, bumps the channel's `failure_count` and sets `last_delivery_status` to `email_failed`. The consumer carries on
 
@@ -180,7 +180,7 @@ set_email_backend(Capture())
 - [Secrets](../security/secrets.md#inventory): `GMAIL_CREDENTIALS_B64` and the other email variables
 - [Deployment guide](../deployment/deployment-guide.md#4-configure-the-environment): setting `FRONTEND_URL` and Gmail on a server
 - [Kafka](kafka.md#topics): the `serpflow.webhooks` consumer that sends notification email
-- [Threat model](../security/threat-model.md#threats-and-responses): why a failed send never changes the response
+- [Threat model](../security/threat-model.md#threats-and-responses): the threats around accounts and sign-in that email takes part in
 - [API keys](../security/api-keys.md): the other half of account access, for machines rather than people
 - [Observability](observability.md#logging): where `email.sent`, `email.retry` and `email.failed` land
 - [Troubleshooting](troubleshooting.md#password-reset-or-verification-email-never-arrives): the email that never arrives
@@ -189,4 +189,4 @@ set_email_backend(Capture())
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Startup bootstrap](../operations/bootstrap.md) | [Docs index](../README.md) | [Observability](../operations/observability.md) |
+| [Startup bootstrap](../operations/bootstrap.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Observability](../operations/observability.md) |

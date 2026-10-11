@@ -4,7 +4,7 @@
   <a href="typescript"><img alt="TypeScript SDK: @serpflow/sdk" src="https://img.shields.io/badge/TypeScript-%40serpflow%2Fsdk-3178C6?logo=typescript&logoColor=white"></a>
   <a href="../backend/app/sdk"><img alt="Python SDK: serpflow" src="https://img.shields.io/badge/Python-serpflow-3776AB?logo=python&logoColor=white"></a>
   <img alt="runtime dependencies: none (TypeScript), httpx (Python)" src="https://img.shields.io/badge/runtime%20deps-none%20%C2%B7%20httpx-3fcf8e">
-  <img alt="registries: not yet published" src="https://img.shields.io/badge/npm%20%C2%B7%20PyPI-not%20yet%20published-555555">
+  <img alt="npm and PyPI: released when SerpFlow is hosted" src="https://img.shields.io/badge/npm%20%C2%B7%20PyPI-released%20when%20hosted-555555">
   <img alt="SerpApi drop-in: yes" src="https://img.shields.io/badge/SerpApi%20drop--in-yes-2F6BFF">
   <a href="../LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
 </p>
@@ -20,7 +20,7 @@
 | TypeScript | [`sdk/typescript/`](typescript) | `@serpflow/sdk` on npm | [TypeScript SDK](../docs/sdks/typescript.md) |
 | Python | [`backend/app/sdk/`](../backend/app/sdk) | `serpflow` on PyPI | [Python SDK](../docs/sdks/python.md) |
 
-- **Neither is on a registry yet.** Both install from a checkout today, and both names were still free on 2026-10-11. How to publish them: [releasing](../docs/sdks/releasing.md)
+- **Neither is released yet, by the author's decision.** They will be published to npm and PyPI when the author decides to host SerpFlow. If you self-host, install them from a checkout and use them on your own infrastructure. When and how: [releasing](../docs/sdks/releasing.md#first-who-runs-the-server)
 - **The CLI and the MCP server** ship with the Python package: [CLI](../docs/sdks/cli.md), [MCP server](../docs/sdks/mcp.md)
 - **Both SDKs talk to a SerpFlow server you run yourself.** SerpFlow is self-hosted for now, by the author's decision; the author will host it on demand, once enough people ask in a public GitHub issue: [hosting](../README.md#hosting)
 

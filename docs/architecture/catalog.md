@@ -1,7 +1,7 @@
 # The engine catalog
 
 <p>
-  <a href="../README.md#architecture"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="../architecture/README.md"><img alt="docs: Architecture" src="https://img.shields.io/badge/docs-Architecture-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <img alt="engines: 54" src="https://img.shields.io/badge/engines-54-2F6BFF">
   <img alt="dependency edges: 30" src="https://img.shields.io/badge/dependency%20edges-30-2F6BFF">
   <img alt="substitutes: 69" src="https://img.shields.io/badge/substitutes-69-2F6BFF">
@@ -11,7 +11,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Architecture](../README.md#architecture) › **The engine catalog** · page 12 of 57
+[Docs](../README.md) › [Architecture](../architecture/README.md) › **The engine catalog** · page 15 of 50
 
 **The catalog is the largest body of domain knowledge in SerpFlow, and everything else depends on it.**
 
@@ -87,7 +87,7 @@ app/services/catalog/
 
 ### Both relationship kinds are mandatory
 
-This is the part that is easy to get wrong, and why the two are kept as separate edge sets: [ADR 0002](../adr/0002-typed-catalog-edges.md).
+This is the part that is easy to get wrong, and why the two are kept as separate edge sets.
 
 | Relationship | Declared by | Describes | Without it |
 | --- | --- | --- | --- |
@@ -168,7 +168,7 @@ Six steps, **two of which cannot be automated**:
 ```
 
 - **`make catalog-build`** does steps 1 and 2 ([`backend/scripts/catalog_build.py`](../../backend/scripts/catalog_build.py)), writing to `data/_drafts/`. It never touches a committed file
-- **Why steps 3 and 4 need a person** ([ADR 0002](../adr/0002-typed-catalog-edges.md#cost)):
+- **Why steps 3 and 4 need a person**:
   - a scraper can see that `google_maps_reviews` takes a `data_id`
   - only a person decides that `google_maps.local_results[].data_id` is the field that satisfies it
   - that the fan-out is roughly twenty
@@ -227,16 +227,15 @@ make catalog-validate            # lint the committed catalog; exits 1 on any pr
 ## Related
 
 - [The planner](planner.md): how stages A to D use the catalog, and how a free-text query becomes a ticker
-- [Marginal replanning](marginal-replanning.md) and [ADR 0008](../adr/0008-coverage-before-price.md): why substitutes give the cost model something to re-rank, and why their `coverage` outranks their price
+- [Marginal replanning](marginal-replanning.md): why substitutes give the cost model something to re-rank, and why their `coverage` outranks their price
 - [Caching](caching.md#adaptive-ttl): how `volatility_prior` seeds each entry's TTL
 - [Database schema](../database/schema.md#catalog-projection): the tables `make seed` projects the catalog into
 - [Benchmark](../product/benchmark.md#if-you-change-the-catalog): routing accuracy per catalog version, and what to run after an edit
 - [The reference demo](../product/demo.md): the contributor chain the dependency edges make routable
-- [ADR 0002](../adr/0002-typed-catalog-edges.md): why dependency and substitute edges are two separate sets
 - [CLI](../sdks/cli.md#serpflow-catalog): `serpflow catalog validate` and the other catalog commands
 
 ---
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Architecture overview](../architecture/overview.md) | [Docs index](../README.md) | [The planner](../architecture/planner.md) |
+| [Architecture overview](../architecture/overview.md) | [Docs index](../README.md) · [Architecture index](../architecture/README.md) | [The planner](../architecture/planner.md) |

@@ -234,7 +234,6 @@ const FOOTER_GROUPS: { title: string; links: { label: string; to?: string; href?
     title: "Project",
     links: [
       { label: "Architecture", to: "/docs/architecture/overview" },
-      { label: "Decision records", to: "/docs/adr" },
       { label: "Security", to: "/docs/security/threat-model" },
       { label: "GitHub", href: "https://github.com/Madhur-Prakash/SerpFlow" },
     ],

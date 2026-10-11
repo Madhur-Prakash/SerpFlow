@@ -1,15 +1,15 @@
 # API keys
 
 <p>
-  <a href="../README.md#security"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
+  <a href="../security/README.md"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
   <img alt="roles: 5 built-in + custom" src="https://img.shields.io/badge/roles-5%20built--in%20%2B%20custom-6E40C9">
   <img alt="HMAC: SHA-256" src="https://img.shields.io/badge/HMAC-SHA--256-6E40C9">
   <img alt="Argon2id: passwords" src="https://img.shields.io/badge/Argon2id-passwords-6E40C9">
   <a href="../../backend/app/core/security.py"><img alt="source: core/security.py" src="https://img.shields.io/badge/source-core%2Fsecurity.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 11 min" src="https://img.shields.io/badge/read-11%20min-555555">
+  <img alt="read: 10 min" src="https://img.shields.io/badge/read-10%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../README.md#security) › **API keys** · page 35 of 57
+[Docs](../README.md) › [Security](../security/README.md) › **API keys** · page 42 of 50
 
 **A SerpFlow API key authenticates a caller to SerpFlow.**
 
@@ -37,7 +37,7 @@ sf_live_pm8kd3_v1a7Qx9mNc2PfLz4Rt6WbYs8KdJh3Gn5
 - **The environment segment matters more than it looks**
   - a `test` key routes to the deterministic mock **regardless** of `SERPFLOW_MODE` ([execution modes](../product/execution-modes.md#who-chooses-and-precedence))
   - `parse_api_key(...).is_test` is readable **before** a database round trip
-  - the precedence is absolute, and no configuration overrides it ([ADR 0010](../adr/0010-test-key-mode-precedence.md))
+  - the precedence is absolute, and no configuration overrides it
 - **The project prefix is plaintext**, and unique per project (`projects.key_prefix`)
   - lookup filters on `project_prefix`, `environment` and `key_hash`, all indexed, so authentication is an **index lookup**, not a scan that HMACs every key in the system to find a match
 
@@ -67,7 +67,6 @@ def hash_api_key(plaintext: str) -> str:
 - **The same pepper hashes other short-lived handles** through `hash_opaque_token`: refresh sessions, email-verification and password-reset tokens, and webhook channel secrets. Changing it breaks every key, session and pending link at once ([secrets: pepper](secrets.md#pepper))
 - **The MCP server hashes keys in-process**, so it needs the API's exact `API_KEY_PEPPER` ([MCP: configuration](../sdks/mcp.md#configuration))
 - **Comparison is always `hmac.compare_digest`**
-- More: [ADR 0004](../adr/0004-hmac-for-api-keys.md#api-keys-hmac-sha256-under-a-server-side-pepper)
 
 ## What is stored
 
@@ -202,15 +201,13 @@ make seed    # prints a usable sf_test_... key
 - **Returns deterministic mock data**, with `X-SerpFlow-Mode: MOCK` ([provenance headers](../api/overview.md#provenance-headers))
 - **Budgets are still checked**, so a test key against an exhausted budget is refused like any other ([executor: budget enforcement](../architecture/executor.md#budget-enforcement))
 - Every example in [the API docs](../api/examples.md) uses one, and so should the [SDKs and the CLI](../sdks/overview.md#test-keys) while you integrate
-- Why no configuration can override it: [ADR 0010](../adr/0010-test-key-mode-precedence.md), [execution modes](../product/execution-modes.md)
+- Why no configuration can override it: [execution modes](../product/execution-modes.md)
 
 ## Related
 
 - [Upstream credentials](credentials.md): the other half of the credential story, the key SerpFlow spends on your behalf
 - [Secrets](secrets.md#pepper): the pepper every key hash depends on, and what rotating it costs
 - [Threat model](threat-model.md#spend-abuse): where keys, roles and session caps sit among the spend limits
-- [ADR 0004](../adr/0004-hmac-for-api-keys.md): why HMAC-SHA256 and not Argon2
-- [ADR 0010](../adr/0010-test-key-mode-precedence.md): why a `test` key always means mock
 - [MCP server](../sdks/mcp.md#sessions-and-budgets): the main user of service sessions and `SERPFLOW_MCP_SESSION`
 - [API overview: identity and access](../api/overview.md#identity-and-access): the key, member and role endpoints
 - [Troubleshooting: `INVALID_API_KEY` on a key that looks right](../operations/troubleshooting.md#invalid_api_key-on-a-key-that-looks-right): environment segment, rotation, pepper
@@ -220,4 +217,4 @@ make seed    # prints a usable sf_test_... key
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Upstream credentials](../security/credentials.md) | [Docs index](../README.md) | [Secrets](../security/secrets.md) |
+| [Upstream credentials](../security/credentials.md) | [Docs index](../README.md) · [Security index](../security/README.md) | [Secrets](../security/secrets.md) |

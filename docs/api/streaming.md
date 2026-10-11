@@ -1,7 +1,7 @@
 # Streaming
 
 <p>
-  <a href="../README.md#api"><img alt="docs: API" src="https://img.shields.io/badge/docs-API-009688?logo=readthedocs&logoColor=white"></a>
+  <a href="../api/README.md"><img alt="docs: API" src="https://img.shields.io/badge/docs-API-009688?logo=readthedocs&logoColor=white"></a>
   <img alt="stages: 11" src="https://img.shields.io/badge/stages-11-009688">
   <img alt="SSE: streaming" src="https://img.shields.io/badge/SSE-streaming-555555">
   <img alt="FastAPI: 0.118" src="https://img.shields.io/badge/FastAPI-0.118-009688?logo=fastapi&logoColor=white">
@@ -9,7 +9,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [API](../README.md#api) › **Streaming** · page 21 of 57
+[Docs](../README.md) › [API](../api/README.md) › **Streaming** · page 25 of 50
 
 ```http
 GET /v1/runs/{run_id}/stream
@@ -43,7 +43,7 @@ POST /v1/search
 - **`202 Accepted`**, with `X-SerpFlow-Run-Id` and `X-SerpFlow-Mode` set ([`app/api/v1/search.py`](../../backend/app/api/v1/search.py))
 - **The run executes in-process**, on the same service
 - **It is not handed to Kafka:** interactive search never is. A broker would add latency and a failure mode for no benefit
-- The Kafka topic exists for scheduled, bulk, retried and webhook-triggered runs. See [ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md) and [Kafka](../operations/kafka.md#what-goes-through-it-and-what-does-not)
+- The Kafka topic exists for scheduled, bulk, retried and webhook-triggered runs. See [Kafka](../operations/kafka.md#what-goes-through-it-and-what-does-not)
 - **Every run publishes frames, not only streamed ones.** A synchronous search or a replay goes through the same service layer ([`app/services/runs.py`](../../backend/app/services/runs.py)), so its stream can be replayed afterwards from the [buffer](#reconnecting)
 
 ## Frame shape
@@ -138,7 +138,7 @@ Each stage reports **what it actually produced**:
 
 // checking_budget
 { "budget": 20, "applied": true, "selected_plan_cost": 0, "note": "...",
-  "reductions": [{ "type": "sampling", "step": 2,
+  "reductions": [{ "type": "fan_out_cap", "step": 2,
                    "engine": "google_maps_contributor_reviews",
                    "original": 80, "reduced": 12,
                    "impact_note": "Contributor sampling reduced; ..." }] }
@@ -216,7 +216,7 @@ curl -N -H "X-API-Key: $SERPFLOW_API_KEY" \
   http://localhost:8000/v1/runs/run_01M3.../stream
 ```
 
-- **Neither SDK is published yet.** Install them from a checkout: [Python](../sdks/python.md#install), [TypeScript](../sdks/typescript.md#install)
+- **The SDKs are not released until the author decides to host SerpFlow** ([why](../sdks/releasing.md#first-who-runs-the-server)). If you self-host, install them from a checkout: [Python](../sdks/python.md#install), [TypeScript](../sdks/typescript.md#install)
 - **Both skip heartbeats and return after `complete` or `error`.** A failed run arrives as an `error` event, not an exception. See [Python streaming](../sdks/python.md#streaming) and [TypeScript streaming](../sdks/typescript.md#streaming)
 - **The console** uses `useRunStream`, which opens an `EventSource` with `?access_token=` and drops heartbeats ([`frontend/src/hooks/useRunStream.ts`](../../frontend/src/hooks/useRunStream.ts))
 
@@ -245,8 +245,7 @@ location ~ ^/v1/runs/[^/]+/stream$ {
 - [API overview](overview.md#runs): the other runs routes, and the permissions they need
 - [Worked examples](examples.md#watch-it-happen): starting a streamed search with `curl` and tailing it
 - [Frontend: the pipeline animation](../architecture/frontend.md#the-pipeline-animation): how the console paces and renders these frames
-- [The planner](../architecture/planner.md): the four stages that emit the first ten frames
-- [ADR 0007](../adr/0007-interactive-search-bypasses-kafka.md): why a streamed search runs in-process, not through Kafka
+- [The planner](../architecture/planner.md): the four stages behind the first ten stage names
 - [Production: behind a reverse proxy](../deployment/production.md#behind-a-reverse-proxy): proxy settings for a deployment
 - [Troubleshooting: streaming](../operations/troubleshooting.md#streaming): buffering, 401s and duplicate frames
 - [Redis](../operations/redis.md#what-lives-in-it): the frame mirror that lets another worker replay a run
@@ -256,4 +255,4 @@ location ~ ^/v1/runs/[^/]+/stream$ {
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [API overview](../api/overview.md) | [Docs index](../README.md) | [Worked examples](../api/examples.md) |
+| [API overview](../api/overview.md) | [Docs index](../README.md) · [API index](../api/README.md) | [Worked examples](../api/examples.md) |

@@ -1,7 +1,7 @@
 # Bring your own key
 
 <p>
-  <a href="../README.md#security"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
+  <a href="../security/README.md"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
   <img alt="platform keys: none" src="https://img.shields.io/badge/platform%20keys-none-3fcf8e">
   <img alt="SerpApi: 54 engines" src="https://img.shields.io/badge/SerpApi-54%20engines-2F6BFF">
   <img alt="Groq: BYOK" src="https://img.shields.io/badge/Groq-BYOK-F55036">
@@ -9,7 +9,7 @@
   <img alt="read: 8 min" src="https://img.shields.io/badge/read-8%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../README.md#security) › **Bring your own key** · page 33 of 57
+[Docs](../README.md) › [Security](../security/README.md) › **Bring your own key** · page 40 of 50
 
 > **SerpFlow is the control plane. The upstream accounts are yours.**
 
@@ -66,9 +66,9 @@ One envelope per credential:
                  wrapped by KEK (CREDENTIAL_KEK)
 ```
 
-- **Stored columns:** `ciphertext`, `encrypted_dek`, `kek_id`, `algo`, `fingerprint` ([ADR 0005](../adr/0005-envelope-encryption.md))
+- **Stored columns:** `ciphertext`, `encrypted_dek`, `kek_id`, `algo`, `fingerprint`
 - **There is no column holding a recoverable plaintext key**
-- **The stronger guarantee is structural:** no Pydantic response model in `app/schemas` has a field that could carry the secret ([ADR 0006](../adr/0006-no-credential-field-in-schemas.md))
+- **The stronger guarantee is structural:** no Pydantic response model in `app/schemas` has a field that could carry the secret
   - not excluded: **absent**. An excluded field leaks through serialisation bugs; a field that does not exist cannot
   - `CredentialResponse` in [`app/schemas/identity.py`](../../backend/app/schemas/identity.py) says so in its docstring, and a test walks every response model to assert it
 - **What you can read back:** nothing derived from the key except its fingerprint (`sha256(key)[:8]`, non-reversible). The rest of a credential's response is metadata: name, provider, scope, `kek_id`, `algo`, validation status, SerpApi's quota readout and timestamps. That holds for everyone, including the organization owner
@@ -184,4 +184,4 @@ curl https://your-instance/v1/credentials/providers \
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Threat model](../security/threat-model.md) | [Docs index](../README.md) | [Upstream credentials](../security/credentials.md) |
+| [Threat model](../security/threat-model.md) | [Docs index](../README.md) · [Security index](../security/README.md) | [Upstream credentials](../security/credentials.md) |

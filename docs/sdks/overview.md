@@ -1,20 +1,20 @@
 # SDKs and tools
 
 <p>
-  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <a href="../sdks/README.md"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
   <img alt="surfaces: Python · TypeScript · CLI · MCP" src="https://img.shields.io/badge/surfaces-Python%20%C2%B7%20TypeScript%20%C2%B7%20CLI%20%C2%B7%20MCP-8250DF">
   <img alt="Python: 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
   <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
   <img alt="MCP: server" src="https://img.shields.io/badge/MCP-server-555555">
   <a href="../../backend/app/sdk/__init__.py"><img alt="source: sdk/__init__.py" src="https://img.shields.io/badge/source-sdk%2F____init____.py-3fcf8e?logo=github&logoColor=white"></a>
-  <img alt="read: 6 min" src="https://img.shields.io/badge/read-6%20min-555555">
+  <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../README.md#sdks) › **SDKs and tools** · page 23 of 57
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **SDKs and tools** · page 28 of 50
 
 - **Four ways to drive SerpFlow from code**, besides calling the [REST API](../api/overview.md) yourself
 - **Two of them speak HTTP to a running API.** The CLI mostly does. **The MCP server does not:** it runs the service layer in its own process, against the database
-- **All four are version 1.0.0** and live in this repository. **Neither SDK is on a package registry yet:** see [releasing](releasing.md)
+- **All four are version 1.0.0** and live in this repository. **The SDKs are not released yet:** they will be published to npm and PyPI when the author decides to host SerpFlow. If you self-host, install them from a checkout and use them on your own infrastructure ([why](releasing.md#first-who-runs-the-server))
 - **SerpFlow is self-hosted, for now, by the author's decision.** There is no public hosted server: every surface here talks to **your own** instance. **The author will host it on demand**, once enough people ask for it in a public GitHub issue: [hosting](../../README.md#hosting)
 
 **On this page:** [the four surfaces](#the-four-surfaces) · [how they connect](#how-they-connect) · [configuration](#configuration) · [test keys](#test-keys) · [which one to use](#which-one-to-use) · [what each can do](#what-each-can-do) · [versions](#versions)
@@ -88,7 +88,7 @@ $env:SERPFLOW_API_KEY = "sf_test_..."
 | Already calling SerpApi from code | the [SerpApi drop-in](python.md#the-serpapi-drop-in) in either SDK | the call keeps its shape: `get_dict()` / `getJson()` |
 | At a terminal | [CLI](cli.md) | rendered plans, rejections and budget reductions |
 | An LLM agent (Claude Desktop, Claude Code, any MCP client) | [MCP server](mcp.md) | four tools, and a budget identity of the agent's own |
-| Anything else (Go, Rust, a shell script) | the [REST API](../api/overview.md) | every surface above is a thin layer over it |
+| Anything else (Go, Rust; a shell script the [CLI](cli.md#scripting) cannot cover) | the [REST API](../api/overview.md) | every surface above is a thin layer over it |
 
 ## What each can do
 
@@ -139,4 +139,4 @@ $env:SERPFLOW_API_KEY = "sf_test_..."
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Worked examples](../api/examples.md) | [Docs index](../README.md) | [Python SDK](../sdks/python.md) |
+| [SDKs index](../sdks/README.md) | [Docs index](../README.md) · [SDKs index](../sdks/README.md) | [Python SDK](../sdks/python.md) |

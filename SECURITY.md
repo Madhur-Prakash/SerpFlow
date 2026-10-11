@@ -81,7 +81,7 @@ SerpFlow is a control plane for a paid upstream API, so it holds sensitive mater
 - Keys use HMAC-SHA256 under a server-side pepper, compared with `hmac.compare_digest`: constant time, sub-millisecond
 - Passwords are low-entropy and human-chosen, so they **do** use Argon2id
 - **The pepper (`API_KEY_PEPPER`) never enters the database**, so a dump alone cannot verify a guessed key
-- More: [`docs/security/api-keys.md`](docs/security/api-keys.md#hashing-hmac-sha256-not-argon2) · [ADR 0004](docs/adr/0004-hmac-for-api-keys.md)
+- More: [`docs/security/api-keys.md`](docs/security/api-keys.md#hashing-hmac-sha256-not-argon2)
 
 ### The credential boundary
 
@@ -94,8 +94,8 @@ SerpFlow is a control plane for a paid upstream API, so it holds sensitive mater
   - written to a log
   - present as a field in any Pydantic response schema
 - **A test enforces the schema rule:** it walks every model in `app/schemas` and fails if `api_key`, `secret`, `ciphertext` or `encrypted_dek` appears on a response model
-- The field is **absent, not excluded**: excluded fields leak through serialisation bugs ([ADR 0006](docs/adr/0006-no-credential-field-in-schemas.md))
-- More: [`docs/security/credentials.md`](docs/security/credentials.md#where-it-is-decrypted) · [ADR 0005: envelope encryption](docs/adr/0005-envelope-encryption.md)
+- The field is **absent, not excluded**: excluded fields leak through serialisation bugs
+- More: [`docs/security/credentials.md`](docs/security/credentials.md#where-it-is-decrypted)
 
 ### Log redaction
 
@@ -123,7 +123,7 @@ Every tenant-scoped table carries an indexed `org_id`, and isolation is enforced
    - **an unset value matches every row, deliberately:** migrations, the seed and cross-organization workers run without a tenant. Every request path sets it, because the principal cannot resolve without doing so
    - want the strict posture? Drop that clause and give those paths a role with `BYPASSRLS`: [the empty-value clause](docs/database/rls.md#the-empty-value-clause)
 
-More: [`docs/database/rls.md`](docs/database/rls.md) · [ADR 0011](docs/adr/0011-rls-plus-application-guards.md)
+More: [`docs/database/rls.md`](docs/database/rls.md)
 
 ## Audit log
 
@@ -133,7 +133,7 @@ More: [`docs/database/rls.md`](docs/database/rls.md) · [ADR 0011](docs/adr/0011
 - **Hash chained:** each entry stores the hash of the previous entry for its organization
   - any insertion, edit or removal shows up as a chain break at a known sequence number
 - `GET /v1/audit/verify` walks the chain and reports the first break
-- More: [row-level security: the audit log](docs/database/rls.md#the-audit-log) · [ADR 0012](docs/adr/0012-append-only-audit-log.md)
+- More: [row-level security: the audit log](docs/database/rls.md#the-audit-log)
 
 ## Retention
 

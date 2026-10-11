@@ -1,7 +1,7 @@
 # Startup bootstrap
 
 <p>
-  <a href="../README.md#operations"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
+  <a href="../operations/README.md"><img alt="docs: Operations" src="https://img.shields.io/badge/docs-Operations-E6522C?logo=readthedocs&logoColor=white"></a>
   <img alt="bootstrap: advisory-locked" src="https://img.shields.io/badge/bootstrap-advisory--locked-3fcf8e">
   <img alt="Alembic: migrations" src="https://img.shields.io/badge/Alembic-migrations-6BA81E">
   <img alt="PostgreSQL: 17 + pgvector" src="https://img.shields.io/badge/PostgreSQL-17%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white">
@@ -9,7 +9,7 @@
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [Operations](../README.md#operations) › **Startup bootstrap** · page 37 of 57
+[Docs](../README.md) › [Operations](../operations/README.md) › **Startup bootstrap** · page 45 of 50
 
 **Two [environment variables](../security/secrets.md#inventory) turn a container plus an empty database into a working instance**, with no orchestration step in between:
 
@@ -157,7 +157,7 @@ docker compose exec backend python scripts/seed.py --reset
 ```
 
 - **Keys are printed only when the demo org is created.** Against a database the bootstrap already seeded, plain `make seed` re-projects the catalog and says *Demo organization already present*; use `ARGS=--reset` to get keys you can see
-- **`--reset` deletes the demo org and both demo users**, which removes their audit rows through [`AuditService.allow_purge`](../adr/0012-append-only-audit-log.md#the-exception-and-why-it-exists), the one sanctioned way past the append-only trigger
+- **`--reset` deletes the demo org and both demo users**, which removes their audit rows through the one sanctioned way past the append-only trigger
 - **The printed `test` key is the one to export as `SERPFLOW_API_KEY`** for the [CLI](../sdks/cli.md) and the [Python SDK](../sdks/python.md#install). They read it from the shell, not from `.env` (the *CLI, SDK and MCP* block of `.env.example`; see [secrets](../security/secrets.md)):
 
 ```bash
@@ -190,7 +190,6 @@ config.attributes["configure_logger"] = False
 - [Production](../deployment/production.md#scaling): the multi-replica case the advisory lock exists for
 - [Local development](../deployment/local.md#first-run): `make seed` and the keys it prints
 - [Secrets](../security/secrets.md#inventory): `ENVIRONMENT`, the two bootstrap flags and `SERPFLOW_API_KEY`
-- [ADR 0012](../adr/0012-append-only-audit-log.md#the-exception-and-why-it-exists): why `--reset` has to opt in to deleting audit rows
 - [Troubleshooting](troubleshooting.md#connection-refused-on-5432): when the database is not up yet at boot
 - [Backend](../architecture/backend.md): the application lifespan that runs the bootstrap
 
@@ -198,4 +197,4 @@ config.attributes["configure_logger"] = False
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Secrets](../security/secrets.md) | [Docs index](../README.md) | [Email](../operations/email.md) |
+| [Operations index](../operations/README.md) | [Docs index](../README.md) · [Operations index](../operations/README.md) | [Email](../operations/email.md) |

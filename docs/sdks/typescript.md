@@ -1,15 +1,15 @@
 # TypeScript SDK
 
 <p>
-  <a href="../README.md#sdks"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
+  <a href="../sdks/README.md"><img alt="docs: SDKs" src="https://img.shields.io/badge/docs-SDKs-8250DF?logo=readthedocs&logoColor=white"></a>
   <img alt="runtime deps: none" src="https://img.shields.io/badge/runtime%20deps-none-3fcf8e">
+  <img alt="runs on: Node 18+ · Deno · Bun · browsers" src="https://img.shields.io/badge/runs%20on-Node%2018%2B%20%C2%B7%20Deno%20%C2%B7%20Bun%20%C2%B7%20browsers-8250DF">
   <img alt="TypeScript: 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white">
-  <img alt="Node: 22" src="https://img.shields.io/badge/Node-22-5FA04E?logo=nodedotjs&logoColor=white">
   <a href="../../sdk/typescript/src/index.ts"><img alt="source: src/index.ts" src="https://img.shields.io/badge/source-src%2Findex.ts-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 7 min" src="https://img.shields.io/badge/read-7%20min-555555">
 </p>
 
-[Docs](../README.md) › [SDKs](../README.md#sdks) › **TypeScript SDK** · page 25 of 57
+[Docs](../README.md) › [SDKs](../sdks/README.md) › **TypeScript SDK** · page 30 of 50
 
 - **`@serpflow/sdk`: one file, no runtime dependencies**: [`src/index.ts`](../../sdk/typescript/src/index.ts)
 - **Uses only `fetch`, `ReadableStream` and `TextDecoder`**, so it runs in Node 18+, Deno, Bun and the browser
@@ -19,7 +19,7 @@
 
 ## Install
 
-**Today, from a checkout.** The package is not on npm yet.
+**From a checkout, on your own infrastructure.** The package is not released: it will be published to npm when the author decides to host SerpFlow ([why](releasing.md#first-who-runs-the-server)). Until then, a self-hosted instance builds and uses it as below.
 
 - **You also need a SerpFlow server to call.** SerpFlow is self-hosted for now, so that is your own instance, `http://localhost:8000` by default. The author will host one on demand: [hosting](../../README.md#hosting)
 
@@ -305,4 +305,4 @@ npm run build         # tsc -> dist/index.js + dist/index.d.ts
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [Python SDK](../sdks/python.md) | [Docs index](../README.md) | [CLI](../sdks/cli.md) |
+| [Python SDK](../sdks/python.md) | [Docs index](../README.md) · [SDKs index](../sdks/README.md) | [CLI](../sdks/cli.md) |

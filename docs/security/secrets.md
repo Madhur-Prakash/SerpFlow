@@ -1,14 +1,14 @@
 # Secrets
 
 <p>
-  <a href="../README.md#security"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
+  <a href="../security/README.md"><img alt="docs: Security" src="https://img.shields.io/badge/docs-Security-6E40C9?logo=readthedocs&logoColor=white"></a>
   <img alt="JWT: HS256" src="https://img.shields.io/badge/JWT-HS256-000000?logo=jsonwebtokens&logoColor=white">
   <img alt="AES: 256-GCM" src="https://img.shields.io/badge/AES-256--GCM-6E40C9">
   <a href="../../backend/app/core/config.py"><img alt="source: core/config.py" src="https://img.shields.io/badge/source-core%2Fconfig.py-3fcf8e?logo=github&logoColor=white"></a>
   <img alt="read: 12 min" src="https://img.shields.io/badge/read-12%20min-555555">
 </p>
 
-[Docs](../README.md) › [Security](../README.md#security) › **Secrets** · page 36 of 57
+[Docs](../README.md) › [Security](../security/README.md) › **Secrets** · page 43 of 50
 
 **Every secret the service holds, where it lives, and what happens if it leaks.**
 
@@ -83,7 +83,7 @@
 - **Not in the repository.** `.env` and `.env.*` are gitignored, except `.env.example`, which holds only obvious placeholders; the deployment secrets in it are marked `CHANGE ME`
 - **Not in a log.** `CredentialRedactionFilter` is installed on the root logger, and scrubs message, args, `extra=` attributes and the exception path ([credentials: never in a log](credentials.md#never-in-a-log))
 - **Not in an error response.** Errors carry a stable code, a sentence and a request id. Never a stack trace, never a configuration value ([API: errors](../api/overview.md#errors))
-- **Not in a response schema.** No field anywhere in `app/schemas` could carry a credential, and a test asserts it by walking every response model ([ADR 0006](../adr/0006-no-credential-field-in-schemas.md))
+- **Not in a response schema.** No field anywhere in `app/schemas` could carry a credential, and a test asserts it by walking every response model
 
 ## Local development
 
@@ -120,7 +120,7 @@ openssl rand -hex 32
 
 ### KEK
 
-**Envelope encryption is what makes this cheap:** only the wrapped DEKs change; the ciphertext does not move ([ADR 0005](../adr/0005-envelope-encryption.md)).
+**Envelope encryption is what makes this cheap:** only the wrapped DEKs change; the ciphertext does not move.
 
 - **The process holds one KEK at a time.** `kek_id` is written on every row, but `_load_kek` reads only `CREDENTIAL_KEK`, and `decrypt_credential` does not consult `kek_id` ([`app/core/security.py`](../../backend/app/core/security.py)). So a rotation is an offline re-wrap, and no tool for it ships yet:
 
@@ -162,7 +162,7 @@ openssl rand -hex 32
 | --- | --- |
 | Environment | `ENVIRONMENT=production` and `DEBUG=false`; this also refuses `SEED_ON_STARTUP` ([bootstrap](../operations/bootstrap.md#3-an-environment-refusal)) |
 | Deployment secrets | `JWT_SECRET`, `API_KEY_PEPPER`, `CREDENTIAL_KEK` all replaced, all distinct, and `CREDENTIAL_KEK_ID` renamed to match |
-| KEK custody | `CREDENTIAL_KEK` held in a KMS, not an environment variable. Today that needs `_load_kek` replaced with a KMS call |
+| KEK custody | `CREDENTIAL_KEK` injected from a secret manager or KMS at deploy time, never committed; on a single host, at least a `chmod 600` `.env` ([production](../deployment/production.md#before-anything-else)). The code reads it from the environment; keeping it out of the environment entirely needs `_load_kek` replaced with a KMS call |
 | CORS | `CORS_ORIGINS` set to real origins, never `*` |
 | Transport | TLS terminated in front of the service, by a proxy that appends to `X-Forwarded-For`, and `TRUSTED_PROXY_HOPS` matching the number of such proxies. Without one, recorded client addresses can be spoofed ([threat model: exposed surfaces](threat-model.md#exposed-surfaces)) |
 | Metrics | `/metrics` not reachable from the public origin: it is unauthenticated and its labels name organizations and projects ([deployment guide, step 9](../deployment/deployment-guide.md#9-put-tls-in-front)) |
@@ -182,7 +182,6 @@ openssl rand -hex 32
 - [Threat model](threat-model.md#out-of-scope): a compromised host holds the KEK and the pepper
 - [Deployment guide: generate secrets](../deployment/deployment-guide.md#3-generate-secrets): where these values go on a real server
 - [SDKs: configuration](../sdks/overview.md#configuration): the shell variables each client reads
-- [ADR 0004](../adr/0004-hmac-for-api-keys.md) and [ADR 0005](../adr/0005-envelope-encryption.md): why a pepper and a KEK, rather than one secret
 - [Troubleshooting: `INVALID_API_KEY` on a key that looks right](../operations/troubleshooting.md#invalid_api_key-on-a-key-that-looks-right): a changed pepper looks exactly like this
 - [Installation](../deployment/installation.md): where the secrets are first generated
 
@@ -190,4 +189,4 @@ openssl rand -hex 32
 
 | ← Previous | Index | Next → |
 | :--- | :---: | ---: |
-| [API keys](../security/api-keys.md) | [Docs index](../README.md) | [Startup bootstrap](../operations/bootstrap.md) |
+| [API keys](../security/api-keys.md) | [Docs index](../README.md) · [Security index](../security/README.md) | [Operations index](../operations/README.md) |
