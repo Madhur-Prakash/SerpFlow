@@ -749,9 +749,6 @@ make test-e2e         # includes the thesis assertion
 
 <h4>&copy; 2026 SerpFlow Contributors &middot; released under the <a href="LICENSE">Apache-2.0 licence</a></h4>
 
-<br>
-<br>
-
 ---
 
 <h3 align="center">
