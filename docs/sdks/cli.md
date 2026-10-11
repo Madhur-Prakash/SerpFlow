@@ -192,6 +192,7 @@ serpflow catalog validate || exit 1
 - [Catalog](../architecture/catalog.md): what `catalog explore` and `catalog paths` are reading
 - [Benchmark](../product/benchmark.md): what `benchmark compare` measures, and the latest results
 - [Troubleshooting](../operations/troubleshooting.md): when `serpflow health` says something is wrong
+- [Glossary](../product/glossary.md): every term in these pages, defined and linked
 
 ---
 

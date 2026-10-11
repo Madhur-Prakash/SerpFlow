@@ -214,6 +214,7 @@ make seed    # prints a usable sf_test_... key
 - [MCP server](../sdks/mcp.md#sessions-and-budgets): the main user of service sessions and `SERPFLOW_MCP_SESSION`
 - [API overview: identity and access](../api/overview.md#identity-and-access): the key, member and role endpoints
 - [Troubleshooting: `INVALID_API_KEY` on a key that looks right](../operations/troubleshooting.md#invalid_api_key-on-a-key-that-looks-right): environment segment, rotation, pepper
+- [Bring your own key](byok.md): the upstream keys, as opposed to SerpFlow's own
 
 ---
 

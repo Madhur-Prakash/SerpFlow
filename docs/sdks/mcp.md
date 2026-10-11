@@ -195,6 +195,7 @@ curl -s -X POST http://localhost:8000/v1/budgets \
 - [Threat model](../security/threat-model.md): what an agent with a key can and cannot reach
 - [CLI](cli.md): the same service layer, from a terminal
 - [Model Context Protocol](https://modelcontextprotocol.io/): the protocol itself
+- [Glossary](../product/glossary.md): every term in these pages, defined and linked
 
 ---
 

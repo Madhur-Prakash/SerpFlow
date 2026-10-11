@@ -390,6 +390,7 @@ routing_evals     per task per run: predicted engines and params, correctness
 - [ADR 0014](../adr/0014-persist-every-candidate.md): why `plan_candidates` keeps the losers too
 - [ADR 0012](../adr/0012-append-only-audit-log.md): why `audit_log` refuses `UPDATE`
 - [Troubleshooting: `type "vector" does not exist`](../operations/troubleshooting.md#type-vector-does-not-exist): when the extension is missing
+- [Architecture overview](../architecture/overview.md): which component writes which table
 
 ---
 

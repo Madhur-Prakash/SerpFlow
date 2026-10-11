@@ -297,6 +297,7 @@ npm run build         # tsc -> dist/index.js + dist/index.d.ts
 - [Streaming](../api/streaming.md): the frame contract behind `stream()`
 - [Releasing](releasing.md#before-the-first-typescript-release): what has to change before `npm install @serpflow/sdk` works
 - [The npm README](../../sdk/typescript/README.md): the page npmjs.com will show
+- [Glossary](../product/glossary.md): every term in these pages, defined and linked
 
 ---
 

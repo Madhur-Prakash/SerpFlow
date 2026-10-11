@@ -419,6 +419,7 @@ jobs:
 - [TypeScript SDK](typescript.md#building-from-source): building and packing it from source
 - [Changelog](../../CHANGELOG.md): where every release is recorded
 - [Contributing](../../CONTRIBUTING.md): the bar a change has to meet before it ships
+- [Glossary](../product/glossary.md): every term in these pages, defined and linked
 
 ---
 

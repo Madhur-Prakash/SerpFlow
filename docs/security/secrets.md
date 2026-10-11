@@ -184,6 +184,7 @@ openssl rand -hex 32
 - [SDKs: configuration](../sdks/overview.md#configuration): the shell variables each client reads
 - [ADR 0004](../adr/0004-hmac-for-api-keys.md) and [ADR 0005](../adr/0005-envelope-encryption.md): why a pepper and a KEK, rather than one secret
 - [Troubleshooting: `INVALID_API_KEY` on a key that looks right](../operations/troubleshooting.md#invalid_api_key-on-a-key-that-looks-right): a changed pepper looks exactly like this
+- [Installation](../deployment/installation.md): where the secrets are first generated
 
 ---
 

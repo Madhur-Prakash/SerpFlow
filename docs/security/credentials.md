@@ -204,6 +204,7 @@ POST /v1/credentials/reconcile-quota    serpflow.quota.reconcile: refresh upstre
 - [Executor: the credential boundary](../architecture/executor.md#the-credential-boundary): where a run decrypts, and when
 - [Threat model](threat-model.md#credential-theft-from-the-database): the threats this page answers
 - [Troubleshooting: `NO_UPSTREAM_CREDENTIAL`](../operations/troubleshooting.md#no_upstream_credential): a live key with nothing attached
+- [Observability: logging](../operations/observability.md#logging): the redaction that keeps keys out of logs
 
 ---
 

@@ -230,6 +230,7 @@ Stated plainly, because an unstated boundary reads as an oversight:
 - [ADR 0011](../adr/0011-rls-plus-application-guards.md) and [ADR 0012](../adr/0012-append-only-audit-log.md): isolation enforced twice, and an audit log that refuses edits
 - [Production](../deployment/production.md#before-anything-else): the hardening this model assumes
 - [SECURITY.md](../../SECURITY.md#reporting-a-vulnerability): how to report what this page missed
+- [Architecture overview](../architecture/overview.md): the components and trust boundaries modelled here
 
 ---
 

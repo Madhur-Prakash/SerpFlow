@@ -132,6 +132,7 @@ $env:SERPFLOW_API_KEY = "sf_test_..."
 - [API overview](../api/overview.md#authentication): the HTTP surface every SDK wraps
 - [API keys](../security/api-keys.md#test-keys): why a `sf_test_...` key spends nothing
 - [SDKs in the repository](../../sdk/README.md): where the source of each SDK lives
+- [Glossary](../product/glossary.md): every term in these pages, defined and linked
 
 ---
 

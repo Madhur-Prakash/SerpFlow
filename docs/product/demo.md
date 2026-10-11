@@ -215,6 +215,7 @@ assert _replan_counter_total() > before
 - [ADR 0009](../adr/0009-freshness-gates-warmth.md): why a warm entry must also be fresh enough to count
 - [Observability](../operations/observability.md#the-thesis-metric): the counter the demo increments
 - [Troubleshooting](../operations/troubleshooting.md#the-demo): when `make demo` exits non-zero
+- [Architecture overview](../architecture/overview.md): the components the demo exercises
 
 ---
 

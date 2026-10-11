@@ -192,6 +192,7 @@ config.attributes["configure_logger"] = False
 - [Secrets](../security/secrets.md#inventory): `ENVIRONMENT`, the two bootstrap flags and `SERPFLOW_API_KEY`
 - [ADR 0012](../adr/0012-append-only-audit-log.md#the-exception-and-why-it-exists): why `--reset` has to opt in to deleting audit rows
 - [Troubleshooting](troubleshooting.md#connection-refused-on-5432): when the database is not up yet at boot
+- [Backend](../architecture/backend.md): the application lifespan that runs the bootstrap
 
 ---
 

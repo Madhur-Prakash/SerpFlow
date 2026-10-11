@@ -250,6 +250,7 @@ location ~ ^/v1/runs/[^/]+/stream$ {
 - [Production: behind a reverse proxy](../deployment/production.md#behind-a-reverse-proxy): proxy settings for a deployment
 - [Troubleshooting: streaming](../operations/troubleshooting.md#streaming): buffering, 401s and duplicate frames
 - [Redis](../operations/redis.md#what-lives-in-it): the frame mirror that lets another worker replay a run
+- [Architecture overview](../architecture/overview.md#request-lifecycle): the request lifecycle these frames narrate
 
 ---
 

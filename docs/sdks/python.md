@@ -307,6 +307,7 @@ SerpApiCompat(params, *, base_url=None)
 - [Streaming](../api/streaming.md): the frame contract behind `stream()`
 - [Execution modes](../product/execution-modes.md): what `result.mode` means, and how to get `LIVE`
 - [Releasing](releasing.md#before-the-first-python-release): what has to change before `pip install serpflow` works
+- [Glossary](../product/glossary.md): every term in these pages, defined and linked
 
 ---
 

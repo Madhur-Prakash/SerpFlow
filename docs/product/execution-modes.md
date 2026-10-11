@@ -138,6 +138,7 @@ SERPFLOW_MODE=replay
 - [Troubleshooting](../operations/troubleshooting.md#replay_cassette_miss): what to do about `REPLAY_CASSETTE_MISS`
 - [The reference demo](demo.md): every phase on a test key, so zero credits
 - [Migrations](../database/migrations.md#0004_project_mode): the revision that made the mode per project
+- [Product overview](product-overview.md): where modes fit in the product
 
 ---
 

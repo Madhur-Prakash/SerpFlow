@@ -368,6 +368,7 @@ make api-check ARGS=--verbose  # print every call
 - [ADR 0010](../adr/0010-test-key-mode-precedence.md): why a test key overrides every execution mode
 - [Troubleshooting](../operations/troubleshooting.md#authentication): fixes for the authentication and execution error codes
 - [Glossary](../product/glossary.md): every term used on this page, with its canonical page
+- [Architecture overview](../architecture/overview.md): where the API sits in the request lifecycle
 
 ---
 

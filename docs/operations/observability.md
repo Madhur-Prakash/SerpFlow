@@ -337,6 +337,7 @@ X-SerpFlow-Run-Id        <- the run, which the Run Inspector will explain
 - [Credentials](../security/credentials.md#never-in-a-log): the redaction rules behind the log filter
 - [Deployment guide](../deployment/deployment-guide.md#12-observability): Prometheus and Grafana on a server
 - [Troubleshooting](troubleshooting.md#logs-and-resources): the SQLAlchemy INFO lines and finding a request in the log
+- [Production](../deployment/production.md): what to watch and alert on in a real deployment
 
 ---
 
