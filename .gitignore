@@ -12,7 +12,7 @@ htmlcov/
 coverage.xml
 dist/
 build/
-
+ 
 # Node
 node_modules/
 frontend/dist/
