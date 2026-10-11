@@ -20,19 +20,25 @@
 
 ## First, who runs the server
 
-**Both SDKs are thin HTTP clients.** A published SDK is only useful to someone who has a SerpFlow API to point it at. Decide which of these you are offering before the first release, because the answer changes the packages.
+**Both SDKs are thin HTTP clients.** A published SDK is only useful to someone who has a SerpFlow API to point it at.
 
-| | Self-hosted | Hosted by you |
+> **Decided: SerpFlow is self-hosted, for now.** The author has chosen not to run a public hosted instance yet.
+> Every user runs their own server, and the SDKs, the CLI and the MCP server point at it.
+> **The author will host SerpFlow on demand**, once enough people ask for it. To ask, open a public GitHub issue. See [hosting](../../README.md#hosting).
+
+**So the packages are released as clients for self-hosted SerpFlow.** The table shows what that means today, and what would have to change on the day the author hosts it:
+
+| | Self-hosted: **today** | Hosted by the author: **on demand, later** |
 | --- | --- | --- |
-| **Who runs the API** | each user, from this repository ([Docker](../deployment/docker.md), [deployment guide](../deployment/deployment-guide.md)) | you, at one public URL |
-| **What you operate** | nothing | the API, PostgreSQL, Redis, Kafka, TLS, backups, sign-ups, uptime and abuse handling |
-| **Upstream cost** | none to you | still none: SerpApi and Groq keys are [bring-your-own](../security/byok.md), per organization |
-| **SDK default `baseUrl`** | `http://localhost:8000`, as today | **change it to your URL before the first release.** Changing a default later is a major version |
-| **`serpflow-mcp`** | works: the user owns the database it connects to | **does not work for your users.** It needs your database and your `API_KEY_PEPPER`. Offer them a remote MCP endpoint you host, or rewrite it as an HTTP client of the API |
+| **Who runs the API** | each user, from this repository ([Docker](../deployment/docker.md), [deployment guide](../deployment/deployment-guide.md)) | the author, at one public URL |
+| **What the author operates** | nothing | the API, PostgreSQL, Redis, Kafka, TLS, backups, sign-ups, uptime and abuse handling |
+| **Upstream cost to the author** | none | still none: SerpApi and Groq keys are [bring-your-own](../security/byok.md), per organization |
+| **SDK default `baseUrl`** | `http://localhost:8000` | the hosted URL. Changing a default is a **major** version of each SDK |
+| **`serpflow-mcp`** | works: the user owns the database it connects to | **would not work for hosted users**: it needs the server's database and `API_KEY_PEPPER`. A remote MCP endpoint, or a rewrite as an HTTP client of the API, comes first |
 | **CLI** | works | works for the HTTP commands; `catalog` and `benchmark` run locally anyway |
 
-- **Self-hosted is what the code is built for today**, and it needs no infrastructure from you. The SDKs are then client libraries for software people run themselves
-- **Publishing the SDKs commits you to neither.** But a hosted offering needs its URL baked into the defaults first, and its own [production deployment](../deployment/production.md)
+- **Release the SDKs with the self-hosted defaults.** Every page in these docs describes the self-hosted setup
+- **The day hosting starts,** ship a major release of both SDKs with the new default URL, and the MCP change before announcing it, and stand the instance up with the [production deployment](../deployment/production.md) guide
 
 ## What ships where
 

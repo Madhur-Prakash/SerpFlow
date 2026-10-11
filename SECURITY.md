@@ -1,7 +1,8 @@
 # Security policy
 
 <p>
-  <a href="#reporting-a-vulnerability"><img alt="reporting: private" src="https://img.shields.io/badge/reporting-private-2F6BFF?logo=github&logoColor=white"></a>
+  <a href="#reporting-a-vulnerability"><img alt="reporting: public issues" src="https://img.shields.io/badge/reporting-public%20issues-2F6BFF?logo=github&logoColor=white"></a>
+  <a href="README.md#hosting"><img alt="hosting: self-hosted, for now" src="https://img.shields.io/badge/hosting-self--hosted%2C%20for%20now-555555"></a>
   <a href="#maintenance-and-support"><img alt="maintained by: one person" src="https://img.shields.io/badge/maintained%20by-one%20person-555555"></a>
   <a href="#supported-versions"><img alt="supported: main" src="https://img.shields.io/badge/supported-main-3fcf8e"></a>
   <img alt="passwords: Argon2id" src="https://img.shields.io/badge/passwords-Argon2id-6E40C9">
@@ -18,6 +19,8 @@
 
 - **SerpFlow is built and maintained by one person, in their own time.** There is no company, security team or on-call rotation behind it
 - **It began as a hackathon entry**, and grew from there into a full-scale project
+- **It is self-hosted, for now, by the author's decision.** There is no public hosted instance, so every deployment is run by its own operator, who is responsible for it
+  - **the author will host SerpFlow on demand**, once enough people ask for it: [hosting](README.md#hosting)
 - **Production-ready development is part of that scope**, not an afterthought:
   - versioned Alembic migrations and a self-bootstrapping container
   - multi-tenant isolation, enforced twice (application guards and PostgreSQL RLS)
@@ -29,19 +32,26 @@
   - response is best-effort, usually within a few days, slower around holidays and busy weeks
   - fixes land on `main` as soon as they are ready; there is no fixed patch schedule
   - a clear report with a proof of concept is the fastest path to a fix
-- Thank you for reporting responsibly. It matters more on a project with one maintainer, not less
+- Thank you for reporting carefully. It matters more on a project with one maintainer, not less
 - What is defended, and what is deliberately out of scope: [threat model](docs/security/threat-model.md#out-of-scope)
 
 ## Reporting a vulnerability
 
-- **Report privately.** Do not open a public issue
-- Use **GitHub's private vulnerability reporting** on this repository
+- **Open a public GitHub issue** on [this repository](https://github.com/Madhur-Prakash/SerpFlow/issues). That is the author's chosen channel; there is no private one
+- **Why public works here:** SerpFlow is self-hosted, so the author runs no instance holding other people's data, and an open report lets every operator see a problem and its fix at the same time
+- **Keep the report safe to publish.** Never include:
+  - real API keys, passwords, tokens, `API_KEY_PEPPER`, `JWT_SECRET` or `CREDENTIAL_KEK` values
+  - a SerpApi or Groq key, even a revoked one
+  - the address of a deployment that is not yours, or anyone's personal data
+- **Reproduce it against a local instance** (`make up && make seed`, a `sf_test_...` key), and describe that
 - Include:
   - what you did
   - what happened
   - what you expected
-  - a proof of concept, if you have one
-- You will get an acknowledgement, then updates while a fix is worked on
+  - a proof of concept, if you have one, against your own local instance
+- **If a real secret was exposed**, rotate it first, then report: [rotation](docs/security/secrets.md#rotation)
+- You will get a reply on the issue, then updates while a fix is worked on
+- **Running SerpFlow yourself?** Watch the repository's issues and releases: fixes land on `main` and in `1.0.x` patch releases
 - **Do not run automated scanners** against a deployment you do not own
 
 ## Supported versions

@@ -14,6 +14,7 @@
   <a href="backend/tests"><img alt="tests: 236 passing" src="https://img.shields.io/badge/tests-236%20passing-3fcf8e"></a>
   <a href="docs/product/demo.md"><img alt="demo: proven" src="https://img.shields.io/badge/make%20demo-PROVEN-3fcf8e"></a>
   <a href="docs/README.md"><img alt="docs: 62 pages" src="https://img.shields.io/badge/docs-62%20pages-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="#hosting"><img alt="hosting: self-hosted, for now" src="https://img.shields.io/badge/hosting-self--hosted%2C%20for%20now-555555"></a>
   <a href="LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
 </p>
 
@@ -36,6 +37,7 @@
   <a href="#the-evidence">Evidence</a> &middot;
   <a href="#the-thesis">Thesis</a> &middot;
   <a href="#how-it-works">How it works</a> &middot;
+  <a href="#hosting">Hosting</a> &middot;
   <a href="#quick-start">Quick start</a> &middot;
   <a href="#make-targets">Commands</a> &middot;
   <a href="#api">API</a> &middot;
@@ -64,6 +66,9 @@ https://github.com/user-attachments/assets/48567a13-c2d4-4cb0-9511-80d50dceed76
 > non-zero unless cache-aware replanning **changed the selected plan**. A cache
 > hit on the same plan does not count.
 
+> **Self-hosted, for now.** There is no public hosted SerpFlow: you run your own.
+> The author will host it once enough people ask for it. [How to ask](#hosting).
+
 ---
 
 ## Contents
@@ -80,6 +85,7 @@ https://github.com/user-attachments/assets/48567a13-c2d4-4cb0-9511-80d50dceed76
 | --- | --- | --- |
 | [Security](#security) | [The free tier](#the-free-tier) | [AI tool disclosure](#ai-tool-disclosure) |
 | [Contributing](#contributing) | [Who builds this](#who-builds-this) | [License](#license) |
+| [Hosting](#hosting) | | |
 
 ---
 
@@ -266,6 +272,23 @@ restaurants in Koramangala   never matches   restaurants in Indiranagar
 - This holds **regardless of cosine score**. It is a mechanism, not a model judgement
 - Every rejection is logged, so the threshold can be tuned with evidence
 - More: [`docs/architecture/caching.md`](docs/architecture/caching.md) · [ADR 0003: a deterministic guard](docs/adr/0003-deterministic-semantic-guard.md)
+
+---
+
+## Hosting
+
+> **SerpFlow is self-hosted, for now. That is the author's decision.**
+> There is no public hosted instance: no SerpFlow website to sign up at, no shared server and no SLA.
+> You run your own, on a laptop or a server: [quick start](#quick-start), [installation](docs/deployment/installation.md), [deployment guide](docs/deployment/deployment-guide.md).
+
+- **The author will host SerpFlow, on demand.** A public hosted instance will be launched **once enough people ask for one**, through requests or through use. There is no fixed number and no date yet
+- **To ask for it, open a public GitHub issue** on [this repository](https://github.com/Madhur-Prakash/SerpFlow/issues), or add a 👍 to an existing hosting request. Every request counts toward that decision
+  - say what you would use a hosted SerpFlow for; that is what decides it
+- **What self-hosting means today:**
+  - you run the API with its own PostgreSQL, Redis and Kafka, all from `docker compose` ([Docker](docs/deployment/docker.md))
+  - you bring your own SerpApi and Groq keys. That stays true on a hosted instance too: SerpFlow is [bring-your-own-key](docs/security/byok.md)
+  - the SDKs, the CLI and the MCP server point at **your** instance, `http://localhost:8000` by default ([SDKs and tools](docs/sdks/overview.md))
+- **If it is hosted later**, the SDKs gain a default URL for it and agents get a remote MCP endpoint. Until then nothing in this repository assumes one: [who runs the server](docs/sdks/releasing.md#first-who-runs-the-server)
 
 ---
 
@@ -574,6 +597,7 @@ for await (const event of client.stream("review rings among Koramangala cafes"))
 - **Python:** sync and async clients, one dependency (`httpx`). **TypeScript:** no dependencies; Node 18+, Deno, Bun and the browser
 - Both ship a **SerpApi-shaped drop-in**: a params dict in, `get_dict()` / `getJson()` out. `q` becomes the intent and SerpFlow's planner picks the engines, so existing code gains caching, budgets and provenance without a rewrite
 - **Not on npm or PyPI yet:** install from a checkout. [Releasing them](docs/sdks/releasing.md) covers the one-time fixes and every step
+- **There is no hosted server to point them at:** they talk to your own instance. See [hosting](#hosting)
 - More: [SDKs and tools](docs/sdks/overview.md) · [Python](docs/sdks/python.md) · [TypeScript](docs/sdks/typescript.md) · [CLI](docs/sdks/cli.md) · [`sdk/README.md`](sdk/README.md)
 
 ---
@@ -608,7 +632,7 @@ serpflow_marginal_replan_changed_selection_total
   - they carry 190+ bits of entropy, so there is no brute-force surface to stretch against
   - Argon2 would add 50-100 ms to every request for no security gain
 - More: [threat model](docs/security/threat-model.md) · [credentials](docs/security/credentials.md) · [API keys](docs/security/api-keys.md) · [secrets](docs/security/secrets.md) · [BYOK](docs/security/byok.md) · [row-level security](docs/database/rls.md)
-- Reporting a vulnerability: [SECURITY.md](SECURITY.md)
+- Reporting a vulnerability: open a **public** GitHub issue, without real keys or secrets, as [SECURITY.md](SECURITY.md#reporting-a-vulnerability) describes
 
 ## Testing
 
@@ -656,7 +680,8 @@ make test-e2e         # includes the thesis assertion
 ## Contributing
 
 - How to work on it: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Security reports: [SECURITY.md](SECURITY.md)
+- Security reports: a public GitHub issue, as [SECURITY.md](SECURITY.md#reporting-a-vulnerability) describes
+- Asking for a hosted instance: a public GitHub issue too. See [hosting](#hosting)
 - What changed: [CHANGELOG.md](CHANGELOG.md)
 
 ## Who builds this
@@ -664,6 +689,7 @@ make test-e2e         # includes the thesis assertion
 - SerpFlow is **built and maintained by one person, in their own time**
 - It started as a **hackathon entry** and grew into a full-scale project, including production-ready development: migrations, tenancy, security, observability and deployment
 - Support is best-effort. Expectations for security reports are in [SECURITY.md](SECURITY.md#maintenance-and-support)
+- **SerpFlow is self-hosted for now, by the author's choice.** The author will host it once enough people ask: [hosting](#hosting)
 
 ## AI tool disclosure
 

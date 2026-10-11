@@ -22,6 +22,7 @@
 
 - **Neither is on a registry yet.** Both install from a checkout today, and both names were still free on 2026-10-11. How to publish them: [releasing](../docs/sdks/releasing.md)
 - **The CLI and the MCP server** ship with the Python package: [CLI](../docs/sdks/cli.md), [MCP server](../docs/sdks/mcp.md)
+- **Both SDKs talk to a SerpFlow server you run yourself.** SerpFlow is self-hosted for now, by the author's decision; the author will host it on demand, once enough people ask in a public GitHub issue: [hosting](../README.md#hosting)
 
 ## Why they are in different places
 

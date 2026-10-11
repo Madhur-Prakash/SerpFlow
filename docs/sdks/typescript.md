@@ -21,6 +21,8 @@
 
 **Today, from a checkout.** The package is not on npm yet.
 
+- **You also need a SerpFlow server to call.** SerpFlow is self-hosted for now, so that is your own instance, `http://localhost:8000` by default. The author will host one on demand: [hosting](../../README.md#hosting)
+
 ```bash
 cd sdk/typescript
 npm install && npm run build          # tsc -> dist/

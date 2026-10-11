@@ -20,6 +20,8 @@
 
 **Today, from a checkout.** The SDK is not on PyPI yet.
 
+- **You also need a SerpFlow server to call.** SerpFlow is self-hosted for now, so that is your own instance, `http://localhost:8000` by default. The author will host one on demand: [hosting](../../README.md#hosting)
+
 ```bash
 make install-backend                  # uv venv on 3.13 + editable install of backend/
 source backend/.venv/bin/activate     # Windows: backend\.venv\Scripts\activate

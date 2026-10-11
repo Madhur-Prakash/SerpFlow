@@ -27,6 +27,9 @@ npm install @serpflow/sdk
 
 - **Until the first release is on npm**, install from a checkout: [building from source](https://github.com/Madhur-Prakash/SerpFlow/blob/main/docs/sdks/typescript.md#install)
 
+> **You need your own SerpFlow server.** SerpFlow is self-hosted for now: there is no public hosted instance, and `baseUrl` defaults to `http://localhost:8000`.
+> Run one with the [quick start](https://github.com/Madhur-Prakash/SerpFlow#quick-start). The author will host SerpFlow on demand, once enough people ask for it in a [public GitHub issue](https://github.com/Madhur-Prakash/SerpFlow/issues): see [hosting](https://github.com/Madhur-Prakash/SerpFlow#hosting).
+
 ## Use
 
 ```typescript

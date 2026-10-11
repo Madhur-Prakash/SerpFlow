@@ -15,6 +15,7 @@
 - **Four ways to drive SerpFlow from code**, besides calling the [REST API](../api/overview.md) yourself
 - **Two of them speak HTTP to a running API.** The CLI mostly does. **The MCP server does not:** it runs the service layer in its own process, against the database
 - **All four are version 1.0.0** and live in this repository. **Neither SDK is on a package registry yet:** see [releasing](releasing.md)
+- **SerpFlow is self-hosted, for now, by the author's decision.** There is no public hosted server: every surface here talks to **your own** instance. **The author will host it on demand**, once enough people ask for it in a public GitHub issue: [hosting](../../README.md#hosting)
 
 **On this page:** [the four surfaces](#the-four-surfaces) · [how they connect](#how-they-connect) · [configuration](#configuration) · [test keys](#test-keys) · [which one to use](#which-one-to-use) · [what each can do](#what-each-can-do) · [versions](#versions)
 
