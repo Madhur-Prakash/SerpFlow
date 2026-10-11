@@ -752,6 +752,8 @@ make test-e2e         # includes the thesis assertion
 <br>
 <br>
 
+---
+
 <h3 align="center">
   Made with ❤️ for the <a href="https://serpapi.github.io/serpapi-india-hackathon-2026/">SerpApi India Hackathon 2026</a> by <a href="https://github.com/Madhur-Prakash">Madhur-Prakash</a>
 </h3>
