@@ -10,10 +10,8 @@
 <p align="center">
   <a href="https://github.com/Madhur-Prakash/SerpFlow/releases/tag/v1.0.0"><img alt="release: v1.0.0" src="https://img.shields.io/badge/release-v1.0.0-2F6BFF?logo=github&logoColor=white"></a>
   <a href="docs/product/product-overview.md"><img alt="thesis: marginal-cost replanning" src="https://img.shields.io/badge/thesis-marginal--cost%20replanning-2F6BFF"></a>
-  <a href="docs/product/benchmark.md"><img alt="routing accuracy 38.3%" src="https://img.shields.io/badge/routing%20accuracy-38.3%25-3fcf8e"></a>
   <a href="backend/tests"><img alt="tests: 236 passing" src="https://img.shields.io/badge/tests-236%20passing-3fcf8e"></a>
-  <a href="docs/product/demo.md"><img alt="demo: proven" src="https://img.shields.io/badge/make%20demo-PROVEN-3fcf8e"></a>
-  <a href="docs/README.md"><img alt="docs: 55 pages" src="https://img.shields.io/badge/docs-55%20pages-2F6BFF?logo=readthedocs&logoColor=white"></a>
+  <a href="docs/README.md"><img alt="docs: 62 pages" src="https://img.shields.io/badge/docs-62%20pages-2F6BFF?logo=readthedocs&logoColor=white"></a>
   <a href="#hosting"><img alt="hosting: self-hosted, for now" src="https://img.shields.io/badge/hosting-self--hosted%2C%20for%20now-555555"></a>
   <a href="LICENSE"><img alt="licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-D22128"></a>
 </p>
@@ -180,7 +178,7 @@ intent
 - Caching inside the executor saves credits on the plan you **already picked**
 - Re-planning changes **which plan you pick**
 - Those are different products
-- More: [the thesis](docs/product/product-overview.md#the-thesis)
+- More: [the thesis](docs/product/product-overview.md#the-thesis) · [ADR 0001: rank on marginal cost](docs/adr/0001-marginal-cost-replanning.md)
 
 ---
 
@@ -250,7 +248,7 @@ Plan B    cold 8    marginal 1      <- SerpFlow selects B
 - When the two disagree, that fact is **persisted on the Plan** and counted in `serpflow_marginal_replan_changed_selection_total`
 - The Plan Inspector renders the stored decision; nothing is recomputed in the browser
 - **Coverage outranks price:** a cheaper, narrow-coverage substitute is no reason to answer a different question
-- More: [`docs/architecture/marginal-replanning.md`](docs/architecture/marginal-replanning.md)
+- More: [`docs/architecture/marginal-replanning.md`](docs/architecture/marginal-replanning.md) · [ADR 0004: coverage before price](docs/adr/0004-coverage-before-price.md)
 
 ### Four cache layers
 
@@ -271,7 +269,7 @@ restaurants in Koramangala   never matches   restaurants in Indiranagar
 
 - This holds **regardless of cosine score**. It is a mechanism, not a model judgement
 - Every rejection is logged, so the threshold can be tuned with evidence
-- More: [`docs/architecture/caching.md`](docs/architecture/caching.md)
+- More: [`docs/architecture/caching.md`](docs/architecture/caching.md) · [ADR 0002: a deterministic guard](docs/adr/0002-deterministic-semantic-guard.md)
 
 ---
 
@@ -365,7 +363,7 @@ Most specific wins. Rule 1 is enforced in [`serpapi/__init__.py`](backend/app/in
 - **An unrecognised mode resolves to `replay`**, never to billable execution
 - The resolved mode travels on every response as `X-SerpFlow-Mode` and is always shown in the UI
 - Replayed or mocked data is never presented as live
-- More: [`docs/product/execution-modes.md`](docs/product/execution-modes.md)
+- More: [`docs/product/execution-modes.md`](docs/product/execution-modes.md) · [ADR 0005: test key precedence](docs/adr/0005-test-key-mode-precedence.md)
 
 ---
 
@@ -652,7 +650,7 @@ make test-e2e         # includes the thesis assertion
 
 ## Documentation
 
-- Everything lives in [`docs/`](docs/README.md): **55 pages**, each with a badge header and previous/next links, so the set reads end to end, and every folder opens with a section index
+- Everything lives in [`docs/`](docs/README.md): **62 pages**, each with a badge header and previous/next links, so the set reads end to end, and every folder opens with a section index
 - The running app serves the same pages at `/docs`, with a sidebar, search and on-page contents
 - The API reference at `/api` is generated from the OpenAPI schema
 
@@ -666,6 +664,7 @@ make test-e2e         # includes the thesis assertion
 | **[Security](docs/security/README.md)** | [threat model](docs/security/threat-model.md) · [BYOK](docs/security/byok.md) · [credentials](docs/security/credentials.md) · [API keys](docs/security/api-keys.md) · [secrets](docs/security/secrets.md) |
 | **[Operations](docs/operations/README.md)** | [bootstrap](docs/operations/bootstrap.md) · [email](docs/operations/email.md) · [observability](docs/operations/observability.md) · [kafka](docs/operations/kafka.md) · [redis](docs/operations/redis.md) · [troubleshooting](docs/operations/troubleshooting.md) |
 | **[SDKs](docs/sdks/README.md)** | [overview](docs/sdks/overview.md) · [Python](docs/sdks/python.md) · [TypeScript](docs/sdks/typescript.md) · [CLI](docs/sdks/cli.md) · [MCP](docs/sdks/mcp.md) · [releasing](docs/sdks/releasing.md) · [in the repo](sdk/README.md) |
+| **[Decisions](docs/adr/README.md)** | six records, each with the alternative rejected and the cost accepted: [marginal cost](docs/adr/0001-marginal-cost-replanning.md) · [cache guard](docs/adr/0002-deterministic-semantic-guard.md) · [envelope encryption](docs/adr/0003-envelope-encryption.md) · [coverage before price](docs/adr/0004-coverage-before-price.md) · [test keys](docs/adr/0005-test-key-mode-precedence.md) · [tenant isolation](docs/adr/0006-rls-plus-application-guards.md) |
 
 ---
 
